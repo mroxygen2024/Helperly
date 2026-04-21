@@ -246,6 +246,11 @@ try {
         return;
     }
 
+    if ($method === 'POST' && $path === '/admin/servant-verification') {
+        $profileController->updateServantVerification($_POST);
+        return;
+    }
+
     if ($method === 'GET' && $path === '/profile/employer') {
         $profileController->showEmployerForm();
         return;

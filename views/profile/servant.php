@@ -2,6 +2,13 @@
     <h1>Servant Profile</h1>
     <p class="muted">Create or update your service provider profile details.</p>
 
+    <?php if (!empty($profile)): ?>
+        <p><strong>Verification status:</strong> <?= escape(ServantProfile::verificationStatusLabel((string) ($profile['verification_status'] ?? 'pending'))); ?></p>
+        <?php if (!empty($profile['verification_notes'])): ?>
+            <p class="muted"><strong>Verification notes:</strong> <?= escape((string) $profile['verification_notes']); ?></p>
+        <?php endif; ?>
+    <?php endif; ?>
+
     <form action="/profile/servant" method="POST" enctype="multipart/form-data" class="form-grid" novalidate>
         <input type="hidden" name="csrf_token" value="<?= escape($csrfToken ?? csrfToken()); ?>">
 

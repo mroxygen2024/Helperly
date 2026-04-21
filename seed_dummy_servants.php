@@ -76,6 +76,8 @@ for ($i = 1; $i <= 30; $i++) {
                 'experience' => $experience[$i % count($experience)],
                 'location' => $locations[$i % count($locations)],
                 'availability' => $availability[$i % count($availability)],
+                'verification_status' => 'pending',
+                'verification_notes' => '',
                 'updated_at' => $now,
             ],
             '$setOnInsert' => [

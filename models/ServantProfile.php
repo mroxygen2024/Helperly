@@ -15,6 +15,8 @@ use MongoDB\Collection;
 
 class ServantProfile
 {
+    private const VERIFICATION_STATUSES = ['pending', 'approved', 'rejected'];
+
     private Collection $collection;
     private static bool $indexesEnsured = false;
 
@@ -62,6 +64,21 @@ class ServantProfile
         return array_values(array_unique($normalized));
     }
 
+    private function normalizeVerificationStatus(string $status): string
+    {
+        $normalized = strtolower(trim($status));
+        if (!in_array($normalized, self::VERIFICATION_STATUSES, true)) {
+            throw new InvalidArgumentException('Invalid verification status provided.');
+        }
+
+        return $normalized;
+    }
+
+    private function normalizeVerificationNotes(?string $notes): string
+    {
+        return trim((string) $notes);
+    }
+
     public function createOrUpdateProfile(
         string $user_id,
         string $fullName,
@@ -104,6 +121,8 @@ class ServantProfile
                 ],
                 '$setOnInsert' => [
                     'user_id' => new ObjectId($user_id),
+                    'verification_status' => 'pending',
+                    'verification_notes' => '',
                     'created_at' => $now,
                 ],
             ],
@@ -121,6 +140,43 @@ class ServantProfile
 
         $profile = $this->collection->findOne(['user_id' => new ObjectId($user_id)]);
         return $profile ? (array) $profile : null;
+    }
+
+    public function updateVerificationStatus(string $user_id, string $status, ?string $notes = null): bool
+    {
+        if (!$this->isValidObjectId($user_id)) {
+            throw new InvalidArgumentException('Invalid user_id provided.');
+        }
+
+        $normalizedStatus = $this->normalizeVerificationStatus($status);
+        $normalizedNotes = $this->normalizeVerificationNotes($notes);
+
+        $result = $this->collection->updateOne(
+            ['user_id' => new ObjectId($user_id)],
+            [
+                '$set' => [
+                    'verification_status' => $normalizedStatus,
+                    'verification_notes' => $normalizedNotes,
+                    'updated_at' => new UTCDateTime(),
+                ],
+            ]
+        );
+
+        return $result->getMatchedCount() > 0;
+    }
+
+    public static function allowedVerificationStatuses(): array
+    {
+        return self::VERIFICATION_STATUSES;
+    }
+
+    public static function verificationStatusLabel(?string $status): string
+    {
+        return match (strtolower(trim((string) $status))) {
+            'approved' => 'Approved',
+            'rejected' => 'Rejected',
+            default => 'Pending',
+        };
     }
 
     /**

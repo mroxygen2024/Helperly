@@ -413,6 +413,10 @@ class ProfileController
             $errors
         );
 
+        $verificationUploadsChanged = $faydaIdFrontUrl !== $existingIdFront
+            || $faydaIdBackUrl !== $existingIdBack
+            || $selfieUrl !== $existingSelfie;
+
         if (!empty($errors)) {
             rememberOldInput([
                 'full_name' => $fullName,
@@ -447,6 +451,10 @@ class ProfileController
                 $faydaIdBackUrl,
                 $selfieUrl
             );
+
+            if ($verificationUploadsChanged) {
+                $this->servantProfiles->updateVerificationStatus($userId, 'pending', '');
+            }
         } catch (Throwable $exception) {
             error_log('Servant profile save failed: ' . $exception->getMessage());
             setFlash('error', 'Could not save profile. Please try again.');
@@ -456,6 +464,41 @@ class ProfileController
         clearOldInput();
         setFlash('success', 'Servant profile saved successfully.');
         redirect('/profile/servant');
+    }
+
+    public function updateServantVerification(array $payload): void
+    {
+        requireRole('administrator');
+
+        if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
+            setFlash('error', 'Invalid request token. Please try again.');
+            redirect('/?page=profiles');
+        }
+
+        $servantUserId = sanitizeInput($payload['servant_user_id'] ?? null);
+        $verificationStatus = sanitizeInput($payload['verification_status'] ?? null);
+        $verificationNotes = sanitizeInput($payload['verification_notes'] ?? null);
+
+        if ($servantUserId === '') {
+            setFlash('error', 'Servant profile is required.');
+            redirect('/?page=profiles');
+        }
+
+        if (!in_array($verificationStatus, ServantProfile::allowedVerificationStatuses(), true)) {
+            setFlash('error', 'Invalid verification status.');
+            redirect('/?page=profiles');
+        }
+
+        try {
+            $this->servantProfiles->updateVerificationStatus($servantUserId, $verificationStatus, $verificationNotes);
+        } catch (Throwable $exception) {
+            error_log('Servant verification update failed: ' . $exception->getMessage());
+            setFlash('error', 'Could not update verification status. Please try again.');
+            redirect('/?page=profiles');
+        }
+
+        setFlash('success', 'Verification status updated successfully.');
+        redirect('/?page=profiles');
     }
 
     public function showEmployerForm(): void
