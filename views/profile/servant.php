@@ -1,9 +1,27 @@
 <section class="card">
     <h1>Servant Profile</h1>
-    <p class="muted">Create or update your profile details.</p>
+    <p class="muted">Create or update your service provider profile details.</p>
 
     <form action="/profile/servant" method="POST" class="form-grid" novalidate>
         <input type="hidden" name="csrf_token" value="<?= escape($csrfToken ?? csrfToken()); ?>">
+
+        <label for="full_name">Full Name</label>
+        <input id="full_name" name="full_name" type="text" value="<?= escape(old('full_name', (string) ($profile['full_name'] ?? ''))); ?>" required>
+
+        <label for="national_id">National ID</label>
+        <input id="national_id" name="national_id" type="text" value="<?= escape(old('national_id', (string) ($profile['national_id'] ?? ''))); ?>" required>
+
+        <label for="age">Age</label>
+        <input id="age" name="age" type="number" min="18" max="80" value="<?= escape(old('age', (string) ($profile['age'] ?? ''))); ?>" required>
+
+        <label for="gender">Gender</label>
+        <?php $selectedGender = old('gender', (string) ($profile['gender'] ?? '')); ?>
+        <select id="gender" name="gender" required>
+            <option value="">Select gender</option>
+            <option value="male" <?= $selectedGender === 'male' ? 'selected' : ''; ?>>Male</option>
+            <option value="female" <?= $selectedGender === 'female' ? 'selected' : ''; ?>>Female</option>
+            <option value="other" <?= $selectedGender === 'other' ? 'selected' : ''; ?>>Other</option>
+        </select>
 
         <label for="skills">Skills (comma separated)</label>
         <input id="skills" name="skills" type="text" value="<?= escape(old('skills', (string) ($skillsText ?? ''))); ?>" required>
@@ -16,6 +34,12 @@
 
         <label for="availability">Availability</label>
         <input id="availability" name="availability" type="text" value="<?= escape(old('availability', (string) ($profile['availability'] ?? ''))); ?>" required>
+
+        <label for="hourly_rate">Hourly Rate</label>
+        <input id="hourly_rate" name="hourly_rate" type="text" value="<?= escape(old('hourly_rate', (string) ($profile['hourly_rate'] ?? ''))); ?>" placeholder="e.g. 500 BDT/hour" required>
+
+        <label for="profile_photo">Profile Photo URL</label>
+        <input id="profile_photo" name="profile_photo" type="url" value="<?= escape(old('profile_photo', (string) ($profile['profile_photo'] ?? ''))); ?>" placeholder="https://..." required>
 
         <button type="submit" class="btn">Save Profile</button>
     </form>

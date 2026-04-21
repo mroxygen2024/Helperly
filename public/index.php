@@ -46,6 +46,7 @@ $pathToPage = [
     '/login' => 'login',
     '/register' => 'register',
     '/dashboard' => 'dashboard',
+    '/profile/account' => 'profile-account',
     '/profiles' => 'profiles',
     '/listings' => 'listings',
 ];
@@ -165,6 +166,10 @@ try {
                 ]);
                 return;
 
+            case 'profile-account':
+                $profileController->showAccountForm();
+                return;
+
             case 'listings':
                 $user = authUser();
 
@@ -223,6 +228,16 @@ try {
 
     if ($method === 'GET' && $path === '/profile/servant') {
         $profileController->showServantForm();
+        return;
+    }
+
+    if ($method === 'GET' && $path === '/profile/account') {
+        $profileController->showAccountForm();
+        return;
+    }
+
+    if ($method === 'POST' && $path === '/profile/account') {
+        $profileController->saveAccountProfile($_POST);
         return;
     }
 

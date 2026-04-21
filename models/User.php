@@ -228,6 +228,26 @@ class User
         return $users;
     }
 
+    public function updateBasicProfile(string $id, string $name, string $phone): bool
+    {
+        if (!$this->isValidObjectId($id)) {
+            throw new InvalidArgumentException('Invalid user id provided.');
+        }
+
+        $result = $this->collection->updateOne(
+            ['_id' => new ObjectId($id)],
+            [
+                '$set' => [
+                    'name' => trim($name),
+                    'phone' => trim($phone),
+                    'updated_at' => new UTCDateTime(),
+                ],
+            ]
+        );
+
+        return $result->getMatchedCount() > 0;
+    }
+
     // Backward-compatible aliases for existing controller usage.
     public function findByEmail(string $email): ?array
     {

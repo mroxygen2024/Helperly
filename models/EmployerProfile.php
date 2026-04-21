@@ -40,7 +40,51 @@ class EmployerProfile
         self::$indexesEnsured = true;
     }
 
-    public function createOrUpdateProfile(string $user_id, string $address, string $location): bool
+    private function normalizeStringArray(array|string $values): array
+    {
+        if (is_string($values)) {
+            $values = explode(',', $values);
+        }
+
+        $normalized = [];
+        foreach ($values as $value) {
+            $item = trim((string) $value);
+            if ($item !== '') {
+                $normalized[] = $item;
+            }
+        }
+
+        return array_values(array_unique($normalized));
+    }
+
+    private function normalizeIntegerArray(array|string $values): array
+    {
+        if (is_string($values)) {
+            $values = explode(',', $values);
+        }
+
+        $normalized = [];
+        foreach ($values as $value) {
+            $number = (int) trim((string) $value);
+            if ($number > 0 && $number <= 25) {
+                $normalized[] = $number;
+            }
+        }
+
+        $normalized = array_values(array_unique($normalized));
+        sort($normalized);
+
+        return $normalized;
+    }
+
+    public function createOrUpdateProfile(
+        string $user_id,
+        string $address,
+        string $location,
+        array|string $emergencyContacts,
+        array|string $childrenAges,
+        array|string $preferences
+    ): bool
     {
         if (!$this->isValidObjectId($user_id)) {
             throw new InvalidArgumentException('Invalid user_id provided.');
@@ -53,6 +97,9 @@ class EmployerProfile
                 '$set' => [
                     'address' => trim($address),
                     'location' => trim($location),
+                    'emergency_contacts' => $this->normalizeStringArray($emergencyContacts),
+                    'children_ages' => $this->normalizeIntegerArray($childrenAges),
+                    'preferences' => $this->normalizeStringArray($preferences),
                     'updated_at' => $now,
                 ],
                 '$setOnInsert' => [
@@ -72,7 +119,22 @@ class EmployerProfile
             return null;
         }
 
-        $profile = $this->collection->findOne(['user_id' => new ObjectId($user_id)]);
+        $profile = $this->collection->findOne(
+            ['user_id' => new ObjectId($user_id)],
+            [
+                'projection' => [
+                    'user_id' => 1,
+                    'address' => 1,
+                    'location' => 1,
+                    'emergency_contacts' => 1,
+                    'children_ages' => 1,
+                    'preferences' => 1,
+                    'created_at' => 1,
+                    'updated_at' => 1,
+                ],
+            ]
+        );
+
         return $profile ? (array) $profile : null;
     }
 }

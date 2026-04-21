@@ -40,6 +40,7 @@ class ServantProfile
         // Support the servant directory filters without scanning the whole collection.
         $this->collection->createIndex(['location' => 1, 'skills' => 1]);
         $this->collection->createIndex(['skills' => 1]);
+        $this->collection->createIndex(['hourly_rate' => 1]);
         self::$indexesEnsured = true;
     }
 
@@ -63,10 +64,16 @@ class ServantProfile
 
     public function createOrUpdateProfile(
         string $user_id,
+        string $fullName,
+        string $nationalId,
+        int $age,
+        string $gender,
         array|string $skills,
         string $experience,
         string $location,
-        string $availability
+        string $availability,
+        string $hourlyRate,
+        string $profilePhoto
     ): bool {
         if (!$this->isValidObjectId($user_id)) {
             throw new InvalidArgumentException('Invalid user_id provided.');
@@ -77,10 +84,16 @@ class ServantProfile
             ['user_id' => new ObjectId($user_id)],
             [
                 '$set' => [
+                    'full_name' => trim($fullName),
+                    'national_id' => trim($nationalId),
+                    'age' => max(18, min(80, $age)),
+                    'gender' => trim($gender),
                     'skills' => $this->normalizeSkills($skills),
                     'experience' => trim($experience),
                     'location' => trim($location),
                     'availability' => trim($availability),
+                    'hourly_rate' => trim($hourlyRate),
+                    'profile_photo' => trim($profilePhoto),
                     'updated_at' => $now,
                 ],
                 '$setOnInsert' => [
@@ -132,10 +145,14 @@ class ServantProfile
                 'limit' => $limit,
                 'projection' => [
                     'user_id' => 1,
+                    'full_name' => 1,
+                    'gender' => 1,
                     'skills' => 1,
                     'experience' => 1,
                     'location' => 1,
                     'availability' => 1,
+                    'hourly_rate' => 1,
+                    'profile_photo' => 1,
                     'created_at' => 1,
                 ],
             ]

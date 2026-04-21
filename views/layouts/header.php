@@ -30,6 +30,7 @@ $currentUser = authUser();
             <?php if ($currentUser): ?>
                 <span class="muted">Signed in as <?= escape($currentUser['name']); ?></span>
                 <a href="/?page=dashboard">Dashboard</a>
+                <a href="/profile/account">Account</a>
                 <a href="/?page=profiles">Profiles</a>
                 <a href="/?page=listings">Listings</a>
                 <?php if (normalizeRole((string) ($currentUser['role'] ?? '')) === 'service_provider'): ?>

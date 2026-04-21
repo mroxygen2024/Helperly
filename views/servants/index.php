@@ -47,9 +47,17 @@
                 </header>
 
                 <div class="servant-meta">
+                    <p><strong>Gender:</strong> <?= escape((string) ($profile['gender'] ?? 'Not provided')); ?></p>
                     <p><strong>Experience:</strong> <?= escape((string) ($profile['experience'] ?? 'Not provided')); ?></p>
                     <p><strong>Availability:</strong> <?= escape((string) ($profile['availability'] ?? 'Not provided')); ?></p>
+                    <p><strong>Hourly Rate:</strong> <?= escape((string) ($profile['hourly_rate'] ?? 'Not provided')); ?></p>
                 </div>
+
+                <?php if (!empty($profile['profile_photo'])): ?>
+                    <div>
+                        <img src="<?= escape((string) $profile['profile_photo']); ?>" alt="<?= escape((string) ($servant['name'] ?? 'Servant')); ?>" style="width:100%;max-width:220px;border-radius:12px;border:1px solid #ead9c0;">
+                    </div>
+                <?php endif; ?>
 
                 <?php $skills = $profile['skills'] ?? []; ?>
                 <div class="pill-row">
