@@ -46,7 +46,14 @@ class User
         return strtolower(trim($email));
     }
 
-    public function createUser(string $name, string $email, string $phone, string $password, string $role): string
+    public function createUser(
+        string $name,
+        string $email,
+        string $phone,
+        string $password,
+        string $role,
+        string $verificationToken
+    ): string
     {
         $normalizedEmail = $this->normalizeEmail($email);
 
@@ -67,6 +74,9 @@ class User
                 'phone' => trim($phone),
                 'password_hash' => $passwordHash,
                 'role' => trim($role),
+                'is_verified' => false,
+                'verification_token' => hashVerificationToken($verificationToken),
+                'verification_sent_at' => new UTCDateTime(),
                 'created_at' => new UTCDateTime(),
             ]);
         } catch (BulkWriteException $exception) {
@@ -84,6 +94,30 @@ class User
     {
         $user = $this->collection->findOne(['email' => $this->normalizeEmail($email)]);
         return $user ? (array) $user : null;
+    }
+
+    public function verifyUserByToken(string $token): bool
+    {
+        $tokenHash = hashVerificationToken($token);
+
+        $result = $this->collection->updateOne(
+            [
+                'verification_token' => $tokenHash,
+                'is_verified' => false,
+            ],
+            [
+                '$set' => [
+                    'is_verified' => true,
+                    'verified_at' => new UTCDateTime(),
+                ],
+                '$unset' => [
+                    'verification_token' => '',
+                    'verification_sent_at' => '',
+                ],
+            ]
+        );
+
+        return $result->getModifiedCount() > 0;
     }
 
     public function findUserById(string $id): ?array

@@ -62,6 +62,16 @@ function validateRole(string $role): bool
     return in_array($role, ['servant', 'employer'], true);
 }
 
+function generateVerificationToken(): string
+{
+    return bin2hex(random_bytes(32));
+}
+
+function hashVerificationToken(string $token): string
+{
+    return hash('sha256', $token);
+}
+
 function redirect(string $path): never
 {
     header('Location: ' . $path);

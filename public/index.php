@@ -187,6 +187,11 @@ try {
         return;
     }
 
+    if ($method === 'GET' && $path === '/verify-email') {
+        $authController->verifyEmail($_GET);
+        return;
+    }
+
     if ($method === 'GET' && $path === '/profile/servant') {
         $profileController->showServantForm();
         return;

@@ -84,14 +84,19 @@ class AuthController
             redirect('/register');
         }
 
+        $verificationToken = generateVerificationToken();
+
         try {
             $this->users->createUser(
                 $name,
                 $email,
                 $phone,
                 $password,
-                $role
+                $role,
+                $verificationToken
             );
+
+            $this->sendVerificationEmail($email, $verificationToken);
         } catch (Throwable $exception) {
             error_log('Registration failed: ' . $exception->getMessage());
             setFlash('error', 'Registration failed. Please try again.');
@@ -99,7 +104,33 @@ class AuthController
         }
 
         clearOldInput();
-        setFlash('success', 'Registration successful. Please login.');
+        setFlash('success', 'Registration successful. Please verify your email before login.');
+        redirect('/login');
+    }
+
+    public function verifyEmail(array $query): void
+    {
+        $token = sanitizeInput($query['token'] ?? null);
+
+        if ($token === '' || strlen($token) !== 64 || !ctype_xdigit($token)) {
+            setFlash('error', 'Invalid verification link.');
+            redirect('/login');
+        }
+
+        try {
+            $verified = $this->users->verifyUserByToken($token);
+        } catch (Throwable $exception) {
+            error_log('Email verification failed: ' . $exception->getMessage());
+            setFlash('error', 'Could not verify account right now. Please try again later.');
+            redirect('/login');
+        }
+
+        if (!$verified) {
+            setFlash('error', 'Verification token is invalid or already used.');
+            redirect('/login');
+        }
+
+        setFlash('success', 'Email verified successfully. You can now log in.');
         redirect('/login');
     }
 
@@ -134,6 +165,13 @@ class AuthController
         if (!$user || !password_verify($password, (string) ($user['password_hash'] ?? ''))) {
             rememberOldInput(['email' => $email]);
             setFlash('error', 'Invalid login credentials.');
+            redirect('/login');
+        }
+
+        $isVerified = array_key_exists('is_verified', $user) ? (bool) $user['is_verified'] : true;
+        if (!$isVerified) {
+            rememberOldInput(['email' => $email]);
+            setFlash('error', 'Please verify your email before logging in.');
             redirect('/login');
         }
 
@@ -179,6 +217,11 @@ class AuthController
 
         if (!$user || !password_verify($password, (string) ($user['password_hash'] ?? ''))) {
             jsonResponse(['error' => 'Invalid login credentials.'], 401);
+        }
+
+        $isVerified = array_key_exists('is_verified', $user) ? (bool) $user['is_verified'] : true;
+        if (!$isVerified) {
+            jsonResponse(['error' => 'Please verify your email before logging in.'], 403);
         }
 
         $userId = (string) ($user['_id'] ?? '');
@@ -249,5 +292,24 @@ class AuthController
         session_regenerate_id(true);
         session_destroy();
         redirect('/login');
+    }
+
+    private function sendVerificationEmail(string $email, string $token): void
+    {
+        $verificationUrl = rtrim(appConfig()['base_url'], '/') . '/verify-email?token=' . urlencode($token);
+        $subject = 'Verify your Servant Marketplace account';
+        $message = "Welcome! Verify your account by visiting: $verificationUrl";
+        $headers = [
+            'MIME-Version: 1.0',
+            'Content-type: text/plain; charset=UTF-8',
+            'From: no-reply@servant-marketplace.local',
+        ];
+
+        $sent = @mail($email, $subject, $message, implode("\r\n", $headers));
+
+        if (!$sent) {
+            // Fallback for local development where mail() may not be configured.
+            error_log('Verification email fallback [' . $email . ']: ' . $verificationUrl);
+        }
     }
 }
