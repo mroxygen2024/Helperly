@@ -19,6 +19,8 @@
         <label for="password">Password</label>
         <input id="password" name="password" type="password" required autocomplete="current-password">
 
+        <p class="muted"><a href="/forgot-password">Forgot your password?</a></p>
+
         <button type="submit" class="btn">Login</button>
     </form>
 </section>

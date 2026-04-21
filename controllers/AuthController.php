@@ -34,6 +34,25 @@ class AuthController
         ]);
     }
 
+    public function showForgotPassword(): void
+    {
+        renderView('auth/forgot-password', [
+            'title' => 'Forgot Password',
+            'csrfToken' => csrfToken(),
+        ]);
+    }
+
+    public function showResetPassword(array $query): void
+    {
+        $token = sanitizeInput($query['token'] ?? null);
+
+        renderView('auth/reset-password', [
+            'title' => 'Reset Password',
+            'csrfToken' => csrfToken(),
+            'token' => $token,
+        ]);
+    }
+
     public function register(array $payload): void
     {
         if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
@@ -131,6 +150,84 @@ class AuthController
         }
 
         setFlash('success', 'Email verified successfully. You can now log in.');
+        redirect('/login');
+    }
+
+    public function forgotPassword(array $payload): void
+    {
+        if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
+            setFlash('error', 'Invalid request token. Please try again.');
+            redirect('/forgot-password');
+        }
+
+        $email = sanitizeEmail($payload['email'] ?? null);
+
+        if (!validateEmail($email)) {
+            rememberOldInput(['email' => $email]);
+            setFlash('error', 'Valid email is required.');
+            redirect('/forgot-password');
+        }
+
+        $token = generateVerificationToken();
+
+        try {
+            $exists = $this->users->createPasswordResetToken($email, $token, 3600);
+
+            // Do not reveal whether the account exists.
+            if ($exists) {
+                $this->sendPasswordResetEmail($email, $token);
+            }
+        } catch (Throwable $exception) {
+            error_log('Forgot password failed: ' . $exception->getMessage());
+            setFlash('error', 'Could not process reset request right now. Please try again later.');
+            redirect('/forgot-password');
+        }
+
+        clearOldInput();
+        setFlash('success', 'If the email exists, a reset link has been sent.');
+        redirect('/login');
+    }
+
+    public function resetPassword(array $payload): void
+    {
+        if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
+            setFlash('error', 'Invalid request token. Please try again.');
+            redirect('/forgot-password');
+        }
+
+        $token = sanitizeInput($payload['token'] ?? null);
+        $password = (string) ($payload['password'] ?? '');
+        $confirmPassword = (string) ($payload['confirm_password'] ?? '');
+
+        if ($token === '' || strlen($token) !== 64 || !ctype_xdigit($token)) {
+            setFlash('error', 'Invalid reset token.');
+            redirect('/forgot-password');
+        }
+
+        if (!validatePassword($password)) {
+            setFlash('error', 'Password must be at least 8 chars and include letters and numbers.');
+            redirect('/reset-password?token=' . urlencode($token));
+        }
+
+        if (!hash_equals($password, $confirmPassword)) {
+            setFlash('error', 'Password confirmation does not match.');
+            redirect('/reset-password?token=' . urlencode($token));
+        }
+
+        try {
+            $updated = $this->users->resetPasswordByToken($token, $password);
+        } catch (Throwable $exception) {
+            error_log('Reset password failed: ' . $exception->getMessage());
+            setFlash('error', 'Could not reset password right now. Please try again later.');
+            redirect('/forgot-password');
+        }
+
+        if (!$updated) {
+            setFlash('error', 'Reset token is invalid or expired.');
+            redirect('/forgot-password');
+        }
+
+        setFlash('success', 'Password reset successful. Please login with your new password.');
         redirect('/login');
     }
 
@@ -310,6 +407,25 @@ class AuthController
         if (!$sent) {
             // Fallback for local development where mail() may not be configured.
             error_log('Verification email fallback [' . $email . ']: ' . $verificationUrl);
+        }
+    }
+
+    private function sendPasswordResetEmail(string $email, string $token): void
+    {
+        $resetUrl = rtrim(appConfig()['base_url'], '/') . '/reset-password?token=' . urlencode($token);
+        $subject = 'Reset your Servant Marketplace password';
+        $message = "A password reset was requested for your account. Open this link within 1 hour: $resetUrl";
+        $headers = [
+            'MIME-Version: 1.0',
+            'Content-type: text/plain; charset=UTF-8',
+            'From: no-reply@servant-marketplace.local',
+        ];
+
+        $sent = @mail($email, $subject, $message, implode("\r\n", $headers));
+
+        if (!$sent) {
+            // Fallback for local development where mail() may not be configured.
+            error_log('Password reset email fallback [' . $email . ']: ' . $resetUrl);
         }
     }
 }

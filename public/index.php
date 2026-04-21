@@ -192,6 +192,26 @@ try {
         return;
     }
 
+    if ($method === 'GET' && $path === '/forgot-password') {
+        $authController->showForgotPassword();
+        return;
+    }
+
+    if ($method === 'POST' && $path === '/forgot-password') {
+        $authController->forgotPassword($_POST);
+        return;
+    }
+
+    if ($method === 'GET' && $path === '/reset-password') {
+        $authController->showResetPassword($_GET);
+        return;
+    }
+
+    if ($method === 'POST' && $path === '/reset-password') {
+        $authController->resetPassword($_POST);
+        return;
+    }
+
     if ($method === 'GET' && $path === '/profile/servant') {
         $profileController->showServantForm();
         return;

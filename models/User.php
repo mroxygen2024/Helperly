@@ -46,6 +46,11 @@ class User
         return strtolower(trim($email));
     }
 
+    private function dateToUtcDateTime(DateTimeImmutable $date): UTCDateTime
+    {
+        return new UTCDateTime($date->getTimestamp() * 1000);
+    }
+
     public function createUser(
         string $name,
         string $email,
@@ -113,6 +118,56 @@ class User
                 '$unset' => [
                     'verification_token' => '',
                     'verification_sent_at' => '',
+                ],
+            ]
+        );
+
+        return $result->getModifiedCount() > 0;
+    }
+
+    public function createPasswordResetToken(string $email, string $token, int $ttlSeconds = 3600): bool
+    {
+        $normalizedEmail = $this->normalizeEmail($email);
+        $expiresAt = new DateTimeImmutable('+' . max(60, $ttlSeconds) . ' seconds');
+
+        $result = $this->collection->updateOne(
+            ['email' => $normalizedEmail],
+            [
+                '$set' => [
+                    'password_reset_token' => hashVerificationToken($token),
+                    'password_reset_expires_at' => $this->dateToUtcDateTime($expiresAt),
+                    'password_reset_requested_at' => new UTCDateTime(),
+                ],
+            ]
+        );
+
+        return $result->getMatchedCount() > 0;
+    }
+
+    public function resetPasswordByToken(string $token, string $newPassword): bool
+    {
+        $passwordHash = password_hash($newPassword, PASSWORD_DEFAULT);
+        if ($passwordHash === false) {
+            throw new RuntimeException('Failed to hash password.');
+        }
+
+        $now = new UTCDateTime();
+        $tokenHash = hashVerificationToken($token);
+
+        $result = $this->collection->updateOne(
+            [
+                'password_reset_token' => $tokenHash,
+                'password_reset_expires_at' => ['$gt' => $now],
+            ],
+            [
+                '$set' => [
+                    'password_hash' => $passwordHash,
+                    'password_updated_at' => $now,
+                ],
+                '$unset' => [
+                    'password_reset_token' => '',
+                    'password_reset_expires_at' => '',
+                    'password_reset_requested_at' => '',
                 ],
             ]
         );
