@@ -218,6 +218,8 @@ class ServantProfile
                     'fayda_id_front_url' => 1,
                     'fayda_id_back_url' => 1,
                     'selfie_url' => 1,
+                    'verification_status' => 1,
+                    'verification_notes' => 1,
                     'created_at' => 1,
                 ],
             ]
