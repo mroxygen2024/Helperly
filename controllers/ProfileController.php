@@ -278,6 +278,9 @@ class ProfileController
 
         $address = sanitizeInput($payload['address'] ?? null);
         $location = sanitizeInput($payload['location'] ?? null);
+        $emergencyContacts = sanitizeInput($payload['emergency_contacts'] ?? null);
+        $childrenAges = sanitizeInput($payload['children_ages'] ?? null);
+        $preferences = sanitizeInput($payload['preferences'] ?? null);
 
         $errors = [];
         if (!validateRequired($address)) {
