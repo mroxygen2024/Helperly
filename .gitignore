@@ -1,0 +1,25 @@
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Composer dependencies
+/vendor/
+
+# Runtime artifacts
+*.log
+*.cache
+/.phpunit.result.cache
+
+# Local overrides and temporary files
+*.tmp
+*.swp
+*.swo
+
+# IDE/editor settings
+/.idea/
+/.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,17 @@
+{
+  "name": "servant/marketplace",
+  "description": "Vanilla PHP marketplace connecting servants and employers",
+  "type": "project",
+  "require": {
+    "php": "^8.1",
+    "ext-mongodb": "*",
+    "mongodb/mongodb": "^1.15"
+  },
+  "autoload": {
+    "files": [
+      "config/app.php",
+      "config/helpers.php",
+      "config/database.php"
+    ]
+  }
+}
