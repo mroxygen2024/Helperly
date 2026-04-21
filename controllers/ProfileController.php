@@ -107,6 +107,74 @@ class ProfileController
         return (string) $result['url'];
     }
 
+    private function uploadVerificationImageDataUrl(string $dataUrl, string $fieldName, string $userId): string
+    {
+        $label = $this->verificationFieldLabel($fieldName);
+        if (!str_starts_with($dataUrl, 'data:image/')) {
+            throw new RuntimeException($label . ' must be captured as an image.');
+        }
+
+        $parts = explode(',', $dataUrl, 2);
+        if (count($parts) !== 2) {
+            throw new RuntimeException($label . ' capture data is invalid.');
+        }
+
+        $binary = base64_decode($parts[1], true);
+        if ($binary === false || $binary === '') {
+            throw new RuntimeException($label . ' capture data could not be decoded.');
+        }
+
+        if (strlen($binary) > self::MAX_IMAGE_UPLOAD_BYTES) {
+            throw new RuntimeException($label . ' must be 5MB or smaller.');
+        }
+
+        $tmpName = tempnam(sys_get_temp_dir(), 'selfie_');
+        if ($tmpName === false) {
+            throw new RuntimeException('Could not process captured selfie image.');
+        }
+
+        try {
+            if (file_put_contents($tmpName, $binary) === false) {
+                throw new RuntimeException('Could not process captured selfie image.');
+            }
+
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
+            $mimeType = (string) $finfo->file($tmpName);
+            $allowedExtensions = [
+                'image/jpeg' => 'jpg',
+                'image/png' => 'png',
+            ];
+
+            if (!isset($allowedExtensions[$mimeType])) {
+                throw new RuntimeException($label . ' must be a JPG or PNG image.');
+            }
+
+            $extension = $allowedExtensions[$mimeType];
+            $fileName = sprintf(
+                '%s_%s_%s.%s',
+                $fieldName,
+                $userId,
+                bin2hex(random_bytes(8)),
+                $extension
+            );
+
+            $result = uploadImageToImageKit(
+                $tmpName,
+                $fileName,
+                [
+                    'folder' => '/servant-verification',
+                    'tags' => ['servant_verification', $fieldName],
+                ]
+            );
+
+            return (string) $result['url'];
+        } finally {
+            if (is_file($tmpName)) {
+                @unlink($tmpName);
+            }
+        }
+    }
+
     private function resolveVerificationImagePath(
         array $files,
         string $fieldName,
@@ -131,6 +199,26 @@ class ProfileController
 
         $errors[] = $this->verificationFieldLabel($fieldName) . ' is required.';
         return '';
+    }
+
+    private function resolveSelfieImagePath(
+        array $payload,
+        array $files,
+        string $existingPath,
+        string $userId,
+        array &$errors
+    ): string {
+        $selfieCaptureData = trim((string) ($payload['selfie_capture_data'] ?? ''));
+        if ($selfieCaptureData !== '') {
+            try {
+                return $this->uploadVerificationImageDataUrl($selfieCaptureData, 'selfie', $userId);
+            } catch (Throwable $exception) {
+                $errors[] = $exception->getMessage();
+                return $existingPath;
+            }
+        }
+
+        return $this->resolveVerificationImagePath($files, 'selfie', $existingPath, $userId, $errors);
     }
 
     public function showAccountForm(): void
@@ -317,9 +405,9 @@ class ProfileController
             $userId,
             $errors
         );
-        $selfieUrl = $this->resolveVerificationImagePath(
+        $selfieUrl = $this->resolveSelfieImagePath(
+            $payload,
             $uploadedFiles,
-            'selfie',
             $existingSelfie,
             $userId,
             $errors
