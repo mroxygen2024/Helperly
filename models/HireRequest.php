@@ -17,6 +17,7 @@ use MongoDB\Driver\Exception\BulkWriteException;
 class HireRequest
 {
     private Collection $collection;
+    private Collection $servantProfilesCollection;
     private static bool $indexesEnsured = false;
 
     private function isValidObjectId(string $value): bool
@@ -27,7 +28,21 @@ class HireRequest
     public function __construct()
     {
         $this->collection = getMongoDatabase()->selectCollection('hire_requests');
+        $this->servantProfilesCollection = getMongoDatabase()->selectCollection('servant_profiles');
         $this->ensureIndexes();
+    }
+
+    private function isApprovedServant(string $servant_id): bool
+    {
+        $approvedProfile = $this->servantProfilesCollection->findOne(
+            [
+                'user_id' => new ObjectId($servant_id),
+                'verification_status' => 'approved',
+            ],
+            ['projection' => ['_id' => 1]]
+        );
+
+        return $approvedProfile !== null;
     }
 
     private function ensureIndexes(): void
@@ -57,6 +72,10 @@ class HireRequest
 
         if ($employer_id === $servant_id) {
             throw new RuntimeException('Invalid request target.');
+        }
+
+        if (!$this->isApprovedServant($servant_id)) {
+            throw new RuntimeException('Only approved service providers can be booked.');
         }
 
         $existing = $this->collection->findOne([
