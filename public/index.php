@@ -242,7 +242,7 @@ try {
     }
 
     if ($method === 'POST' && $path === '/profile/servant') {
-        $profileController->saveServantProfile($_POST);
+        $profileController->saveServantProfile($_POST, $_FILES);
         return;
     }
 

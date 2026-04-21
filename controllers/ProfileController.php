@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 class ProfileController
 {
+    private const MAX_IMAGE_UPLOAD_BYTES = 5 * 1024 * 1024;
+
     private ServantProfile $servantProfiles;
     private EmployerProfile $employerProfiles;
     private User $users;
@@ -37,6 +39,109 @@ class ProfileController
         }
 
         return implode(', ', $items);
+    }
+
+    private function verificationUploadsDirectory(): string
+    {
+        $directory = dirname(__DIR__) . '/public/uploads/verification';
+
+        if (!is_dir($directory) && !mkdir($directory, 0755, true) && !is_dir($directory)) {
+            throw new RuntimeException('Could not prepare upload directory.');
+        }
+
+        return $directory;
+    }
+
+    private function removeUploadedFiles(array $paths): void
+    {
+        foreach ($paths as $path) {
+            if (!is_string($path) || $path === '') {
+                continue;
+            }
+
+            if (is_file($path)) {
+                @unlink($path);
+            }
+        }
+    }
+
+    private function saveVerificationImage(array $file, string $fieldName): array
+    {
+        $errorCode = (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE);
+        if ($errorCode !== UPLOAD_ERR_OK) {
+            $error = match ($errorCode) {
+                UPLOAD_ERR_NO_FILE => 'is required.',
+                UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => 'is too large.',
+                default => 'could not be uploaded.',
+            };
+
+            throw new RuntimeException(ucfirst(str_replace('_', ' ', $fieldName)) . ' ' . $error);
+        }
+
+        $tmpName = (string) ($file['tmp_name'] ?? '');
+        if ($tmpName === '' || !is_uploaded_file($tmpName)) {
+            throw new RuntimeException('Uploaded file for ' . $fieldName . ' is invalid.');
+        }
+
+        $size = (int) ($file['size'] ?? 0);
+        if ($size <= 0 || $size > self::MAX_IMAGE_UPLOAD_BYTES) {
+            throw new RuntimeException(ucfirst(str_replace('_', ' ', $fieldName)) . ' must be 5MB or smaller.');
+        }
+
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mimeType = (string) $finfo->file($tmpName);
+        $allowedExtensions = [
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+        ];
+
+        if (!isset($allowedExtensions[$mimeType])) {
+            throw new RuntimeException(ucfirst(str_replace('_', ' ', $fieldName)) . ' must be a JPG or PNG image.');
+        }
+
+        $directory = $this->verificationUploadsDirectory();
+        $extension = $allowedExtensions[$mimeType];
+        $fileName = $fieldName . '_' . bin2hex(random_bytes(16)) . '.' . $extension;
+        $destinationPath = $directory . '/' . $fileName;
+
+        if (!move_uploaded_file($tmpName, $destinationPath)) {
+            throw new RuntimeException('Could not store uploaded file for ' . $fieldName . '.');
+        }
+
+        @chmod($destinationPath, 0644);
+
+        return [
+            'disk' => $destinationPath,
+            'public' => '/uploads/verification/' . $fileName,
+        ];
+    }
+
+    private function resolveVerificationImagePath(
+        array $files,
+        string $fieldName,
+        string $existingPath,
+        array &$uploadedDiskPaths,
+        array &$errors
+    ): string {
+        $file = $files[$fieldName] ?? null;
+
+        if (is_array($file) && (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
+            try {
+                $stored = $this->saveVerificationImage($file, $fieldName);
+                $uploadedDiskPaths[] = $stored['disk'];
+                return $stored['public'];
+            } catch (Throwable $exception) {
+                $errors[] = $exception->getMessage();
+                return $existingPath;
+            }
+        }
+
+        if ($existingPath !== '') {
+            return $existingPath;
+        }
+
+        $errors[] = ucfirst(str_replace('_', ' ', $fieldName)) . ' is required.';
+        return '';
     }
 
     public function showAccountForm(): void
@@ -135,7 +240,7 @@ class ProfileController
         ]);
     }
 
-    public function saveServantProfile(array $payload): void
+    public function saveServantProfile(array $payload, ?array $files = null): void
     {
         requireRole('service_provider');
 
@@ -149,6 +254,17 @@ class ProfileController
             setFlash('error', 'User session is invalid. Please login again.');
             redirect('/login');
         }
+
+        $uploadedFiles = $files ?? $_FILES;
+        $existingProfile = $this->servantProfiles->getProfileByUserId($userId);
+        $existingIdFront = is_array($existingProfile) ? sanitizeInput((string) ($existingProfile['id_front'] ?? '')) : '';
+        $existingIdBack = is_array($existingProfile) ? sanitizeInput((string) ($existingProfile['id_back'] ?? '')) : '';
+        $existingSelfie = is_array($existingProfile) ? sanitizeInput((string) ($existingProfile['selfie'] ?? '')) : '';
+
+        $newUploadDiskPaths = [];
+        $idFrontPath = '';
+        $idBackPath = '';
+        $selfiePath = '';
 
         $fullName = sanitizeInput($payload['full_name'] ?? null);
         $nationalId = sanitizeInput($payload['national_id'] ?? null);
@@ -193,7 +309,30 @@ class ProfileController
             $errors[] = 'Profile photo URL is required.';
         }
 
+        $idFrontPath = $this->resolveVerificationImagePath(
+            $uploadedFiles,
+            'id_front',
+            $existingIdFront,
+            $newUploadDiskPaths,
+            $errors
+        );
+        $idBackPath = $this->resolveVerificationImagePath(
+            $uploadedFiles,
+            'id_back',
+            $existingIdBack,
+            $newUploadDiskPaths,
+            $errors
+        );
+        $selfiePath = $this->resolveVerificationImagePath(
+            $uploadedFiles,
+            'selfie',
+            $existingSelfie,
+            $newUploadDiskPaths,
+            $errors
+        );
+
         if (!empty($errors)) {
+            $this->removeUploadedFiles($newUploadDiskPaths);
             rememberOldInput([
                 'full_name' => $fullName,
                 'national_id' => $nationalId,
@@ -222,9 +361,13 @@ class ProfileController
                 $location,
                 $availability,
                 $hourlyRate,
-                $profilePhoto
+                $profilePhoto,
+                $idFrontPath,
+                $idBackPath,
+                $selfiePath
             );
         } catch (Throwable $exception) {
+            $this->removeUploadedFiles($newUploadDiskPaths);
             error_log('Servant profile save failed: ' . $exception->getMessage());
             setFlash('error', 'Could not save profile. Please try again.');
             redirect('/profile/servant');
