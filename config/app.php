@@ -88,6 +88,13 @@ if (!defined('APP_BOOTSTRAPPED')) {
             'imagekit_public_key' => getenv('IMAGEKIT_PUBLIC_KEY') ?: '',
             'imagekit_private_key' => getenv('IMAGEKIT_PRIVATE_KEY') ?: '',
             'imagekit_url_endpoint' => rtrim(getenv('IMAGEKIT_URL_ENDPOINT') ?: '', '/'),
+            'smtp_host' => getenv('SMTP_HOST') ?: '',
+            'smtp_port' => (int) (getenv('SMTP_PORT') ?: 587),
+            'smtp_username' => getenv('SMTP_USERNAME') ?: '',
+            'smtp_password' => getenv('SMTP_PASSWORD') ?: '',
+            'smtp_encryption' => strtolower(trim(getenv('SMTP_ENCRYPTION') ?: 'tls')),
+            'smtp_from_email' => getenv('SMTP_FROM_EMAIL') ?: 'no-reply@servant-marketplace.local',
+            'smtp_from_name' => getenv('SMTP_FROM_NAME') ?: (getenv('APP_NAME') ?: 'Servant Marketplace'),
         ];
     }
 

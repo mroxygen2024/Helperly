@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use PHPMailer\PHPMailer\Exception as MailerException;
+use PHPMailer\PHPMailer\PHPMailer;
+
 /*
  |--------------------------------------------------------------------------
  | controllers/ purpose
@@ -407,18 +410,8 @@ class AuthController
         $verificationUrl = rtrim(appConfig()['base_url'], '/') . '/verify-email?token=' . urlencode($token);
         $subject = 'Verify your Servant Marketplace account';
         $message = "Welcome! Verify your account by visiting: $verificationUrl";
-        $headers = [
-            'MIME-Version: 1.0',
-            'Content-type: text/plain; charset=UTF-8',
-            'From: no-reply@servant-marketplace.local',
-        ];
 
-        $sent = @mail($email, $subject, $message, implode("\r\n", $headers));
-
-        if (!$sent) {
-            // Fallback for local development where mail() may not be configured.
-            error_log('Verification email fallback [' . $email . ']: ' . $verificationUrl);
-        }
+        $this->sendTransactionalEmail($email, $subject, $message, 'Verification email');
     }
 
     private function sendPasswordResetEmail(string $email, string $token): void
@@ -426,17 +419,53 @@ class AuthController
         $resetUrl = rtrim(appConfig()['base_url'], '/') . '/reset-password?token=' . urlencode($token);
         $subject = 'Reset your Servant Marketplace password';
         $message = "A password reset was requested for your account. Open this link within 1 hour: $resetUrl";
-        $headers = [
-            'MIME-Version: 1.0',
-            'Content-type: text/plain; charset=UTF-8',
-            'From: no-reply@servant-marketplace.local',
-        ];
 
-        $sent = @mail($email, $subject, $message, implode("\r\n", $headers));
+        $this->sendTransactionalEmail($email, $subject, $message, 'Password reset email');
+    }
 
-        if (!$sent) {
-            // Fallback for local development where mail() may not be configured.
-            error_log('Password reset email fallback [' . $email . ']: ' . $resetUrl);
+    private function sendTransactionalEmail(string $toEmail, string $subject, string $plainTextBody, string $label): void
+    {
+        $config = appConfig();
+
+        if (!class_exists(PHPMailer::class)) {
+            error_log($label . ' failed: PHPMailer is not installed.');
+            return;
+        }
+
+        if (($config['smtp_host'] ?? '') === '') {
+            error_log($label . ' skipped: SMTP_HOST is not configured.');
+            return;
+        }
+
+        try {
+            $mailer = new PHPMailer(true);
+            $mailer->isSMTP();
+            $mailer->Host = (string) $config['smtp_host'];
+            $mailer->Port = max(1, (int) ($config['smtp_port'] ?? 587));
+            $mailer->SMTPAuth = true;
+            $mailer->Username = (string) ($config['smtp_username'] ?? '');
+            $mailer->Password = (string) ($config['smtp_password'] ?? '');
+
+            $encryption = strtolower(trim((string) ($config['smtp_encryption'] ?? 'tls')));
+            if ($encryption === 'ssl') {
+                $mailer->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+            } elseif ($encryption === 'tls') {
+                $mailer->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            }
+
+            $mailer->CharSet = 'UTF-8';
+            $mailer->setFrom(
+                (string) ($config['smtp_from_email'] ?? 'no-reply@servant-marketplace.local'),
+                (string) ($config['smtp_from_name'] ?? 'Servant Marketplace')
+            );
+            $mailer->addAddress($toEmail);
+            $mailer->Subject = $subject;
+            $mailer->Body = $plainTextBody;
+            $mailer->AltBody = $plainTextBody;
+
+            $mailer->send();
+        } catch (MailerException $exception) {
+            error_log($label . ' failed for [' . $toEmail . ']: ' . $exception->getMessage());
         }
     }
 }

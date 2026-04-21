@@ -31,6 +31,30 @@ $updatedUsers = 0;
 $upsertedProfiles = 0;
 $updatedProfiles = 0;
 
+$roleAccounts = [
+    [
+        'name' => 'Demo Parent',
+        'email' => 'demo.parent@example.com',
+        'phone' => '+8801800000001',
+        'role' => 'parent',
+        'password' => 'DemoPass123',
+    ],
+    [
+        'name' => 'Demo Service Provider',
+        'email' => 'demo.provider@example.com',
+        'phone' => '+8801800000002',
+        'role' => 'service_provider',
+        'password' => 'DemoPass123',
+    ],
+    [
+        'name' => 'Demo Administrator',
+        'email' => 'demo.admin@example.com',
+        'phone' => '+8801800000003',
+        'role' => 'administrator',
+        'password' => 'DemoPass123',
+    ],
+];
+
 for ($i = 1; $i <= 30; $i++) {
     $name = sprintf('Demo Servant %02d', $i);
     $email = sprintf('dummy.servant%02d@example.com', $i);
@@ -111,9 +135,93 @@ foreach ($cursor as $doc) {
 $totalDummyUsers = count($ids);
 $totalDummyProfiles = $profiles->countDocuments(['user_id' => ['$in' => $ids]]);
 
+$upsertedRoleUsers = 0;
+$updatedRoleUsers = 0;
+$upsertedRoleProfiles = 0;
+$updatedRoleProfiles = 0;
+
+foreach ($roleAccounts as $account) {
+    $now = new MongoDB\BSON\UTCDateTime();
+
+    $roleUserResult = $users->updateOne(
+        ['email' => $account['email']],
+        [
+            '$set' => [
+                'name' => $account['name'],
+                'email' => $account['email'],
+                'phone' => $account['phone'],
+                'role' => $account['role'],
+                'is_verified' => true,
+                'verified_at' => $now,
+                'updated_at' => $now,
+            ],
+            '$unset' => [
+                'verification_token' => '',
+                'verification_sent_at' => '',
+            ],
+            '$setOnInsert' => [
+                'password_hash' => password_hash($account['password'], PASSWORD_DEFAULT),
+                'created_at' => $now,
+            ],
+        ],
+        ['upsert' => true]
+    );
+
+    if ($roleUserResult->getUpsertedCount() > 0) {
+        $upsertedRoleUsers++;
+    } elseif ($roleUserResult->getMatchedCount() > 0) {
+        $updatedRoleUsers++;
+    }
+
+    if ($account['role'] !== 'service_provider') {
+        continue;
+    }
+
+    $providerDoc = $users->findOne(['email' => $account['email']], ['projection' => ['_id' => 1]]);
+    if (!$providerDoc || !isset($providerDoc['_id'])) {
+        throw new RuntimeException('Unable to resolve service provider id for ' . $account['email']);
+    }
+
+    $profileNow = new MongoDB\BSON\UTCDateTime();
+    $providerProfileResult = $profiles->updateOne(
+        ['user_id' => $providerDoc['_id']],
+        [
+            '$set' => [
+                'skills' => ['Cleaning', 'Cooking'],
+                'experience' => '3 years',
+                'location' => 'Dhaka',
+                'availability' => 'Full-time',
+                'verification_status' => 'approved',
+                'verification_notes' => 'Auto-approved demo seed account.',
+                'updated_at' => $profileNow,
+            ],
+            '$setOnInsert' => [
+                'user_id' => $providerDoc['_id'],
+                'created_at' => $profileNow,
+            ],
+        ],
+        ['upsert' => true]
+    );
+
+    if ($providerProfileResult->getUpsertedCount() > 0) {
+        $upsertedRoleProfiles++;
+    } elseif ($providerProfileResult->getMatchedCount() > 0) {
+        $updatedRoleProfiles++;
+    }
+}
+
 echo "Users upserted(new): {$upsertedUsers}\n";
 echo "Users updated(existing): {$updatedUsers}\n";
 echo "Profiles upserted(new): {$upsertedProfiles}\n";
 echo "Profiles updated(existing): {$updatedProfiles}\n";
 echo "Total dummy servant users: {$totalDummyUsers}\n";
 echo "Total dummy servant profiles: {$totalDummyProfiles}\n";
+echo "Role users upserted(new): {$upsertedRoleUsers}\n";
+echo "Role users updated(existing): {$updatedRoleUsers}\n";
+echo "Role provider profiles upserted(new): {$upsertedRoleProfiles}\n";
+echo "Role provider profiles updated(existing): {$updatedRoleProfiles}\n\n";
+
+echo "Login credentials (all email-verified):\n";
+foreach ($roleAccounts as $account) {
+    echo "- role={$account['role']} | email={$account['email']} | password={$account['password']}\n";
+}

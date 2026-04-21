@@ -32,6 +32,35 @@ This is a small, production-ready starter structure for a marketplace that conne
 - Session ID is regenerated on login.
 - User input is validated and escaped before rendering.
 
+## SMTP email setup (verification + reset emails)
+
+Email verification and password reset now use SMTP (PHPMailer).
+
+1. Copy `.env.example` to `.env` if needed.
+2. Set SMTP values in `.env`:
+   - `SMTP_HOST`
+   - `SMTP_PORT`
+   - `SMTP_USERNAME`
+   - `SMTP_PASSWORD`
+   - `SMTP_ENCRYPTION` (`tls` or `ssl`)
+   - `SMTP_FROM_EMAIL`
+   - `SMTP_FROM_NAME`
+3. Restart PHP/FPM or restart your local PHP server.
+
+Example (Mailtrap sandbox):
+
+```
+SMTP_HOST=sandbox.smtp.mailtrap.io
+SMTP_PORT=2525
+SMTP_USERNAME=your_mailtrap_username
+SMTP_PASSWORD=your_mailtrap_password
+SMTP_ENCRYPTION=tls
+SMTP_FROM_EMAIL=no-reply@your-domain.test
+SMTP_FROM_NAME="Servant Marketplace"
+```
+
+If SMTP is not configured, the app logs a warning and email delivery is skipped.
+
 ## MongoDB Atlas notes
 
 - Reuse a single MongoDB client instance in app runtime.
