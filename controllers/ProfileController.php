@@ -472,7 +472,7 @@ class ProfileController
 
         if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
             setFlash('error', 'Invalid request token. Please try again.');
-            redirect('/?page=profiles');
+            redirect('/admin/verifications');
         }
 
         $servantUserId = sanitizeInput($payload['servant_user_id'] ?? null);
@@ -481,12 +481,21 @@ class ProfileController
 
         if ($servantUserId === '') {
             setFlash('error', 'Servant profile is required.');
-            redirect('/?page=profiles');
+            redirect('/admin/verifications');
         }
 
-        if (!in_array($verificationStatus, ServantProfile::allowedVerificationStatuses(), true)) {
-            setFlash('error', 'Invalid verification status.');
-            redirect('/?page=profiles');
+        if (!in_array($verificationStatus, ['approved', 'rejected'], true)) {
+            setFlash('error', 'Invalid verification action.');
+            redirect('/admin/verifications');
+        }
+
+        if ($verificationStatus === 'approved') {
+            $verificationNotes = '';
+        }
+
+        if ($verificationStatus === 'rejected' && $verificationNotes === '') {
+            setFlash('error', 'Rejection reason is required.');
+            redirect('/admin/verifications');
         }
 
         try {
@@ -494,11 +503,48 @@ class ProfileController
         } catch (Throwable $exception) {
             error_log('Servant verification update failed: ' . $exception->getMessage());
             setFlash('error', 'Could not update verification status. Please try again.');
-            redirect('/?page=profiles');
+            redirect('/admin/verifications');
         }
 
         setFlash('success', 'Verification status updated successfully.');
-        redirect('/?page=profiles');
+        redirect('/admin/verifications');
+    }
+
+    public function showAdminVerifications(): void
+    {
+        requireRole('administrator');
+
+        $profiles = $this->servantProfiles->findPendingProfiles(100);
+
+        $userIds = [];
+        foreach ($profiles as $profile) {
+            $userId = (string) ($profile['user_id'] ?? '');
+            if ($userId !== '') {
+                $userIds[] = $userId;
+            }
+        }
+
+        $usersById = $this->users->findUsersByIds($userIds);
+
+        $providers = [];
+        foreach ($profiles as $profile) {
+            $userId = (string) ($profile['user_id'] ?? '');
+            $user = $usersById[$userId] ?? [];
+
+            $providers[] = [
+                'profile' => $profile,
+                'user' => $user,
+                'name' => (string) (($profile['full_name'] ?? '') !== '' ? $profile['full_name'] : ($user['name'] ?? 'Unnamed provider')),
+                'phone' => (string) ($user['phone'] ?? 'Not provided'),
+            ];
+        }
+
+        renderView('admin/verifications', [
+            'title' => 'Provider Verifications',
+            'csrfToken' => csrfToken(),
+            'providers' => $providers,
+            'user' => authUser(),
+        ]);
     }
 
     public function showEmployerForm(): void

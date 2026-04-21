@@ -33,7 +33,6 @@
             <p class="muted">Try changing the filters or clear them to see the full list.</p>
         </article>
     <?php else: ?>
-        <?php $isAdmin = normalizeRole((string) ($user['role'] ?? '')) === 'administrator'; ?>
         <?php foreach ($servants as $servant): ?>
             <?php $profile = $servant['profile'] ?? []; ?>
             <article class="card servant-card">
@@ -44,7 +43,6 @@
                     </div>
                     <div class="pill-row">
                         <span class="pill"><?= escape((string) ($profile['location'] ?? 'Unknown location')); ?></span>
-                        <span class="pill"><?= escape(ServantProfile::verificationStatusLabel((string) ($profile['verification_status'] ?? 'pending'))); ?></span>
                     </div>
                 </header>
 
@@ -75,25 +73,6 @@
                     <input type="hidden" name="servant_id" value="<?= escape((string) ($profile['user_id'] ?? '')); ?>">
                     <button type="submit" class="btn">Hire</button>
                 </form>
-
-                <?php if ($isAdmin): ?>
-                    <form action="/admin/servant-verification" method="POST" class="form-grid" style="margin-top:1rem;">
-                        <input type="hidden" name="csrf_token" value="<?= escape($csrfToken ?? csrfToken()); ?>">
-                        <input type="hidden" name="servant_user_id" value="<?= escape((string) ($profile['user_id'] ?? '')); ?>">
-
-                        <label for="verification_status_<?= escape((string) ($profile['user_id'] ?? '')); ?>">Verification status</label>
-                        <select id="verification_status_<?= escape((string) ($profile['user_id'] ?? '')); ?>" name="verification_status">
-                            <option value="pending" <?= (string) ($profile['verification_status'] ?? 'pending') === 'pending' ? 'selected' : ''; ?>>Pending</option>
-                            <option value="approved" <?= (string) ($profile['verification_status'] ?? '') === 'approved' ? 'selected' : ''; ?>>Approved</option>
-                            <option value="rejected" <?= (string) ($profile['verification_status'] ?? '') === 'rejected' ? 'selected' : ''; ?>>Rejected</option>
-                        </select>
-
-                        <label for="verification_notes_<?= escape((string) ($profile['user_id'] ?? '')); ?>">Verification notes</label>
-                        <textarea id="verification_notes_<?= escape((string) ($profile['user_id'] ?? '')); ?>" name="verification_notes" rows="3" placeholder="Optional review notes"><?= escape((string) ($profile['verification_notes'] ?? '')); ?></textarea>
-
-                        <button type="submit" class="btn btn-secondary">Update verification</button>
-                    </form>
-                <?php endif; ?>
             </article>
         <?php endforeach; ?>
     <?php endif; ?>

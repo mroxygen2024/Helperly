@@ -231,6 +231,11 @@ try {
         return;
     }
 
+    if ($method === 'GET' && $path === '/admin/verifications') {
+        $profileController->showAdminVerifications();
+        return;
+    }
+
     if ($method === 'GET' && $path === '/profile/account') {
         $profileController->showAccountForm();
         return;

@@ -227,4 +227,41 @@ class ServantProfile
 
         return iterator_to_array($cursor, false);
     }
+
+    /**
+     * Fetch only profiles waiting for admin verification.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function findPendingProfiles(int $limit = 100): array
+    {
+        $limit = max(1, min($limit, 200));
+
+        $cursor = $this->collection->find(
+            [
+                '$or' => [
+                    ['verification_status' => 'pending'],
+                    ['verification_status' => ['$exists' => false]],
+                ],
+            ],
+            [
+                'limit' => $limit,
+                'sort' => ['updated_at' => -1, 'created_at' => -1],
+                'projection' => [
+                    'user_id' => 1,
+                    'full_name' => 1,
+                    'location' => 1,
+                    'fayda_id_front_url' => 1,
+                    'fayda_id_back_url' => 1,
+                    'selfie_url' => 1,
+                    'verification_status' => 1,
+                    'verification_notes' => 1,
+                    'created_at' => 1,
+                    'updated_at' => 1,
+                ],
+            ]
+        );
+
+        return iterator_to_array($cursor, false);
+    }
 }
