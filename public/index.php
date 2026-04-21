@@ -81,6 +81,17 @@ if ($method === 'GET' && str_starts_with($path, '/assets/')) {
 }
 
 try {
+    if ($method === 'POST' && $path === '/api/login') {
+        $authController->loginApi(requestJsonBody());
+        return;
+    }
+
+    if ($method === 'GET' && $path === '/api/me') {
+        $claims = requireJwtAuth();
+        $authController->meApi($claims);
+        return;
+    }
+
     if ($method === 'GET') {
         $requestedPage = sanitizeInput($_GET['page'] ?? '');
 

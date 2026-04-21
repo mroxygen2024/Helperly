@@ -161,6 +161,79 @@ class AuthController
         redirect($redirectPath);
     }
 
+    public function loginApi(array $payload): void
+    {
+        $email = sanitizeEmail($payload['email'] ?? null);
+        $password = (string) ($payload['password'] ?? '');
+
+        if (!validateEmail($email) || !validateRequired($password)) {
+            jsonResponse(['error' => 'Email and password are required.'], 422);
+        }
+
+        try {
+            $user = $this->users->findUserByEmail($email);
+        } catch (Throwable $exception) {
+            error_log('API login failed during user lookup: ' . $exception->getMessage());
+            jsonResponse(['error' => 'Unable to login right now. Please try again.'], 500);
+        }
+
+        if (!$user || !password_verify($password, (string) ($user['password_hash'] ?? ''))) {
+            jsonResponse(['error' => 'Invalid login credentials.'], 401);
+        }
+
+        $userId = (string) ($user['_id'] ?? '');
+        $role = (string) ($user['role'] ?? '');
+
+        $token = createJwt([
+            'user_id' => $userId,
+            'role' => $role,
+        ]);
+
+        $claims = verifyJwt($token);
+
+        jsonResponse([
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+            'expires_at' => $claims['exp'] ?? null,
+            'user' => [
+                'id' => $userId,
+                'name' => (string) ($user['name'] ?? ''),
+                'email' => (string) ($user['email'] ?? ''),
+                'role' => $role,
+            ],
+        ]);
+    }
+
+    public function meApi(array $claims): void
+    {
+        $userId = (string) ($claims['user_id'] ?? '');
+
+        if ($userId === '') {
+            jsonResponse(['error' => 'Invalid token payload.'], 401);
+        }
+
+        try {
+            $user = $this->users->findUserById($userId);
+        } catch (Throwable $exception) {
+            error_log('API me lookup failed: ' . $exception->getMessage());
+            jsonResponse(['error' => 'Unable to fetch user right now.'], 500);
+        }
+
+        if (!$user) {
+            jsonResponse(['error' => 'User not found.'], 404);
+        }
+
+        jsonResponse([
+            'user' => [
+                'id' => (string) ($user['_id'] ?? ''),
+                'name' => (string) ($user['name'] ?? ''),
+                'email' => (string) ($user['email'] ?? ''),
+                'phone' => (string) ($user['phone'] ?? ''),
+                'role' => (string) ($user['role'] ?? ''),
+            ],
+        ]);
+    }
+
     public function logout(): void
     {
         startSecureSession();

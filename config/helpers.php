@@ -113,6 +113,141 @@ function verifyCsrfToken(?string $token): bool
     return is_string($token) && hash_equals($_SESSION['csrf_token'], $token);
 }
 
+function base64UrlEncode(string $input): string
+{
+    return rtrim(strtr(base64_encode($input), '+/', '-_'), '=');
+}
+
+function base64UrlDecode(string $input): string
+{
+    $padding = strlen($input) % 4;
+    if ($padding > 0) {
+        $input .= str_repeat('=', 4 - $padding);
+    }
+
+    $decoded = base64_decode(strtr($input, '-_', '+/'), true);
+    if ($decoded === false) {
+        throw new RuntimeException('Invalid base64url token segment.');
+    }
+
+    return $decoded;
+}
+
+function jwtSecret(): string
+{
+    $secret = (string) (appConfig()['jwt_secret'] ?? '');
+    if ($secret === '') {
+        throw new RuntimeException('JWT_SECRET is missing. Configure it in your environment.');
+    }
+
+    return $secret;
+}
+
+function createJwt(array $payload, ?int $ttlSeconds = null): string
+{
+    $config = appConfig();
+    $now = time();
+    $ttl = $ttlSeconds ?? max(1, (int) ($config['jwt_ttl_seconds'] ?? 3600));
+
+    $header = ['alg' => 'HS256', 'typ' => 'JWT'];
+    $claims = $payload;
+    $claims['iat'] = $now;
+    $claims['exp'] = $now + $ttl;
+
+    $headerEncoded = base64UrlEncode(json_encode($header, JSON_THROW_ON_ERROR));
+    $payloadEncoded = base64UrlEncode(json_encode($claims, JSON_THROW_ON_ERROR));
+    $unsignedToken = $headerEncoded . '.' . $payloadEncoded;
+
+    $signature = hash_hmac('sha256', $unsignedToken, jwtSecret(), true);
+    $signatureEncoded = base64UrlEncode($signature);
+
+    return $unsignedToken . '.' . $signatureEncoded;
+}
+
+function verifyJwt(string $token): array
+{
+    $parts = explode('.', $token);
+    if (count($parts) !== 3) {
+        throw new RuntimeException('Malformed token.');
+    }
+
+    [$headerEncoded, $payloadEncoded, $signatureEncoded] = $parts;
+
+    $unsignedToken = $headerEncoded . '.' . $payloadEncoded;
+    $expectedSignature = base64UrlEncode(hash_hmac('sha256', $unsignedToken, jwtSecret(), true));
+
+    if (!hash_equals($expectedSignature, $signatureEncoded)) {
+        throw new RuntimeException('Invalid token signature.');
+    }
+
+    $header = json_decode(base64UrlDecode($headerEncoded), true, 512, JSON_THROW_ON_ERROR);
+    if (($header['alg'] ?? '') !== 'HS256') {
+        throw new RuntimeException('Unsupported token algorithm.');
+    }
+
+    $claims = json_decode(base64UrlDecode($payloadEncoded), true, 512, JSON_THROW_ON_ERROR);
+    if (!is_array($claims)) {
+        throw new RuntimeException('Invalid token payload.');
+    }
+
+    $exp = (int) ($claims['exp'] ?? 0);
+    if ($exp <= 0 || $exp < time()) {
+        throw new RuntimeException('Token has expired.');
+    }
+
+    return $claims;
+}
+
+function jsonResponse(array $payload, int $statusCode = 200): never
+{
+    http_response_code($statusCode);
+    header('Content-Type: application/json; charset=UTF-8');
+    echo json_encode($payload, JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
+function requestJsonBody(): array
+{
+    $rawBody = file_get_contents('php://input');
+    if ($rawBody === false || trim($rawBody) === '') {
+        return [];
+    }
+
+    $decoded = json_decode($rawBody, true);
+    return is_array($decoded) ? $decoded : [];
+}
+
+function bearerTokenFromRequest(): ?string
+{
+    $header = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['Authorization'] ?? '';
+    if (!is_string($header) || $header === '') {
+        return null;
+    }
+
+    if (preg_match('/^Bearer\s+(.+)$/i', $header, $matches) !== 1) {
+        return null;
+    }
+
+    $token = trim($matches[1]);
+    return $token !== '' ? $token : null;
+}
+
+function requireJwtAuth(): array
+{
+    $token = bearerTokenFromRequest();
+    if ($token === null) {
+        jsonResponse(['error' => 'Missing bearer token.'], 401);
+    }
+
+    try {
+        $claims = verifyJwt($token);
+    } catch (Throwable $exception) {
+        jsonResponse(['error' => 'Unauthorized: ' . $exception->getMessage()], 401);
+    }
+
+    return $claims;
+}
+
 function authUser(): ?array
 {
     return $_SESSION['auth_user'] ?? null;

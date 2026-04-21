@@ -83,6 +83,8 @@ if (!defined('APP_BOOTSTRAPPED')) {
             'mongodb_uri' => getenv('MONGODB_URI') ?: '',
             'mongodb_db' => getenv('MONGODB_DB') ?: 'servant_marketplace',
             'session_name' => getenv('SESSION_NAME') ?: 'servant_session',
+            'jwt_secret' => getenv('JWT_SECRET') ?: '',
+            'jwt_ttl_seconds' => (int) (getenv('JWT_TTL_SECONDS') ?: 3600),
         ];
     }
 
