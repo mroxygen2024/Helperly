@@ -142,6 +142,23 @@ class ServantProfile
         return $profile ? (array) $profile : null;
     }
 
+    public function isApprovedByUserId(string $user_id): bool
+    {
+        if (!$this->isValidObjectId($user_id)) {
+            return false;
+        }
+
+        $profile = $this->collection->findOne(
+            [
+                'user_id' => new ObjectId($user_id),
+                'verification_status' => 'approved',
+            ],
+            ['projection' => ['_id' => 1]]
+        );
+
+        return $profile !== null;
+    }
+
     public function updateVerificationStatus(string $user_id, string $status, ?string $notes = null): bool
     {
         if (!$this->isValidObjectId($user_id)) {
@@ -186,7 +203,7 @@ class ServantProfile
      */
     public function findProfilesByFilters(string $location = '', string $skill = '', int $limit = 50): array
     {
-        $filter = [];
+        $filter = ['verification_status' => 'approved'];
 
         $location = trim($location);
         $skill = trim($skill);

@@ -15,11 +15,13 @@ class HireRequestController
 {
     private HireRequest $hireRequests;
     private User $users;
+    private ServantProfile $servantProfiles;
 
     public function __construct()
     {
         $this->hireRequests = new HireRequest();
         $this->users = new User();
+        $this->servantProfiles = new ServantProfile();
     }
 
     public function createRequest(array $payload): void
@@ -45,6 +47,11 @@ class HireRequestController
             redirect('/servants');
         }
 
+        if (!$this->servantProfiles->isApprovedByUserId($servantId)) {
+            setFlash('error', 'Only approved service providers can be booked.');
+            redirect('/servants');
+        }
+
         try {
             $this->hireRequests->createRequest($employerId, $servantId);
             setFlash('success', 'Hire request sent successfully.');
@@ -66,6 +73,11 @@ class HireRequestController
         if ($servantId === '') {
             setFlash('error', 'User session is invalid. Please login again.');
             redirect('/login');
+        }
+
+        if (!$this->servantProfiles->isApprovedByUserId($servantId)) {
+            setFlash('error', 'Only approved service providers can access hire requests.');
+            redirect('/profile/servant');
         }
 
         $requests = $this->hireRequests->getRequestsForServant($servantId);
@@ -127,6 +139,11 @@ class HireRequestController
         if (!in_array($status, ['accepted', 'rejected'], true)) {
             setFlash('error', 'Invalid status update.');
             redirect('/servant/requests');
+        }
+
+        if (!$this->servantProfiles->isApprovedByUserId($servantId)) {
+            setFlash('error', 'Only approved service providers can process hire requests.');
+            redirect('/profile/servant');
         }
 
         $request = $this->hireRequests->getRequestById($requestId);
