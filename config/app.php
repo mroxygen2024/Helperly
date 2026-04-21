@@ -85,6 +85,9 @@ if (!defined('APP_BOOTSTRAPPED')) {
             'session_name' => getenv('SESSION_NAME') ?: 'servant_session',
             'jwt_secret' => getenv('JWT_SECRET') ?: '',
             'jwt_ttl_seconds' => (int) (getenv('JWT_TTL_SECONDS') ?: 3600),
+            'imagekit_public_key' => getenv('IMAGEKIT_PUBLIC_KEY') ?: '',
+            'imagekit_private_key' => getenv('IMAGEKIT_PRIVATE_KEY') ?: '',
+            'imagekit_url_endpoint' => rtrim(getenv('IMAGEKIT_URL_ENDPOINT') ?: '', '/'),
         ];
     }
 

@@ -318,6 +318,67 @@ function requireRole(string|array $requiredRoles): void
     }
 }
 
+function imageKitConfig(): array
+{
+    $config = appConfig();
+
+    return [
+        'public_key' => (string) ($config['imagekit_public_key'] ?? ''),
+        'private_key' => (string) ($config['imagekit_private_key'] ?? ''),
+        'url_endpoint' => (string) ($config['imagekit_url_endpoint'] ?? ''),
+    ];
+}
+
+function imageKitClient(): \ImageKit\ImageKit
+{
+    $config = imageKitConfig();
+
+    if ($config['public_key'] === '' || $config['private_key'] === '' || $config['url_endpoint'] === '') {
+        throw new RuntimeException('ImageKit is not configured. Set IMAGEKIT_PUBLIC_KEY, IMAGEKIT_PRIVATE_KEY, and IMAGEKIT_URL_ENDPOINT.');
+    }
+
+    return new \ImageKit\ImageKit(
+        $config['public_key'],
+        $config['private_key'],
+        $config['url_endpoint']
+    );
+}
+
+function uploadImageToImageKit(string $tmpFilePath, string $fileName, array $options = []): array
+{
+    if (!is_file($tmpFilePath) || !is_readable($tmpFilePath)) {
+        throw new RuntimeException('Temporary upload file is not readable.');
+    }
+
+    $binary = file_get_contents($tmpFilePath);
+    if ($binary === false || $binary === '') {
+        throw new RuntimeException('Could not read uploaded image content.');
+    }
+
+    $payload = [
+        'file' => base64_encode($binary),
+        'fileName' => $fileName,
+        'useUniqueFileName' => true,
+    ];
+
+    if (isset($options['folder']) && is_string($options['folder']) && $options['folder'] !== '') {
+        $payload['folder'] = $options['folder'];
+    }
+
+    if (isset($options['tags']) && is_array($options['tags'])) {
+        $payload['tags'] = $options['tags'];
+    }
+
+    $response = imageKitClient()->uploadFile($payload);
+    $result = is_array($response['result'] ?? null) ? $response['result'] : null;
+
+    if ($result === null || !is_string($result['url'] ?? null) || trim($result['url']) === '') {
+        throw new RuntimeException('ImageKit upload succeeded but no URL was returned.');
+    }
+
+    return $result;
+}
+
 function renderView(string $view, array $data = []): void
 {
     $basePath = dirname(__DIR__);
@@ -334,4 +395,10 @@ function renderView(string $view, array $data = []): void
     include $basePath . '/views/layouts/header.php';
     include $viewFile;
     include $basePath . '/views/layouts/footer.php';
+}
+
+function uploadToImageKit(string $filePath, string $fileName): string
+{
+    $result = uploadImageToImageKit($filePath, $fileName);
+    return (string) $result['url'];
 }

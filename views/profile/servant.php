@@ -41,22 +41,22 @@
         <label for="profile_photo">Profile Photo URL</label>
         <input id="profile_photo" name="profile_photo" type="url" value="<?= escape(old('profile_photo', (string) ($profile['profile_photo'] ?? ''))); ?>" placeholder="https://..." required>
 
-        <label for="id_front">National ID Front (JPG/PNG, max 5MB)</label>
-        <input id="id_front" name="id_front" type="file" accept="image/jpeg,image/png" required>
-        <?php if (!empty($profile['id_front'])): ?>
-            <p class="muted">Current: <a href="<?= escape((string) $profile['id_front']); ?>" target="_blank" rel="noopener noreferrer">View uploaded front image</a></p>
+        <label for="fayda_id_front">Fayda ID Front (JPG/PNG, max 5MB)</label>
+        <input id="fayda_id_front" name="fayda_id_front" type="file" accept="image/jpeg,image/png" required>
+        <?php if (!empty($profile['fayda_id_front_url'])): ?>
+            <p class="muted">Current: <a href="<?= escape((string) $profile['fayda_id_front_url']); ?>" target="_blank" rel="noopener noreferrer">View uploaded front image</a></p>
         <?php endif; ?>
 
-        <label for="id_back">National ID Back (JPG/PNG, max 5MB)</label>
-        <input id="id_back" name="id_back" type="file" accept="image/jpeg,image/png" required>
-        <?php if (!empty($profile['id_back'])): ?>
-            <p class="muted">Current: <a href="<?= escape((string) $profile['id_back']); ?>" target="_blank" rel="noopener noreferrer">View uploaded back image</a></p>
+        <label for="fayda_id_back">Fayda ID Back (JPG/PNG, max 5MB)</label>
+        <input id="fayda_id_back" name="fayda_id_back" type="file" accept="image/jpeg,image/png" required>
+        <?php if (!empty($profile['fayda_id_back_url'])): ?>
+            <p class="muted">Current: <a href="<?= escape((string) $profile['fayda_id_back_url']); ?>" target="_blank" rel="noopener noreferrer">View uploaded back image</a></p>
         <?php endif; ?>
 
         <label for="selfie">Selfie (JPG/PNG, max 5MB)</label>
         <input id="selfie" name="selfie" type="file" accept="image/jpeg,image/png" required>
-        <?php if (!empty($profile['selfie'])): ?>
-            <p class="muted">Current: <a href="<?= escape((string) $profile['selfie']); ?>" target="_blank" rel="noopener noreferrer">View uploaded selfie</a></p>
+        <?php if (!empty($profile['selfie_url'])): ?>
+            <p class="muted">Current: <a href="<?= escape((string) $profile['selfie_url']); ?>" target="_blank" rel="noopener noreferrer">View uploaded selfie</a></p>
         <?php endif; ?>
 
         <button type="submit" class="btn">Save Profile</button>

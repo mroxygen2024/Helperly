@@ -74,9 +74,9 @@ class ServantProfile
         string $availability,
         string $hourlyRate,
         string $profilePhoto,
-        string $idFront,
-        string $idBack,
-        string $selfie
+        string $faydaIdFrontUrl,
+        string $faydaIdBackUrl,
+        string $selfieUrl
     ): bool {
         if (!$this->isValidObjectId($user_id)) {
             throw new InvalidArgumentException('Invalid user_id provided.');
@@ -97,9 +97,9 @@ class ServantProfile
                     'availability' => trim($availability),
                     'hourly_rate' => trim($hourlyRate),
                     'profile_photo' => trim($profilePhoto),
-                    'id_front' => trim($idFront),
-                    'id_back' => trim($idBack),
-                    'selfie' => trim($selfie),
+                    'fayda_id_front_url' => trim($faydaIdFrontUrl),
+                    'fayda_id_back_url' => trim($faydaIdBackUrl),
+                    'selfie_url' => trim($selfieUrl),
                     'updated_at' => $now,
                 ],
                 '$setOnInsert' => [
@@ -159,9 +159,9 @@ class ServantProfile
                     'availability' => 1,
                     'hourly_rate' => 1,
                     'profile_photo' => 1,
-                    'id_front' => 1,
-                    'id_back' => 1,
-                    'selfie' => 1,
+                    'fayda_id_front_url' => 1,
+                    'fayda_id_back_url' => 1,
+                    'selfie_url' => 1,
                     'created_at' => 1,
                 ],
             ]
