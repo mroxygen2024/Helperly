@@ -61,6 +61,7 @@ class User
     ): string
     {
         $normalizedEmail = $this->normalizeEmail($email);
+        $normalizedRole = normalizeRole($role);
 
         // Fast pre-check to provide a clear validation message.
         if ($this->findUserByEmail($normalizedEmail) !== null) {
@@ -78,7 +79,7 @@ class User
                 'email' => $normalizedEmail,
                 'phone' => trim($phone),
                 'password_hash' => $passwordHash,
-                'role' => trim($role),
+                'role' => $normalizedRole,
                 'is_verified' => false,
                 'verification_token' => hashVerificationToken($verificationToken),
                 'verification_sent_at' => new UTCDateTime(),

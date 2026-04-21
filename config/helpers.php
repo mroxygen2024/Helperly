@@ -57,9 +57,41 @@ function validatePassword(string $password): bool
     return (bool) preg_match('/^(?=.*[A-Za-z])(?=.*\d).{8,}$/', $password);
 }
 
+function canonicalRoles(): array
+{
+    return ['parent', 'service_provider', 'administrator'];
+}
+
+function normalizeRole(string $role): string
+{
+    $normalized = strtolower(trim($role));
+
+    return match ($normalized) {
+        // Backward compatibility for old data and legacy code paths.
+        'employer' => 'parent',
+        'servant', 'provider' => 'service_provider',
+        'admin' => 'administrator',
+        default => $normalized,
+    };
+}
+
 function validateRole(string $role): bool
 {
-    return in_array($role, ['servant', 'employer'], true);
+    return in_array(normalizeRole($role), canonicalRoles(), true);
+}
+
+function userHasRole(array $user, string|array $requiredRoles): bool
+{
+    $currentRole = normalizeRole((string) ($user['role'] ?? ''));
+    $roles = is_array($requiredRoles) ? $requiredRoles : [$requiredRoles];
+
+    foreach ($roles as $role) {
+        if ($currentRole === normalizeRole((string) $role)) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 function generateVerificationToken(): string
@@ -271,12 +303,15 @@ function requireAuth(): void
     }
 }
 
-function requireRole(string $role): void
+function requireRole(string|array $requiredRoles): void
 {
     requireAuth();
 
-    $currentRole = (string) ($_SESSION['role'] ?? ($_SESSION['auth_user']['role'] ?? ''));
-    if ($currentRole !== $role) {
+    $sessionUser = [
+        'role' => (string) ($_SESSION['role'] ?? ($_SESSION['auth_user']['role'] ?? '')),
+    ];
+
+    if (!userHasRole($sessionUser, $requiredRoles)) {
         http_response_code(403);
         setFlash('error', 'You do not have permission to access that page.');
         redirect('/');

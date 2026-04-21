@@ -24,7 +24,7 @@ class ProfileController
 
     public function showServantForm(): void
     {
-        requireRole('servant');
+        requireRole('service_provider');
 
         $userId = (string) ($_SESSION['user_id'] ?? '');
         if ($userId === '') {
@@ -52,7 +52,7 @@ class ProfileController
 
     public function saveServantProfile(array $payload): void
     {
-        requireRole('servant');
+        requireRole('service_provider');
 
         if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
             setFlash('error', 'Invalid request token. Please try again.');
@@ -116,7 +116,7 @@ class ProfileController
 
     public function showEmployerForm(): void
     {
-        requireRole('employer');
+        requireRole('parent');
 
         $userId = (string) ($_SESSION['user_id'] ?? '');
         if ($userId === '') {
@@ -135,7 +135,7 @@ class ProfileController
 
     public function saveEmployerProfile(array $payload): void
     {
-        requireRole('employer');
+        requireRole('parent');
 
         if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
             setFlash('error', 'Invalid request token. Please try again.');
@@ -183,7 +183,7 @@ class ProfileController
 
     public function listServants(array $query): void
     {
-        requireRole('employer');
+        requireRole(['parent', 'administrator']);
 
         $location = sanitizeInput($query['location'] ?? null);
         $skill = sanitizeInput($query['skill'] ?? null);

@@ -32,7 +32,7 @@ $currentUser = authUser();
                 <a href="/?page=dashboard">Dashboard</a>
                 <a href="/?page=profiles">Profiles</a>
                 <a href="/?page=listings">Listings</a>
-                <?php if (($currentUser['role'] ?? '') === 'servant'): ?>
+                <?php if (normalizeRole((string) ($currentUser['role'] ?? '')) === 'service_provider'): ?>
                     <a href="/servant/requests">Requests</a>
                 <?php endif; ?>
                 <form action="/logout" method="POST" class="inline-form">

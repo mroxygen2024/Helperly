@@ -9,7 +9,7 @@
 ?>
 <section class="card">
     <h1>Create account</h1>
-    <p class="muted">Join as a servant or an employer.</p>
+    <p class="muted">Join as a service provider, parent, or administrator.</p>
 
     <form action="/register" method="POST" class="form-grid" novalidate>
         <input type="hidden" name="csrf_token" value="<?= escape($csrfToken ?? csrfToken()); ?>">
@@ -29,8 +29,9 @@
         <label for="role">I am a</label>
         <select id="role" name="role" required>
             <option value="">Select role</option>
-            <option value="servant" <?= old('role') === 'servant' ? 'selected' : ''; ?>>Servant</option>
-            <option value="employer" <?= old('role') === 'employer' ? 'selected' : ''; ?>>Employer</option>
+            <option value="service_provider" <?= normalizeRole(old('role')) === 'service_provider' ? 'selected' : ''; ?>>Service provider</option>
+            <option value="parent" <?= normalizeRole(old('role')) === 'parent' ? 'selected' : ''; ?>>Parent</option>
+            <option value="administrator" <?= normalizeRole(old('role')) === 'administrator' ? 'selected' : ''; ?>>Administrator</option>
         </select>
 
         <button type="submit" class="btn">Register</button>

@@ -31,7 +31,7 @@ class MarketplaceController
 
     public function employerDashboard(): void
     {
-        requireRole('employer');
+        requireRole('parent');
 
         renderView('marketplace/index', [
             'title' => 'Employer Dashboard',
@@ -42,10 +42,21 @@ class MarketplaceController
 
     public function servantDashboard(): void
     {
-        requireRole('servant');
+        requireRole('service_provider');
 
         renderView('marketplace/index', [
             'title' => 'Servant Dashboard',
+            'listings' => $this->listings->getLatest(20),
+            'user' => authUser(),
+        ]);
+    }
+
+    public function adminDashboard(): void
+    {
+        requireRole('administrator');
+
+        renderView('marketplace/index', [
+            'title' => 'Administrator Dashboard',
             'listings' => $this->listings->getLatest(20),
             'user' => authUser(),
         ]);

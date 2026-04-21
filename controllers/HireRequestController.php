@@ -24,7 +24,7 @@ class HireRequestController
 
     public function createRequest(array $payload): void
     {
-        requireRole('employer');
+        requireRole('parent');
 
         if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
             setFlash('error', 'Invalid request token. Please try again.');
@@ -40,7 +40,7 @@ class HireRequestController
         }
 
         $servant = $this->users->findUserById($servantId);
-        if (!$servant || (string) ($servant['role'] ?? '') !== 'servant') {
+        if (!$servant || normalizeRole((string) ($servant['role'] ?? '')) !== 'service_provider') {
             setFlash('error', 'Selected servant account was not found.');
             redirect('/servants');
         }
@@ -60,7 +60,7 @@ class HireRequestController
 
     public function showIncomingRequests(): void
     {
-        requireRole('servant');
+        requireRole(['service_provider', 'administrator']);
 
         $servantId = (string) ($_SESSION['user_id'] ?? '');
         if ($servantId === '') {
@@ -108,7 +108,7 @@ class HireRequestController
 
     public function updateRequestStatus(array $payload): void
     {
-        requireRole('servant');
+        requireRole('service_provider');
 
         if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
             setFlash('error', 'Invalid request token. Please try again.');

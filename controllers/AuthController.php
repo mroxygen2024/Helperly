@@ -64,7 +64,7 @@ class AuthController
         $email = sanitizeEmail($payload['email'] ?? null);
         $phone = sanitizePhone($payload['phone'] ?? null);
         $password = (string) ($payload['password'] ?? '');
-        $role = sanitizeInput($payload['role'] ?? null);
+        $role = normalizeRole(sanitizeInput($payload['role'] ?? null));
 
         $errors = [];
 
@@ -85,7 +85,7 @@ class AuthController
         }
 
         if (!validateRole($role)) {
-            $errors[] = 'Role must be servant or employer.';
+            $errors[] = 'Role must be parent, service provider, or administrator.';
         }
 
         if ($this->users->findUserByEmail($email)) {
@@ -275,7 +275,7 @@ class AuthController
         session_regenerate_id(true);
 
         $userId = (string) ($user['_id'] ?? '');
-        $userRole = (string) ($user['role'] ?? '');
+        $userRole = normalizeRole((string) ($user['role'] ?? ''));
 
         $_SESSION['auth_user'] = [
             'id' => $userId,
@@ -290,7 +290,18 @@ class AuthController
 
         clearOldInput();
 
-        $redirectPath = $userRole === 'employer' ? '/employer/dashboard' : '/servant/dashboard';
+        $redirectPath = '/dashboard';
+        if ($userRole === 'parent') {
+            $redirectPath = '/parent/dashboard';
+        }
+
+        if ($userRole === 'service_provider') {
+            $redirectPath = '/service-provider/dashboard';
+        }
+
+        if ($userRole === 'administrator') {
+            $redirectPath = '/admin/dashboard';
+        }
 
         setFlash('success', 'Welcome back, ' . $_SESSION['auth_user']['name'] . '.');
         redirect($redirectPath);
@@ -322,7 +333,7 @@ class AuthController
         }
 
         $userId = (string) ($user['_id'] ?? '');
-        $role = (string) ($user['role'] ?? '');
+        $role = normalizeRole((string) ($user['role'] ?? ''));
 
         $token = createJwt([
             'user_id' => $userId,

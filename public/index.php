@@ -119,13 +119,20 @@ try {
                     redirect('/?page=login');
                 }
 
-                if (($user['role'] ?? '') === 'employer') {
+                $role = normalizeRole((string) ($user['role'] ?? ''));
+
+                if ($role === 'parent') {
                     $marketplaceController->employerDashboard();
                     return;
                 }
 
-                if (($user['role'] ?? '') === 'servant') {
+                if ($role === 'service_provider') {
                     $marketplaceController->servantDashboard();
+                    return;
+                }
+
+                if ($role === 'administrator') {
+                    $marketplaceController->adminDashboard();
                     return;
                 }
 
@@ -139,12 +146,14 @@ try {
                     redirect('/?page=login');
                 }
 
-                if (($user['role'] ?? '') === 'employer') {
+                $role = normalizeRole((string) ($user['role'] ?? ''));
+
+                if ($role === 'parent') {
                     $profileController->showEmployerForm();
                     return;
                 }
 
-                if (($user['role'] ?? '') === 'servant') {
+                if ($role === 'service_provider') {
                     $profileController->showServantForm();
                     return;
                 }
@@ -159,7 +168,7 @@ try {
             case 'listings':
                 $user = authUser();
 
-                if ($user && ($user['role'] ?? '') === 'employer') {
+                if ($user && normalizeRole((string) ($user['role'] ?? '')) === 'parent') {
                     $profileController->listServants($_GET);
                     return;
                 }

@@ -43,7 +43,7 @@ for ($i = 1; $i <= 30; $i++) {
             '$set' => [
                 'name' => $name,
                 'email' => $email,
-                'role' => 'servant',
+                'role' => 'service_provider',
                 'phone' => $phone,
                 'updated_at' => $now,
             ],
@@ -95,7 +95,7 @@ for ($i = 1; $i <= 30; $i++) {
 
 $cursor = $users->find(
     [
-        'role' => 'servant',
+        'role' => 'service_provider',
         'email' => ['$regex' => '^dummy\\.servant\\d{2}@example\\.com$'],
     ],
     ['projection' => ['_id' => 1]]
