@@ -91,7 +91,8 @@ if (!defined('APP_BOOTSTRAPPED')) {
             'smtp_host' => getenv('SMTP_HOST') ?: '',
             'smtp_port' => (int) (getenv('SMTP_PORT') ?: 587),
             'smtp_username' => getenv('SMTP_USERNAME') ?: '',
-            'smtp_password' => getenv('SMTP_PASSWORD') ?: '',
+            // Allow app-password values pasted with display spacing, which breaks SMTP auth.
+            'smtp_password' => preg_replace('/\s+/', '', getenv('SMTP_PASSWORD') ?: '') ?: '',
             'smtp_encryption' => strtolower(trim(getenv('SMTP_ENCRYPTION') ?: 'tls')),
             'smtp_from_email' => getenv('SMTP_FROM_EMAIL') ?: 'no-reply@servant-marketplace.local',
             'smtp_from_name' => getenv('SMTP_FROM_NAME') ?: (getenv('APP_NAME') ?: 'Servant Marketplace'),

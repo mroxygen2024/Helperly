@@ -23,10 +23,12 @@ require_once dirname(__DIR__) . '/models/Listing.php';
 require_once dirname(__DIR__) . '/models/ServantProfile.php';
 require_once dirname(__DIR__) . '/models/EmployerProfile.php';
 require_once dirname(__DIR__) . '/models/HireRequest.php';
+require_once dirname(__DIR__) . '/models/Job.php';
 require_once dirname(__DIR__) . '/controllers/AuthController.php';
 require_once dirname(__DIR__) . '/controllers/MarketplaceController.php';
 require_once dirname(__DIR__) . '/controllers/ProfileController.php';
 require_once dirname(__DIR__) . '/controllers/HireRequestController.php';
+require_once dirname(__DIR__) . '/controllers/JobController.php';
 
 startSecureSession();
 
@@ -34,6 +36,7 @@ $authController = new AuthController();
 $marketplaceController = new MarketplaceController();
 $profileController = new ProfileController();
 $hireRequestController = new HireRequestController();
+$jobController = new JobController();
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
@@ -283,6 +286,11 @@ try {
 
     if ($method === 'POST' && $path === '/profile/employer') {
         $profileController->saveEmployerProfile($_POST);
+        return;
+    }
+
+    if ($method === 'POST' && $path === '/jobs') {
+        $jobController->create($_POST);
         return;
     }
 
