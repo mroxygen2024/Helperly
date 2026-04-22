@@ -38,6 +38,7 @@ $currentUser = authUser();
                 <?php endif; ?>
                 <?php if (normalizeRole((string) ($currentUser['role'] ?? '')) === 'service_provider'): ?>
                     <a href="/servant/requests">Requests</a>
+                    <a href="/services">My Services</a>
                 <?php endif; ?>
                 <form action="/logout" method="POST" class="inline-form">
                     <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">

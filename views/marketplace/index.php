@@ -43,6 +43,44 @@
 </section>
 <?php endif; ?>
 
+<?php if (normalizeRole((string) (($user['role'] ?? ''))) === 'service_provider'): ?>
+<section class="card stack">
+    <h2>Open Jobs</h2>
+    <p class="muted">Apply only to jobs you can actually take on. Duplicate applications are blocked.</p>
+
+    <?php if (empty($jobs)): ?>
+        <article class="card empty-state">
+            <h3>No open jobs</h3>
+            <p class="muted">Check back later for new work.</p>
+        </article>
+    <?php else: ?>
+        <div class="grid">
+            <?php foreach ($jobs as $job): ?>
+                <?php
+                $jobId = (string) ($job['_id'] ?? '');
+                $alreadyApplied = in_array($jobId, $appliedJobIds ?? [], true);
+                ?>
+                <article class="card">
+                    <h2><?= escape((string) ($job['service_type'] ?? 'Untitled job')); ?></h2>
+                    <p><?= nl2br(escape((string) ($job['instructions'] ?? ''))); ?></p>
+                    <p class="muted">Location: <?= escape((string) ($job['location'] ?? 'Unknown')); ?></p>
+                    <p><strong>Time:</strong> <?= escape(isset($job['time']) && $job['time'] instanceof \MongoDB\BSON\UTCDateTime ? $job['time']->toDateTime()->format('Y-m-d H:i') : 'N/A'); ?></p>
+                    <p><strong>Duration:</strong> <?= escape((string) ($job['duration'] ?? '')); ?></p>
+
+                    <form action="/jobs/apply" method="POST" class="inline-form">
+                        <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">
+                        <input type="hidden" name="job_id" value="<?= escape($jobId); ?>">
+                        <button type="submit" class="btn" <?= $alreadyApplied ? 'disabled' : ''; ?>>
+                            <?= $alreadyApplied ? 'Applied' : 'Apply'; ?>
+                        </button>
+                    </form>
+                </article>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+</section>
+<?php endif; ?>
+
 <section class="grid">
     <?php if (empty($listings)): ?>
         <article class="card">

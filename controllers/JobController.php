@@ -12,10 +12,14 @@ declare(strict_types=1);
 class JobController
 {
     private Job $jobs;
+    private JobApplication $applications;
+    private ServantProfile $servantProfiles;
 
     public function __construct()
     {
         $this->jobs = new Job();
+        $this->applications = new JobApplication();
+        $this->servantProfiles = new ServantProfile();
     }
 
     public function create(array $payload): void
@@ -92,6 +96,51 @@ class JobController
         } catch (Throwable $exception) {
             error_log('Job creation failed: ' . $exception->getMessage());
             setFlash('error', 'Could not create job right now. Please try again.');
+        }
+
+        redirect('/?page=dashboard');
+    }
+
+    public function apply(array $payload): void
+    {
+        requireRole('service_provider');
+
+        if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
+            setFlash('error', 'Invalid request token. Please try again.');
+            redirect('/?page=dashboard');
+        }
+
+        $providerId = (string) ($_SESSION['user_id'] ?? '');
+        $jobId = sanitizeInput($payload['job_id'] ?? null);
+
+        if ($providerId === '' || $jobId === '') {
+            setFlash('error', 'Missing job application data.');
+            redirect('/?page=dashboard');
+        }
+
+        if (!$this->servantProfiles->isApprovedByUserId($providerId)) {
+            setFlash('error', 'Only verified service providers can apply to jobs.');
+            redirect('/?page=dashboard');
+        }
+
+        $job = $this->jobs->getJobById($jobId);
+        if (!$job || (string) ($job['status'] ?? '') !== 'open') {
+            setFlash('error', 'Selected job is not available.');
+            redirect('/?page=dashboard');
+        }
+
+        try {
+            $created = $this->applications->createApplication($jobId, $providerId);
+            if ($created) {
+                setFlash('success', 'Application submitted successfully.');
+            } else {
+                setFlash('error', 'Application could not be saved. Please try again.');
+            }
+        } catch (RuntimeException $exception) {
+            setFlash('error', $exception->getMessage());
+        } catch (Throwable $exception) {
+            error_log('Job application failed: ' . $exception->getMessage());
+            setFlash('error', 'Could not submit application right now. Please try again.');
         }
 
         redirect('/?page=dashboard');

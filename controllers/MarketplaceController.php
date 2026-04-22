@@ -12,10 +12,14 @@ declare(strict_types=1);
 class MarketplaceController
 {
     private Listing $listings;
+    private Job $jobs;
+    private JobApplication $applications;
 
     public function __construct()
     {
         $this->listings = new Listing();
+        $this->jobs = new Job();
+        $this->applications = new JobApplication();
     }
 
     public function index(): void
@@ -47,6 +51,8 @@ class MarketplaceController
         renderView('marketplace/index', [
             'title' => 'Servant Dashboard',
             'listings' => $this->listings->getLatest(20),
+            'jobs' => $this->jobs->getOpenJobs(),
+            'appliedJobIds' => $this->applications->getAppliedJobIdsByProvider((string) ($_SESSION['user_id'] ?? '')),
             'user' => authUser(),
         ]);
     }

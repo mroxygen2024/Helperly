@@ -75,4 +75,27 @@ class Job
 
         return $result->getInsertedCount() === 1;
     }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function getOpenJobs(): array
+    {
+        $cursor = $this->collection->find(
+            ['status' => 'open'],
+            ['sort' => ['created_at' => -1]]
+        );
+
+        return iterator_to_array($cursor, false);
+    }
+
+    public function getJobById(string $jobId): ?array
+    {
+        if (!$this->isValidObjectId($jobId)) {
+            return null;
+        }
+
+        $job = $this->collection->findOne(['_id' => new ObjectId($jobId)]);
+        return $job ? (array) $job : null;
+    }
 }
