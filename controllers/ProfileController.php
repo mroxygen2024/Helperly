@@ -647,10 +647,19 @@ class ProfileController
     {
         requireRole(['parent', 'administrator']);
 
-        $location = sanitizeInput($query['location'] ?? null);
-        $skill = sanitizeInput($query['skill'] ?? null);
+        $filters = [
+            'location' => sanitizeInput($query['location'] ?? null),
+            'skill' => sanitizeInput($query['skill'] ?? null),
+            'experience' => sanitizeInput($query['experience'] ?? null),
+            'availability' => sanitizeInput($query['availability'] ?? null),
+            'name' => sanitizeInput($query['name'] ?? null),
+            'service_type' => sanitizeInput($query['service_type'] ?? null),
+            'min_price' => sanitizeInput($query['min_price'] ?? null),
+            'max_price' => sanitizeInput($query['max_price'] ?? null),
+            'rating' => sanitizeInput($query['rating'] ?? null),
+        ];
 
-        $profiles = $this->servantProfiles->findProfilesByFilters($location, $skill, 50);
+        $profiles = $this->servantProfiles->findProfilesByFilters($filters, 50);
 
         $userIds = [];
         foreach ($profiles as $profile) {
@@ -680,10 +689,7 @@ class ProfileController
             'csrfToken' => csrfToken(),
             'user' => authUser(),
             'servants' => $servants,
-            'filters' => [
-                'location' => $location,
-                'skill' => $skill,
-            ],
+            'filters' => $filters,
         ]);
     }
 }

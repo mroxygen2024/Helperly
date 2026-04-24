@@ -197,51 +197,104 @@ class ServantProfile
     }
 
     /**
-     * Fetch servant profiles with optional exact-match filters.
+     * Fetch servant profiles with dynamic filters (regex, ranges, relationships).
      *
      * @return array<int, array<string, mixed>>
      */
-    public function findProfilesByFilters(string $location = '', string $skill = '', int $limit = 50): array
+    public function findProfilesByFilters(array $filters = [], int $limit = 50): array
     {
-        $filter = ['verification_status' => 'approved'];
-
-        $location = trim($location);
-        $skill = trim($skill);
-
-        if ($location !== '') {
-            $filter['location'] = $location;
-        }
-
-        if ($skill !== '') {
-            $filter['skills'] = $skill;
-        }
-
         $limit = max(1, min($limit, 100));
+        
+        $initialMatch = ['verification_status' => 'approved'];
 
-        $cursor = $this->collection->find(
-            $filter,
-            [
-                'limit' => $limit,
-                'projection' => [
-                    'user_id' => 1,
-                    'full_name' => 1,
-                    'gender' => 1,
-                    'skills' => 1,
-                    'experience' => 1,
-                    'location' => 1,
-                    'availability' => 1,
-                    'hourly_rate' => 1,
-                    'profile_photo' => 1,
-                    'fayda_id_front_url' => 1,
-                    'fayda_id_back_url' => 1,
-                    'selfie_url' => 1,
-                    'verification_status' => 1,
-                    'verification_notes' => 1,
-                    'created_at' => 1,
-                ],
-            ]
-        );
+        if (!empty($filters['location'])) {
+            $initialMatch['location'] = new \MongoDB\BSON\Regex(preg_quote(trim($filters['location'])), 'i');
+        }
+        if (!empty($filters['skill'])) {
+            $initialMatch['skills'] = new \MongoDB\BSON\Regex(preg_quote(trim($filters['skill'])), 'i');
+        }
+        if (!empty($filters['experience'])) {
+            $initialMatch['experience'] = new \MongoDB\BSON\Regex(preg_quote(trim($filters['experience'])), 'i');
+        }
+        if (!empty($filters['availability'])) {
+            $initialMatch['availability'] = new \MongoDB\BSON\Regex(preg_quote(trim($filters['availability'])), 'i');
+        }
+        if (!empty($filters['name'])) {
+            $initialMatch['full_name'] = new \MongoDB\BSON\Regex(preg_quote(trim($filters['name'])), 'i');
+        }
+        if (isset($filters['rating']) && $filters['rating'] !== '') {
+            // Note: rating may need to be mapped to review collection eventually
+            $initialMatch['rating'] = ['$gte' => (float)$filters['rating']];
+        }
 
+        $pipeline = [
+            ['$match' => $initialMatch]
+        ];
+
+        if (!empty($filters['service_type'])) {
+            $pipeline[] = [
+                '$lookup' => [
+                    'from' => 'services',
+                    'localField' => 'user_id',
+                    'foreignField' => 'provider_id',
+                    'as' => 'services_info'
+                ]
+            ];
+            $pipeline[] = [
+                '$match' => [
+                    'services_info.service_type' => new \MongoDB\BSON\Regex(preg_quote(trim($filters['service_type'])), 'i')
+                ]
+            ];
+        }
+        
+        if ((isset($filters['min_price']) && $filters['min_price'] !== '') || (isset($filters['max_price']) && $filters['max_price'] !== '')) {
+            $pipeline[] = [
+                '$addFields' => [
+                    'numeric_rate' => [
+                        '$convert' => [
+                            'input' => '$hourly_rate',
+                            'to' => 'double',
+                            'onError' => 0.0,
+                            'onNull' => 0.0
+                        ]
+                    ]
+                ]
+            ];
+            $priceFilter = [];
+            if (isset($filters['min_price']) && $filters['min_price'] !== '') {
+                $priceFilter['$gte'] = (float)$filters['min_price'];
+            }
+            if (isset($filters['max_price']) && $filters['max_price'] !== '') {
+                $priceFilter['$lte'] = (float)$filters['max_price'];
+            }
+            $pipeline[] = [
+                '$match' => [
+                    'numeric_rate' => $priceFilter
+                ]
+            ];
+        }
+
+        $pipeline[] = ['$limit' => $limit];
+
+        $pipeline[] = ['$project' => [
+            'user_id' => 1,
+            'full_name' => 1,
+            'gender' => 1,
+            'skills' => 1,
+            'experience' => 1,
+            'location' => 1,
+            'availability' => 1,
+            'hourly_rate' => 1,
+            'profile_photo' => 1,
+            'fayda_id_front_url' => 1,
+            'fayda_id_back_url' => 1,
+            'selfie_url' => 1,
+            'verification_status' => 1,
+            'verification_notes' => 1,
+            'created_at' => 1,
+        ]];
+        
+        $cursor = $this->collection->aggregate($pipeline);
         return iterator_to_array($cursor, false);
     }
 
