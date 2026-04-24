@@ -74,6 +74,7 @@
                                         Confirm Job Finished
                                     <?php endif; ?>
                                 </button>
+                                <a href="/messages?job_id=<?= escape((string) $job['_id']); ?>" class="btn btn-outline btn-small" style="margin-left: 0.5rem;">Open Chat</a>
                             </form>
                         </div>
                     <?php endif; ?>
@@ -143,6 +144,7 @@
                                 Confirm Job Finished
                             <?php endif; ?>
                         </button>
+                        <a href="/messages?job_id=<?= escape((string) $job['_id']); ?>" class="btn btn-outline btn-small" style="margin-left: 0.5rem;">Open Chat</a>
                     </form>
                 </div>
             </article>
