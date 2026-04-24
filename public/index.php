@@ -317,6 +317,21 @@ try {
         return;
     }
 
+    if ($method === 'POST' && $path === '/jobs/accept') {
+        $jobController->accept($_POST);
+        return;
+    }
+
+    if ($method === 'POST' && $path === '/jobs/reject') {
+        $jobController->reject($_POST);
+        return;
+    }
+
+    if ($method === 'POST' && $path === '/jobs/confirm') {
+        $jobController->confirm($_POST);
+        return;
+    }
+
     if ($method === 'POST' && $path === '/logout') {
         if (!verifyCsrfToken($_POST['csrf_token'] ?? null)) {
             setFlash('error', 'Invalid request token.');

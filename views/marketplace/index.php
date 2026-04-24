@@ -41,9 +41,116 @@
         </div>
     </form>
 </section>
+
+<section class="card stack">
+    <h2>My Jobs & Applicants</h2>
+    <p class="muted">Review applicants for your posted jobs. You can accept one provider per job.</p>
+
+    <?php if (empty($jobs)): ?>
+        <p class="muted">You haven't posted any jobs yet.</p>
+    <?php else: ?>
+        <div class="stack">
+            <?php foreach ($jobs as $job): ?>
+                <article class="card border">
+                    <div class="flex-between">
+                        <div>
+                            <h3 style="margin: 0;"><?= escape((string) ($job['service_type'] ?? 'Job')); ?></h3>
+                            <p class="muted" style="margin: 0;">Status: <span class="badge"><?= escape((string) ($job['status'] ?? '')); ?></span></p>
+                        </div>
+                        <p class="muted"><?= escape(isset($job['time']) && $job['time'] instanceof \MongoDB\BSON\UTCDateTime ? $job['time']->toDateTime()->format('Y-m-d H:i') : 'N/A'); ?></p>
+                    </div>
+                    <p style="margin: 1rem 0;"><?= nl2br(escape((string) ($job['instructions'] ?? ''))); ?></p>
+
+                    <?php if ((string) $job['status'] === 'active'): ?>
+                        <div style="margin: 1rem 0; padding: 1rem; background: #eefbff; border: 1px solid #cceeff; border-radius: 8px;">
+                            <p style="margin-top: 0;"><strong>Job is Active.</strong> Provider is currently working on this. Please confirm when the job is done.</p>
+                            <form action="/jobs/confirm" method="POST" class="inline-form">
+                                <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">
+                                <input type="hidden" name="job_id" value="<?= escape((string) $job['_id']); ?>">
+                                <button type="submit" class="btn btn-small" <?= ($job['parent_confirmed'] ?? false) ? 'disabled' : ''; ?>>
+                                    <?php if ($job['parent_confirmed'] ?? false): ?>
+                                        Confirmed (Waiting for Provider)
+                                    <?php else: ?>
+                                        Confirm Job Finished
+                                    <?php endif; ?>
+                                </button>
+                            </form>
+                        </div>
+                    <?php endif; ?>
+
+                    <div class="applicants-section" style="margin-top: 1rem; border-top: 1px solid #eee; padding-top: 1rem;">
+                        <h4 style="margin-bottom: 0.5rem;">Applicants</h4>
+                        <?php if (empty($job['applicants'])): ?>
+                            <p class="muted">No applicants yet.</p>
+                        <?php else: ?>
+                            <div class="grid" style="--grid-cols: 1;">
+                                <?php foreach ($job['applicants'] as $application): ?>
+                                    <div class="card" style="background: #fdfdfd; border: 1px solid #f0f0f0;">
+                                        <div class="flex-between">
+                                            <div>
+                                                <strong style="display: block;"><?= escape((string) ($application['provider']['name'] ?? 'Unknown')); ?></strong>
+                                                <span class="muted small"><?= escape((string) ($application['provider']['phone'] ?? '')); ?></span>
+                                            </div>
+                                            <span class="badge"><?= escape((string) ($application['status'] ?? 'pending')); ?></span>
+                                        </div>
+
+                                        <?php if ((string) $job['status'] === 'open' && (string) $application['status'] === 'pending'): ?>
+                                            <div class="flex-row gap-small" style="margin-top: 1rem;">
+                                                <form action="/jobs/accept" method="POST" class="inline-form">
+                                                    <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">
+                                                    <input type="hidden" name="job_id" value="<?= escape((string) $job['_id']); ?>">
+                                                    <input type="hidden" name="provider_id" value="<?= escape((string) $application['provider_id']); ?>">
+                                                    <button type="submit" class="btn btn-small">Accept</button>
+                                                </form>
+                                                <form action="/jobs/reject" method="POST" class="inline-form">
+                                                    <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">
+                                                    <input type="hidden" name="job_id" value="<?= escape((string) $job['_id']); ?>">
+                                                    <input type="hidden" name="provider_id" value="<?= escape((string) $application['provider_id']); ?>">
+                                                    <button type="submit" class="btn btn-small btn-outline">Reject</button>
+                                                </form>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </article>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+</section>
 <?php endif; ?>
 
 <?php if (normalizeRole((string) (($user['role'] ?? ''))) === 'service_provider'): ?>
+<?php if (!empty($activeJobs)): ?>
+<section class="card stack">
+    <h2>Active Assignments</h2>
+    <p class="muted">These are the jobs you are currently assigned to. Confirm when you have finished.</p>
+    <div class="grid">
+        <?php foreach ($activeJobs as $job): ?>
+            <article class="card border" style="border-left: 5px solid #28a745;">
+                <h3><?= escape((string) ($job['service_type'] ?? 'Job')); ?></h3>
+                <p><?= nl2br(escape((string) ($job['instructions'] ?? ''))); ?></p>
+                <div style="margin-top: 1rem;">
+                    <form action="/jobs/confirm" method="POST" class="inline-form">
+                        <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">
+                        <input type="hidden" name="job_id" value="<?= escape((string) $job['_id']); ?>">
+                        <button type="submit" class="btn btn-small" <?= ($job['provider_confirmed'] ?? false) ? 'disabled' : ''; ?>>
+                            <?php if ($job['provider_confirmed'] ?? false): ?>
+                                Confirmed (Waiting for Parent)
+                            <?php else: ?>
+                                Confirm Job Finished
+                            <?php endif; ?>
+                        </button>
+                    </form>
+                </div>
+            </article>
+        <?php endforeach; ?>
+    </div>
+</section>
+<?php endif; ?>
+
 <section class="card stack">
     <h2>Open Jobs</h2>
     <p class="muted">Apply only to jobs you can actually take on. Duplicate applications are blocked.</p>

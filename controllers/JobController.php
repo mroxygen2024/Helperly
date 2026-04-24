@@ -145,4 +145,130 @@ class JobController
 
         redirect('/?page=dashboard');
     }
+
+    public function accept(array $payload): void
+    {
+        requireRole('parent');
+
+        if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
+            setFlash('error', 'Invalid request token.');
+            redirect('/?page=dashboard');
+        }
+
+        $jobId = sanitizeInput($payload['job_id'] ?? null);
+        $providerId = sanitizeInput($payload['provider_id'] ?? null);
+        $parentId = (string) ($_SESSION['user_id'] ?? '');
+
+        if (!$jobId || !$providerId) {
+            setFlash('error', 'Missing required data.');
+            redirect('/?page=dashboard');
+        }
+
+        $job = $this->jobs->getJobById($jobId);
+        if (!$job || (string) $job['parent_id'] !== $parentId) {
+            setFlash('error', 'You are not authorized to accept applicants for this job.');
+            redirect('/?page=dashboard');
+        }
+
+        if ((string) $job['status'] !== 'open') {
+            setFlash('error', 'This job is no longer open.');
+            redirect('/?page=dashboard');
+        }
+
+        try {
+            $updated = $this->applications->updateApplicationStatus($jobId, $providerId, 'accepted');
+
+            if ($updated) {
+                // Mark job as active and record the provider
+                $this->jobs->acceptProvider($jobId, $providerId);
+
+                // Reject other applicants
+                $this->applications->rejectOtherApplicants($jobId, $providerId);
+
+                setFlash('success', 'Applicant accepted. The job is now active.');
+            } else {
+                setFlash('error', 'Could not accept applicant. Please try again.');
+            }
+        } catch (Throwable $exception) {
+            error_log('Accept job application failed: ' . $exception->getMessage());
+            setFlash('error', 'An error occurred while accepting the applicant.');
+        }
+
+        redirect('/?page=dashboard');
+    }
+
+    public function reject(array $payload): void
+    {
+        requireRole('parent');
+
+        if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
+            setFlash('error', 'Invalid request token.');
+            redirect('/?page=dashboard');
+        }
+
+        $jobId = sanitizeInput($payload['job_id'] ?? null);
+        $providerId = sanitizeInput($payload['provider_id'] ?? null);
+        $parentId = (string) ($_SESSION['user_id'] ?? '');
+
+        if (!$jobId || !$providerId) {
+            setFlash('error', 'Missing required data.');
+            redirect('/?page=dashboard');
+        }
+
+        $job = $this->jobs->getJobById($jobId);
+        if (!$job || (string) $job['parent_id'] !== $parentId) {
+            setFlash('error', 'You are not authorized to reject applicants for this job.');
+            redirect('/?page=dashboard');
+        }
+
+        try {
+            $updated = $this->applications->updateApplicationStatus($jobId, $providerId, 'rejected');
+            if ($updated) {
+                setFlash('success', 'Applicant has been rejected.');
+            } else {
+                setFlash('error', 'Could not reject applicant. Please try again.');
+            }
+        } catch (Throwable $exception) {
+            error_log('Reject job application failed: ' . $exception->getMessage());
+            setFlash('error', 'An error occurred while rejecting the applicant.');
+        }
+
+        redirect('/?page=dashboard');
+    }
+
+    public function confirm(array $payload): void
+    {
+        $user = authUser();
+        if (!$user) {
+            redirect('/?page=login');
+        }
+
+        if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
+            setFlash('error', 'Invalid request token.');
+            redirect('/?page=dashboard');
+        }
+
+        $jobId = sanitizeInput($payload['job_id'] ?? null);
+        $userId = (string) ($_SESSION['user_id'] ?? '');
+        $role = normalizeRole((string) ($user['role'] ?? ''));
+
+        if (!$jobId) {
+            setFlash('error', 'Missing job ID.');
+            redirect('/?page=dashboard');
+        }
+
+        try {
+            $success = $this->jobs->confirmJob($jobId, $userId, $role);
+            if ($success) {
+                setFlash('success', 'Your confirmation has been recorded.');
+            } else {
+                setFlash('error', 'Could not record confirmation. You might not be authorized for this job.');
+            }
+        } catch (Throwable $exception) {
+            error_log('Job confirmation failed: ' . $exception->getMessage());
+            setFlash('error', 'An error occurred during confirmation.');
+        }
+
+        redirect('/?page=dashboard');
+    }
 }

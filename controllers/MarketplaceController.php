@@ -37,9 +37,21 @@ class MarketplaceController
     {
         requireRole('parent');
 
+        $parentId = (string) ($_SESSION['user_id'] ?? '');
+        $jobs = $this->jobs->getJobsByParentId($parentId);
+
+        $jobsWithApplicants = [];
+        foreach ($jobs as $job) {
+            $jobId = (string) $job['_id'];
+            $jobArray = (array) $job;
+            $jobArray['applicants'] = $this->applications->getApplicationsForJob($jobId);
+            $jobsWithApplicants[] = $jobArray;
+        }
+
         renderView('marketplace/index', [
             'title' => 'Employer Dashboard',
             'listings' => $this->listings->getLatest(20),
+            'jobs' => $jobsWithApplicants,
             'user' => authUser(),
         ]);
     }
@@ -47,12 +59,14 @@ class MarketplaceController
     public function servantDashboard(): void
     {
         requireRole('service_provider');
+        $providerId = (string) ($_SESSION['user_id'] ?? '');
 
         renderView('marketplace/index', [
             'title' => 'Servant Dashboard',
             'listings' => $this->listings->getLatest(20),
             'jobs' => $this->jobs->getOpenJobs(),
-            'appliedJobIds' => $this->applications->getAppliedJobIdsByProvider((string) ($_SESSION['user_id'] ?? '')),
+            'activeJobs' => $this->jobs->getActiveJobsByProvider($providerId),
+            'appliedJobIds' => $this->applications->getAppliedJobIdsByProvider($providerId),
             'user' => authUser(),
         ]);
     }

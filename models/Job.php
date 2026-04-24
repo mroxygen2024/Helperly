@@ -98,4 +98,111 @@ class Job
         $job = $this->collection->findOne(['_id' => new ObjectId($jobId)]);
         return $job ? (array) $job : null;
     }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function getJobsByParentId(string $parentId): array
+    {
+        if (!$this->isValidObjectId($parentId)) {
+            return [];
+        }
+
+        $cursor = $this->collection->find(
+            ['parent_id' => new ObjectId($parentId)],
+            ['sort' => ['created_at' => -1]]
+        );
+
+        return iterator_to_array($cursor, false);
+    }
+
+    public function updateStatus(string $jobId, string $status): bool
+    {
+        if (!$this->isValidObjectId($jobId)) {
+            return false;
+        }
+
+        $result = $this->collection->updateOne(
+            ['_id' => new ObjectId($jobId)],
+            [
+                '$set' => [
+                    'status' => $status,
+                    'updated_at' => new UTCDateTime(),
+                ]
+            ]
+        );
+
+        return $result->getModifiedCount() === 1;
+    }
+
+    public function acceptProvider(string $jobId, string $providerId): bool
+    {
+        if (!$this->isValidObjectId($jobId) || !$this->isValidObjectId($providerId)) {
+            return false;
+        }
+
+        $result = $this->collection->updateOne(
+            ['_id' => new ObjectId($jobId)],
+            [
+                '$set' => [
+                    'selected_provider_id' => new ObjectId($providerId),
+                    'status' => 'active',
+                    'parent_confirmed' => false,
+                    'provider_confirmed' => false,
+                    'updated_at' => new UTCDateTime(),
+                ]
+            ]
+        );
+
+        return $result->getModifiedCount() === 1;
+    }
+
+    public function confirmJob(string $jobId, string $userId, string $role): bool
+    {
+        if (!$this->isValidObjectId($jobId) || !$this->isValidObjectId($userId)) {
+            return false;
+        }
+
+        $query = ['_id' => new ObjectId($jobId)];
+        if ($role === 'parent') {
+            $query['parent_id'] = new ObjectId($userId);
+            $field = 'parent_confirmed';
+        } else {
+            $query['selected_provider_id'] = new ObjectId($userId);
+            $field = 'provider_confirmed';
+        }
+
+        $this->collection->updateOne(
+            $query,
+            ['$set' => [$field => true, 'updated_at' => new UTCDateTime()]]
+        );
+
+        // Check if both confirmed
+        $job = $this->collection->findOne(['_id' => new ObjectId($jobId)]);
+        if ($job && ($job['parent_confirmed'] ?? false) && ($job['provider_confirmed'] ?? false)) {
+            $this->updateStatus($jobId, 'completed');
+        }
+
+        return true;
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function getActiveJobsByProvider(string $providerId): array
+    {
+        if (!$this->isValidObjectId($providerId)) {
+            return [];
+        }
+
+        $cursor = $this->collection->find(
+            [
+                'selected_provider_id' => new ObjectId($providerId),
+                'status' => 'active'
+            ],
+            ['sort' => ['created_at' => -1]]
+        );
+
+        return iterator_to_array($cursor, false);
+    }
 }

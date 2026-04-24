@@ -92,4 +92,74 @@ class JobApplication
 
         return $jobIds;
     }
+
+    public function getApplicationsForJob(string $jobId): array
+    {
+        if (!$this->isValidObjectId($jobId)) {
+            return [];
+        }
+
+        $pipeline = [
+            ['$match' => ['job_id' => new ObjectId($jobId)]],
+            [
+                '$lookup' => [
+                    'from' => 'users',
+                    'localField' => 'provider_id',
+                    'foreignField' => '_id',
+                    'as' => 'provider'
+                ]
+            ],
+            ['$unwind' => [
+                'path' => '$provider',
+                'preserveNullAndEmptyArrays' => true
+            ]],
+            ['$sort' => ['created_at' => -1]]
+        ];
+
+        $cursor = $this->collection->aggregate($pipeline);
+        return iterator_to_array($cursor, false);
+    }
+
+    public function updateApplicationStatus(string $jobId, string $providerId, string $status): bool
+    {
+        if (!$this->isValidObjectId($jobId) || !$this->isValidObjectId($providerId)) {
+            return false;
+        }
+
+        $result = $this->collection->updateOne(
+            [
+                'job_id' => new ObjectId($jobId),
+                'provider_id' => new ObjectId($providerId)
+            ],
+            [
+                '$set' => [
+                    'status' => $status,
+                    'updated_at' => new UTCDateTime(),
+                ]
+            ]
+        );
+
+        return $result->getModifiedCount() === 1;
+    }
+
+    public function rejectOtherApplicants(string $jobId, string $acceptedProviderId): void
+    {
+        if (!$this->isValidObjectId($jobId) || !$this->isValidObjectId($acceptedProviderId)) {
+            return;
+        }
+
+        $this->collection->updateMany(
+            [
+                'job_id' => new ObjectId($jobId),
+                'provider_id' => ['$ne' => new ObjectId($acceptedProviderId)],
+                'status' => 'pending'
+            ],
+            [
+                '$set' => [
+                    'status' => 'rejected',
+                    'updated_at' => new UTCDateTime(),
+                ]
+            ]
+        );
+    }
 }
