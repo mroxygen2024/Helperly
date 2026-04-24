@@ -26,6 +26,7 @@ require_once dirname(__DIR__) . '/models/HireRequest.php';
 require_once dirname(__DIR__) . '/models/Job.php';
 require_once dirname(__DIR__) . '/models/JobApplication.php';
 require_once dirname(__DIR__) . '/models/Service.php';
+require_once dirname(__DIR__) . '/models/Message.php';
 
 require_once dirname(__DIR__) . '/controllers/AuthController.php';
 require_once dirname(__DIR__) . '/controllers/MarketplaceController.php';
@@ -33,6 +34,7 @@ require_once dirname(__DIR__) . '/controllers/ProfileController.php';
 require_once dirname(__DIR__) . '/controllers/HireRequestController.php';
 require_once dirname(__DIR__) . '/controllers/JobController.php';
 require_once dirname(__DIR__) . '/controllers/ServiceController.php';
+require_once dirname(__DIR__) . '/controllers/MessageController.php';
 
 
 startSecureSession();
@@ -43,6 +45,7 @@ $profileController = new ProfileController();
 $hireRequestController = new HireRequestController();
 $jobController = new JobController();
 $serviceController = new ServiceController();
+$messageController = new MessageController();
 
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
@@ -309,6 +312,16 @@ try {
 
     if ($method === 'GET' && $path === '/job/book') {
         $jobController->showBookForm($_GET);
+        return;
+    }
+
+    if ($method === 'GET' && $path === '/messages') {
+        $messageController->index($_GET);
+        return;
+    }
+
+    if ($method === 'POST' && $path === '/messages') {
+        $messageController->store($_POST);
         return;
     }
 
