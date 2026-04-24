@@ -307,6 +307,11 @@ try {
         return;
     }
 
+    if ($method === 'GET' && $path === '/job/book') {
+        $jobController->showBookForm($_GET);
+        return;
+    }
+
     if ($method === 'POST' && $path === '/jobs') {
         $jobController->create($_POST);
         return;

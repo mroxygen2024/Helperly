@@ -22,6 +22,23 @@ class JobController
         $this->servantProfiles = new ServantProfile();
     }
 
+    public function showBookForm(array $query): void
+    {
+        requireRole('parent');
+        $providerId = sanitizeInput($query['provider_id'] ?? '');
+
+        if (!$providerId || !$this->servantProfiles->isApprovedByUserId($providerId)) {
+            setFlash('error', 'Invalid or unverified service provider selected.');
+            redirect('/servants');
+        }
+
+        renderView('jobs/book', [
+            'title' => 'Book Provider',
+            'csrfToken' => csrfToken(),
+            'provider_id' => $providerId,
+        ]);
+    }
+
     public function create(array $payload): void
     {
         requireRole('parent');
@@ -37,6 +54,7 @@ class JobController
         $serviceType = sanitizeInput($payload['service_type'] ?? null);
         $location = sanitizeInput($payload['location'] ?? null);
         $instructions = sanitizeInput($payload['instructions'] ?? null);
+        $selectedProviderId = sanitizeInput($payload['selected_provider_id'] ?? null);
 
         $errors = [];
 
@@ -75,12 +93,13 @@ class JobController
                 $duration,
                 $serviceType,
                 $location,
-                $instructions
+                $instructions,
+                $selectedProviderId ?: null
             );
 
             if ($created) {
                 clearOldInput();
-                setFlash('success', 'Job posted successfully with status open.');
+                setFlash('success', 'Job ' . ($selectedProviderId ? 'booked and assigned directly.' : 'posted successfully with status open.'));
             } else {
                 setFlash('error', 'Job could not be created. Please try again.');
             }

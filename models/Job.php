@@ -48,7 +48,8 @@ class Job
         string $duration,
         string $serviceType,
         string $location,
-        string $instructions
+        string $instructions,
+        ?string $selectedProviderId = null
     ): bool {
         if (!$this->isValidObjectId($parentId)) {
             throw new InvalidArgumentException('Invalid parent id provided.');
@@ -66,10 +67,16 @@ class Job
             'service_type' => $serviceType,
             'location' => $location,
             'instructions' => $instructions,
-            'status' => 'open',
+            'status' => $selectedProviderId ? 'active' : 'open',
             'created_at' => new UTCDateTime(),
             'updated_at' => new UTCDateTime(),
         ];
+
+        if ($selectedProviderId) {
+            $document['selected_provider_id'] = new ObjectId($selectedProviderId);
+            $document['parent_confirmed'] = false;
+            $document['provider_confirmed'] = false;
+        }
 
         $result = $this->collection->insertOne($document);
 

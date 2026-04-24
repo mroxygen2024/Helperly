@@ -103,11 +103,9 @@
                     <?php endif; ?>
                 </div>
 
-                <form action="/hire-requests" method="POST" class="hire-form">
-                    <input type="hidden" name="csrf_token" value="<?= escape($csrfToken ?? csrfToken()); ?>">
-                    <input type="hidden" name="servant_id" value="<?= escape((string) ($profile['user_id'] ?? '')); ?>">
-                    <button type="submit" class="btn">Hire</button>
-                </form>
+                <div style="margin-top: 1rem;">
+                    <a href="/job/book?provider_id=<?= escape((string) ($profile['user_id'] ?? '')); ?>" class="btn">Book Directly</a>
+                </div>
             </article>
         <?php endforeach; ?>
     <?php endif; ?>
