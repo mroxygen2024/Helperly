@@ -25,9 +25,19 @@
         </div>
 
         <div>
-            <label for="job_duration">Duration</label>
-            <input id="job_duration" name="duration" type="text" value="<?= escape(old('duration')); ?>" placeholder="e.g. 3 hours" required>
+            <label for="job_duration">Duration (Hours)</label>
+            <input id="job_duration" name="duration" type="number" step="0.5" value="<?= escape(old('duration')); ?>" placeholder="e.g. 3" required oninput="calculateTotal()">
+            <p class="small muted" id="total_preview">Total: </p>
         </div>
+
+        <script>
+            const rate = <?= (float) ($provider['hourly_rate'] ?? 0); ?>;
+            function calculateTotal() {
+                const duration = document.getElementById('job_duration').value;
+                const total = rate * duration;
+                document.getElementById('total_preview').innerText = 'Estimated Total: ' + (total || 0).toFixed(2);
+            }
+        </script>
 
         <div>
             <label for="job_service_type">Type of Service</label>

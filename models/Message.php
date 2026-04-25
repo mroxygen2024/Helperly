@@ -82,4 +82,48 @@ class Message
 
         return iterator_to_array($cursor, false);
     }
+
+    public function getRecentConversations(string $userId): array
+    {
+        if (!$this->isValidObjectId($userId)) {
+            return [];
+        }
+
+        $pipeline = [
+            [
+                '$match' => [
+                    '$or' => [
+                        ['sender_id' => new ObjectId($userId)],
+                        ['receiver_id' => new ObjectId($userId)]
+                    ]
+                ]
+            ],
+            [
+                '$sort' => ['created_at' => -1]
+            ],
+            [
+                '$group' => [
+                    '_id' => '$job_id',
+                    'latest_message' => ['$first' => '$$ROOT']
+                ]
+            ],
+            [
+                '$sort' => ['latest_message.created_at' => -1]
+            ],
+            [
+                '$lookup' => [
+                    'from' => 'jobs',
+                    'localField' => '_id',
+                    'foreignField' => '_id',
+                    'as' => 'job_info'
+                ]
+            ],
+            [
+                '$unwind' => '$job_info'
+            ]
+        ];
+
+        $cursor = $this->collection->aggregate($pipeline);
+        return iterator_to_array($cursor, false);
+    }
 }

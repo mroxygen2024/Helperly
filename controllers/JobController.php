@@ -223,7 +223,7 @@ class JobController
             $updated = $this->applications->updateApplicationStatus($jobId, $providerId, 'accepted');
 
             if ($updated) {
-               // Fetch provider details to get their hourly rate
+                // Fetch provider details to get their hourly rate
                 $profile = $this->servantProfiles->getProfileByUserId($providerId);
                 $hourlyRate = (float) ($profile['hourly_rate'] ?? 0);
                 $numericDuration = (float) filter_var($job['duration'] ?? '', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);

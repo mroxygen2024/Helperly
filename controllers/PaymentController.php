@@ -2,13 +2,22 @@
 
 declare(strict_types=1);
 
+/*
+ |--------------------------------------------------------------------------
+ | controllers/PaymentController.php
+ |--------------------------------------------------------------------------
+ | Handles payment status updates.
+ */
+
 class PaymentController
 {
     private Payment $payments;
+    private Job $jobs;
 
     public function __construct()
     {
         $this->payments = new Payment();
+        $this->jobs = new Job();
     }
 
     public function processPayment(array $payload): void
@@ -28,12 +37,16 @@ class PaymentController
         }
 
         try {
-            $jobModel = new Job();
-            $job = $jobModel->getJobById($jobId);
+            $job = $this->jobs->getJobById($jobId);
             $parentId = (string) ($_SESSION['user_id'] ?? '');
 
             if (!$job || (string) $job['parent_id'] !== $parentId) {
                 setFlash('error', 'Unauthorized access.');
+                redirect('/?page=dashboard');
+            }
+
+            if ((string) ($job['status'] ?? '') !== 'completed') {
+                setFlash('error', 'Payments can only be processed for completed jobs.');
                 redirect('/?page=dashboard');
             }
 
