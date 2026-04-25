@@ -290,6 +290,41 @@
 
 <?php if (normalizeRole((string) (($user['role'] ?? ''))) === 'administrator'): ?>
 <section class="card stack">
+    <h2>Marketplace Statistics</h2>
+    <p class="muted">A high-level overview of the platform's current scale and health.</p>
+
+    <div class="grid" style="--grid-cols: 3;">
+        <div class="card border stat-card">
+            <span class="muted small uppercase">Total Users</span>
+            <div class="h2"><?= number_format((float)($stats['total_users'] ?? 0)); ?></div>
+        </div>
+        <div class="card border stat-card">
+            <span class="muted small uppercase">Total Jobs</span>
+            <div class="h2"><?= number_format((float)($stats['total_jobs'] ?? 0)); ?></div>
+        </div>
+        <div class="card border stat-card">
+            <span class="muted small uppercase">Provider Verification</span>
+            <div class="h2"><?= (int)($stats['verified_providers'] ?? 0); ?> / <?= (int)($stats['total_providers'] ?? 0); ?></div>
+            <p class="muted small"><?= (int)($stats['total_providers'] ?? 0) > 0 ? round((int)$stats['verified_providers'] / (int)$stats['total_providers'] * 100) : 0; ?>% Approved</p>
+        </div>
+    </div>
+</section>
+
+<style>
+    .stat-card {
+        text-align: center;
+        padding: 1.5rem;
+    }
+    .stat-card .h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0.5rem 0;
+        color: #2c7ef2;
+    }
+    .uppercase { text-transform: uppercase; letter-spacing: 0.05em; }
+</style>
+
+<section class="card stack">
     <h2>Management Modules</h2>
     <p class="muted">Access restricted administrative tools to manage the marketplace.</p>
     

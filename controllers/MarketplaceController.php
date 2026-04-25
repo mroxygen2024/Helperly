@@ -91,10 +91,21 @@ class MarketplaceController
     {
         requireRole('administrator');
 
+        $userModel = new User();
+        $servantProfileModel = new ServantProfile();
+
+        $stats = [
+            'total_users' => $userModel->countUsers(),
+            'total_jobs' => $this->jobs->countJobs(),
+            'verified_providers' => $servantProfileModel->countVerifiedProviders(),
+            'total_providers' => $servantProfileModel->countTotalProviders(),
+        ];
+
         renderView('marketplace/index', [
             'title' => 'Administrator Dashboard',
             'listings' => $this->listings->getLatest(20),
             'user' => authUser(),
+            'stats' => $stats,
             'adminSections' => [
                 ['title' => 'User Management', 'link' => '/admin/users', 'icon' => '👥'],
                 ['title' => 'Provider Verifications', 'link' => '/admin/verifications', 'icon' => '✅'],

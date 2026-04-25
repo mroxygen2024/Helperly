@@ -400,4 +400,14 @@ class ServantProfile
 
         return $result->getMatchedCount() > 0;
     }
+
+    public function countVerifiedProviders(): int
+    {
+        return $this->collection->countDocuments(['verification_status' => 'approved']);
+    }
+
+    public function countTotalProviders(): int
+    {
+        return $this->collection->countDocuments();
+    }
 }

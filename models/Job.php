@@ -224,4 +224,9 @@ class Job
 
         return iterator_to_array($cursor, false);
     }
+
+    public function countJobs(): int
+    {
+        return $this->collection->countDocuments();
+    }
 }

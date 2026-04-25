@@ -296,4 +296,9 @@ class User
         $result = $this->collection->deleteOne(['_id' => new ObjectId($id)]);
         return $result->getDeletedCount() === 1;
     }
+
+    public function countUsers(): int
+    {
+        return $this->collection->countDocuments();
+    }
 }
