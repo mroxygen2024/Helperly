@@ -176,7 +176,11 @@ class Job
             return false;
         }
 
-        $query = ['_id' => new ObjectId($jobId)];
+        $query = [
+            '_id' => new ObjectId($jobId),
+            'status' => 'active'
+        ];
+
         if ($role === 'parent') {
             $query['parent_id'] = new ObjectId($userId);
             $field = 'parent_confirmed';
@@ -185,19 +189,25 @@ class Job
             $field = 'provider_confirmed';
         }
 
-        $this->collection->updateOne(
+        $result = $this->collection->updateOne(
             $query,
             ['$set' => [$field => true, 'updated_at' => new UTCDateTime()]]
         );
+
+        if ($result->getMatchedCount() === 0) {
+            return false;
+        }
 
         // Check if both confirmed
         $job = $this->collection->findOne(['_id' => new ObjectId($jobId)]);
         if ($job && ($job['parent_confirmed'] ?? false) && ($job['provider_confirmed'] ?? false)) {
             $this->updateStatus($jobId, 'completed');
-            
-            // Create payment record
-            $payment = new Payment();
-            $payment->createPayment($jobId, (float) ($job['total_cost'] ?? 0));
+
+            // Trigger payment creation
+            if (class_exists('Payment')) {
+                $payment = new Payment();
+                $payment->createPayment($jobId, (float) ($job['total_cost'] ?? 0));
+            }
         }
 
         return true;
@@ -221,5 +231,10 @@ class Job
         );
 
         return iterator_to_array($cursor, false);
+    }
+
+    public function countJobs(): int
+    {
+        return $this->collection->countDocuments();
     }
 }

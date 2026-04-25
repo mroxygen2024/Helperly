@@ -64,11 +64,13 @@
                         </div>
                         <p class="muted"><?= escape(isset($job['time']) && $job['time'] instanceof \MongoDB\BSON\UTCDateTime ? $job['time']->toDateTime()->format('Y-m-d H:i') : 'N/A'); ?></p>
                     </div>
+                    
                     <div class="flex-row gap-medium" style="margin: 0.5rem 0;">
                         <span class="small">Duration: <strong><?= escape((string) ($job['duration'] ?? '0')); ?> hrs</strong></span>
                         <span class="small">Rate: <strong><?= escape((string) ($job['hourly_rate'] ?? '0')); ?>/hr</strong></span>
                         <span class="small">Total: <strong style="color: #2c7ef2;"><?= escape((string) ($job['total_cost'] ?? '0')); ?></strong></span>
                     </div>
+
                     <p style="margin: 1rem 0;"><?= nl2br(escape((string) ($job['instructions'] ?? ''))); ?></p>
 
                     <?php if ((string) $job['status'] === 'active'): ?>
@@ -101,6 +103,32 @@
                                         <button type="submit" class="btn btn-small">Pay Now (<?= escape((string) $job['payment']['amount']); ?>)</button>
                                     </form>
                                 <?php endif; ?>
+                            <?php endif; ?>
+
+                            <hr style="margin: 1rem 0; border: 0; border-top: 1px solid #eee;">
+
+                            <?php if (isset($job['review'])): ?>
+                                <p>Your Rating: <strong style="color: #f39c12;"><?= str_repeat('★', (int) $job['review']['rating']); ?></strong></p>
+                                <p class="small muted"><?= escape((string) $job['review']['review_text']); ?></p>
+<?php else: ?>
+                                <p><strong>Rate your service provider:</strong></p>
+                                <form action="/reviews" method="POST" class="stack gap-small">
+                                    <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">
+                                    <input type="hidden" name="job_id" value="<?= escape((string) $job['_id']); ?>">
+                                    <div class="flex-row gap-small">
+                                        <label>Rating:</label>
+                                        <select name="rating" required>
+                                            <option value="">- Rate -</option>
+                                            <option value="5">5 - Excellent</option>
+                                            <option value="4">4 - Good</option>
+                                            <option value="3">3 - Average</option>
+                                            <option value="2">2 - Poor</option>
+                                            <option value="1">1 - Terrible</option>
+                                        </select>
+                                    </div>
+                                    <textarea name="review_text" placeholder="Write a short review..." rows="2"></textarea>
+                                    <button type="submit" class="btn btn-small">Submit Review</button>
+                                </form>
                             <?php endif; ?>
                         </div>
                     <?php endif; ?>
@@ -165,6 +193,60 @@
 <?php endif; ?>
 
 <?php if (normalizeRole((string) (($user['role'] ?? ''))) === 'service_provider'): ?>
+<section class="card stack" style="border-top: 5px solid #2c7ef2;">
+    <div class="flex-between">
+        <div>
+            <h2>Welcome back, <?= escape((string) ($user['name'] ?? 'Servant')); ?>!</h2>
+            <p class="muted">Your current standing and active tasks.</p>
+        </div>
+        <div style="text-align: right;">
+            <?php if (isset($profile)): ?>
+                <div class="rating-display" style="margin-bottom: 0.5rem;">
+                    <?php if (isset($profile['rating']) && (float)$profile['rating'] > 0): ?>
+                        <span style="font-size: 1.5rem; color: #f39c12; font-weight: bold;">
+                            <?= number_format((float)$profile['rating'], 1); ?> ★
+                        </span>
+                        <span class="muted small">(<?= (int)($profile['rating_count'] ?? 0); ?> reviews)</span>
+                    <?php else: ?>
+                        <span class="muted small">No ratings yet</span>
+                    <?php endif; ?>
+                </div>
+                <div>
+                    <span class="badge" style="background: <?= (string)($profile['verification_status'] ?? '') === 'approved' ? '#28a745' : '#ffc107'; ?>;">
+                        <?= ServantProfile::verificationStatusLabel($profile['verification_status'] ?? ''); ?>
+                    </span>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+</section>
+
+<?php if (!empty($applicationsList)): ?>
+<section class="card stack">
+    <h2>Application Tracking</h2>
+    <p class="muted">Monitor the status of your recent job applications.</p>
+    <div class="stack gap-small">
+        <?php foreach ($applicationsList as $app): ?>
+            <?php 
+                $job = $app['job'] ?? []; 
+                $appStatus = (string)($app['status'] ?? 'pending');
+            ?>
+            <div class="card border" style="padding: 0.75rem 1rem;">
+                <div class="flex-between">
+                    <div>
+                        <h4 style="margin: 0;"><?= escape((string)($job['service_type'] ?? 'Untitled Job')); ?></h4>
+                        <p class="muted small" style="margin: 0;"><?= escape((string)($job['location'] ?? 'Unknown Location')); ?></p>
+                    </div>
+                    <span class="badge" style="background: <?= $appStatus === 'accepted' ? '#def7ec' : ($appStatus === 'rejected' ? '#fde8e8' : '#feecdc'); ?>; color: <?= $appStatus === 'accepted' ? '#03543f' : ($appStatus === 'rejected' ? '#981b1b' : '#9a3412'); ?>;">
+                        <?= ucfirst(escape($appStatus)); ?>
+                    </span>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+</section>
+<?php endif; ?>
+
 <?php if (!empty($activeJobs)): ?>
 <section class="card stack">
     <h2>Active Assignments</h2>
@@ -230,6 +312,66 @@
         </div>
     <?php endif; ?>
 </section>
+<?php endif; ?>
+
+<?php if (normalizeRole((string) (($user['role'] ?? ''))) === 'administrator'): ?>
+<section class="card stack">
+    <h2>Marketplace Statistics</h2>
+    <p class="muted">A high-level overview of the platform's current scale and health.</p>
+
+    <div class="grid" style="--grid-cols: 3;">
+        <div class="card border stat-card">
+            <span class="muted small uppercase">Total Users</span>
+            <div class="h2"><?= number_format((float)($stats['total_users'] ?? 0)); ?></div>
+        </div>
+        <div class="card border stat-card">
+            <span class="muted small uppercase">Total Jobs</span>
+            <div class="h2"><?= number_format((float)($stats['total_jobs'] ?? 0)); ?></div>
+        </div>
+        <div class="card border stat-card">
+            <span class="muted small uppercase">Provider Verification</span>
+            <div class="h2"><?= (int)($stats['verified_providers'] ?? 0); ?> / <?= (int)($stats['total_providers'] ?? 0); ?></div>
+            <p class="muted small"><?= (int)($stats['total_providers'] ?? 0) > 0 ? round((int)$stats['verified_providers'] / (int)$stats['total_providers'] * 100) : 0; ?>% Approved</p>
+        </div>
+    </div>
+</section>
+
+<style>
+    .stat-card {
+        text-align: center;
+        padding: 1.5rem;
+    }
+    .stat-card .h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0.5rem 0;
+        color: #2c7ef2;
+    }
+    .uppercase { text-transform: uppercase; letter-spacing: 0.05em; }
+</style>
+
+<section class="card stack">
+    <h2>Management Modules</h2>
+    <p class="muted">Access restricted administrative tools to manage the marketplace.</p>
+    
+    <div class="grid" style="--grid-cols: 2;">
+        <?php foreach ($adminSections ?? [] as $section): ?>
+            <a href="<?= escape($section['link']); ?>" class="card border clickable-card" style="text-decoration: none; color: inherit; transition: transform 0.2s;">
+                <div style="font-size: 2rem; margin-bottom: 0.5rem;"><?= escape($section['icon']); ?></div>
+                <h3 style="margin: 0;"><?= escape($section['title']); ?></h3>
+                <p class="muted small">Quick access to <?= strtolower(escape($section['title'])); ?>.</p>
+            </a>
+        <?php endforeach; ?>
+    </div>
+</section>
+
+<style>
+    .clickable-card:hover {
+        transform: translateY(-4px);
+        border-color: #2c7ef2;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+</style>
 <?php endif; ?>
 
 <section class="grid">

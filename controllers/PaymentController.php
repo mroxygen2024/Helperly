@@ -29,30 +29,36 @@ class PaymentController
             redirect('/?page=dashboard');
         }
 
-        $jobId = sanitizeInput($payload['job_id'] ?? null);
+        $jobId = sanitizeInput($payload['job_id'] ?? '');
 
         if (!$jobId) {
-            setFlash('error', 'Missing job ID.');
+            setFlash('error', 'Missing job ID for payment.');
             redirect('/?page=dashboard');
         }
 
-        $job = $this->jobs->getJobById($jobId);
-        if (!$job || (string) $job['parent_id'] !== (string) $_SESSION['user_id']) {
-            setFlash('error', 'Unauthorized access.');
-            redirect('/?page=dashboard');
-        }
+        try {
+            $job = $this->jobs->getJobById($jobId);
+            $parentId = (string) ($_SESSION['user_id'] ?? '');
 
-        if ((string) ($job['status'] ?? '') !== 'completed') {
-            setFlash('error', 'Payments can only be processed for completed jobs.');
-            redirect('/?page=dashboard');
-        }
+            if (!$job || (string) $job['parent_id'] !== $parentId) {
+                setFlash('error', 'Unauthorized access.');
+                redirect('/?page=dashboard');
+            }
 
-        $success = $this->payments->updateStatus($jobId, 'paid');
+            if ((string) ($job['status'] ?? '') !== 'completed') {
+                setFlash('error', 'Payments can only be processed for completed jobs.');
+                redirect('/?page=dashboard');
+            }
 
-        if ($success) {
-            setFlash('success', 'Payment successful! Thank you.');
-        } else {
-            setFlash('error', 'Could not process payment at this time.');
+            $updated = $this->payments->updateStatus($jobId, 'paid');
+            if ($updated) {
+                setFlash('success', 'Payment processed successfully.');
+            } else {
+                setFlash('error', 'Could not process payment. Please try again.');
+            }
+        } catch (Throwable $exception) {
+            error_log('Payment processing failed: ' . $exception->getMessage());
+            setFlash('error', 'An error occurred while processing the payment.');
         }
 
         redirect('/?page=dashboard');

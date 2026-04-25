@@ -258,4 +258,47 @@ class User
     {
         return $this->findUserById($id);
     }
+
+    public function getAllUsers(int $limit = 100): array
+    {
+        $cursor = $this->collection->find([], [
+            'limit' => $limit,
+            'sort' => ['created_at' => -1]
+        ]);
+        return iterator_to_array($cursor, false);
+    }
+
+    public function updateBlockedStatus(string $id, bool $isBlocked): bool
+    {
+        if (!$this->isValidObjectId($id)) {
+            return false;
+        }
+
+        $result = $this->collection->updateOne(
+            ['_id' => new ObjectId($id)],
+            [
+                '$set' => [
+                    'is_blocked' => $isBlocked,
+                    'updated_at' => new UTCDateTime()
+                ]
+            ]
+        );
+
+        return $result->getMatchedCount() > 0;
+    }
+
+    public function deleteUser(string $id): bool
+    {
+        if (!$this->isValidObjectId($id)) {
+            return false;
+        }
+
+        $result = $this->collection->deleteOne(['_id' => new ObjectId($id)]);
+        return $result->getDeletedCount() === 1;
+    }
+
+    public function countUsers(): int
+    {
+        return $this->collection->countDocuments();
+    }
 }

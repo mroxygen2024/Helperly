@@ -78,6 +78,11 @@
                     </div>
                     <div class="pill-row">
                         <span class="pill"><?= escape((string) ($profile['location'] ?? 'Unknown location')); ?></span>
+                        <?php if (isset($profile['rating']) && (float)$profile['rating'] > 0): ?>
+                            <span class="pill" style="background: #fff9e6; color: #f39c12; border-color: #f39c12;">
+                                <?= number_format((float)$profile['rating'], 1); ?> ★ (<?= (int)($profile['rating_count'] ?? 0); ?>)
+                            </span>
+                        <?php endif; ?>
                     </div>
                 </header>
 
@@ -103,8 +108,14 @@
                     <?php endif; ?>
                 </div>
 
-                <div style="margin-top: 1rem;">
+                <div class="flex-row gap-small" style="margin-top: 1rem;">
                     <a href="/job/book?provider_id=<?= escape((string) ($profile['user_id'] ?? '')); ?>" class="btn">Book Directly</a>
+                    
+                    <form action="/hire-requests" method="POST" class="inline-form">
+                        <input type="hidden" name="csrf_token" value="<?= escape($csrfToken ?? csrfToken()); ?>">
+                        <input type="hidden" name="servant_id" value="<?= escape((string) ($profile['user_id'] ?? '')); ?>">
+                        <button type="submit" class="btn btn-outline">Invite to Hire</button>
+                    </form>
                 </div>
             </article>
         <?php endforeach; ?>

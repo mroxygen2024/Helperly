@@ -268,6 +268,12 @@ class AuthController
             redirect('/login');
         }
 
+        if ((bool) ($user['is_blocked'] ?? false)) {
+            rememberOldInput(['email' => $email]);
+            setFlash('error', 'Your account has been suspended. Please contact support.');
+            redirect('/login');
+        }
+
         $isVerified = array_key_exists('is_verified', $user) ? (bool) $user['is_verified'] : true;
         if (!$isVerified) {
             rememberOldInput(['email' => $email]);

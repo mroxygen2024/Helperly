@@ -65,6 +65,10 @@ class JobController
 
         // If direct booking, we pull the rate from the provider profile to be safe
         if ($selectedProviderId) {
+            if (!$this->servantProfiles->isApprovedByUserId($selectedProviderId)) {
+                setFlash('error', 'The selected provider is no longer available or not verified.');
+                redirect('/servants');
+            }
             $profile = $this->servantProfiles->getProfileByUserId($selectedProviderId);
             if ($profile && isset($profile['hourly_rate'])) {
                 $hourlyRate = (float) $profile['hourly_rate'];
@@ -99,6 +103,7 @@ class JobController
                 'service_type' => $serviceType,
                 'location' => $location,
                 'instructions' => $instructions,
+                'hourly_rate' => $hourlyRate
             ]);
             setFlash('error', implode(' ', $errors));
             redirect('/?page=dashboard');
@@ -299,6 +304,12 @@ class JobController
 
         if (!$jobId) {
             setFlash('error', 'Missing job ID.');
+            redirect('/?page=dashboard');
+        }
+
+        $job = $this->jobs->getJobById($jobId);
+        if (!$job || (string) ($job['status'] ?? '') !== 'active') {
+            setFlash('error', 'This job is not in a state that can be confirmed.');
             redirect('/?page=dashboard');
         }
 

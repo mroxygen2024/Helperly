@@ -162,4 +162,31 @@ class JobApplication
             ]
         );
     }
+
+    public function getApplicationsByProvider(string $providerId): array
+    {
+        if (!$this->isValidObjectId($providerId)) {
+            return [];
+        }
+
+        $pipeline = [
+            ['$match' => ['provider_id' => new \MongoDB\BSON\ObjectId($providerId)]],
+            [
+                '$lookup' => [
+                    'from' => 'jobs',
+                    'localField' => 'job_id',
+                    'foreignField' => '_id',
+                    'as' => 'job'
+                ]
+            ],
+            ['$unwind' => [
+                'path' => '$job',
+                'preserveNullAndEmptyArrays' => true
+            ]],
+            ['$sort' => ['created_at' => -1]]
+        ];
+
+        $cursor = $this->collection->aggregate($pipeline);
+        return iterator_to_array($cursor, false);
+    }
 }

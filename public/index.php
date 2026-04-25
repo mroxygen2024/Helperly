@@ -28,6 +28,7 @@ require_once dirname(__DIR__) . '/models/JobApplication.php';
 require_once dirname(__DIR__) . '/models/Service.php';
 require_once dirname(__DIR__) . '/models/Message.php';
 require_once dirname(__DIR__) . '/models/Payment.php';
+require_once dirname(__DIR__) . '/models/Review.php';
 
 require_once dirname(__DIR__) . '/controllers/AuthController.php';
 require_once dirname(__DIR__) . '/controllers/MarketplaceController.php';
@@ -37,6 +38,8 @@ require_once dirname(__DIR__) . '/controllers/JobController.php';
 require_once dirname(__DIR__) . '/controllers/ServiceController.php';
 require_once dirname(__DIR__) . '/controllers/MessageController.php';
 require_once dirname(__DIR__) . '/controllers/PaymentController.php';
+require_once dirname(__DIR__) . '/controllers/ReviewController.php';
+require_once dirname(__DIR__) . '/controllers/AdminUserController.php';
 
 
 startSecureSession();
@@ -49,6 +52,8 @@ $jobController = new JobController();
 $serviceController = new ServiceController();
 $messageController = new MessageController();
 $paymentController = new PaymentController();
+$reviewController = new ReviewController();
+$adminUserController = new AdminUserController();
 
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
@@ -299,7 +304,7 @@ try {
     }
 
     if ($method === 'GET' && $path === '/servant/requests') {
-        $hireRequestController->showIncomingRequests();
+        $hireRequestController->index();
         return;
     }
 
@@ -360,6 +365,26 @@ try {
 
     if ($method === 'POST' && $path === '/payments/pay') {
         $paymentController->processPayment($_POST);
+        return;
+    }
+
+    if ($method === 'POST' && $path === '/reviews') {
+        $reviewController->store($_POST);
+        return;
+    }
+
+    if ($method === 'GET' && $path === '/admin/users') {
+        $adminUserController->index();
+        return;
+    }
+
+    if ($method === 'POST' && $path === '/admin/users/toggle-block') {
+        $adminUserController->toggleBlock($_POST);
+        return;
+    }
+
+    if ($method === 'POST' && $path === '/admin/users/delete') {
+        $adminUserController->delete($_POST);
         return;
     }
 

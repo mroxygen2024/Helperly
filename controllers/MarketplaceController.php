@@ -43,6 +43,8 @@ class MarketplaceController
         $jobsWithApplicants = [];
         $userModel = new User();
         $paymentModel = new Payment();
+        $reviewModel = new Review();
+
         foreach ($jobs as $job) {
             $jobId = (string) $job['_id'];
             $jobArray = (array) $job;
@@ -53,6 +55,7 @@ class MarketplaceController
             }
 
             $jobArray['payment'] = $paymentModel->getPaymentByJobId($jobId);
+            $jobArray['review'] = $reviewModel->getReviewByJobId($jobId);
 
             $jobsWithApplicants[] = $jobArray;
         }
@@ -70,13 +73,18 @@ class MarketplaceController
         requireRole('service_provider');
         $providerId = (string) ($_SESSION['user_id'] ?? '');
 
+        $servantProfileModel = new ServantProfile();
+        $profile = $servantProfileModel->getProfileByUserId($providerId);
+
         renderView('marketplace/index', [
             'title' => 'Servant Dashboard',
             'listings' => $this->listings->getLatest(20),
             'jobs' => $this->jobs->getOpenJobs(),
             'activeJobs' => $this->jobs->getActiveJobsByProvider($providerId),
             'appliedJobIds' => $this->applications->getAppliedJobIdsByProvider($providerId),
+            'applicationsList' => $this->applications->getApplicationsByProvider($providerId),
             'user' => authUser(),
+            'profile' => $profile,
         ]);
     }
 
@@ -84,10 +92,25 @@ class MarketplaceController
     {
         requireRole('administrator');
 
+        $userModel = new User();
+        $servantProfileModel = new ServantProfile();
+
+        $stats = [
+            'total_users' => $userModel->countUsers(),
+            'total_jobs' => $this->jobs->countJobs(),
+            'verified_providers' => $servantProfileModel->countVerifiedProviders(),
+            'total_providers' => $servantProfileModel->countTotalProviders(),
+        ];
+
         renderView('marketplace/index', [
             'title' => 'Administrator Dashboard',
             'listings' => $this->listings->getLatest(20),
             'user' => authUser(),
+            'stats' => $stats,
+            'adminSections' => [
+                ['title' => 'User Management', 'link' => '/admin/users', 'icon' => '👥'],
+                ['title' => 'Provider Verifications', 'link' => '/admin/verifications', 'icon' => '✅'],
+            ]
         ]);
     }
 }
