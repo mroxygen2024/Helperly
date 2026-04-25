@@ -194,6 +194,10 @@ class Job
         $job = $this->collection->findOne(['_id' => new ObjectId($jobId)]);
         if ($job && ($job['parent_confirmed'] ?? false) && ($job['provider_confirmed'] ?? false)) {
             $this->updateStatus($jobId, 'completed');
+            
+            // Create payment record
+            $payment = new Payment();
+            $payment->createPayment($jobId, (float) ($job['total_cost'] ?? 0));
         }
 
         return true;

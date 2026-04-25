@@ -89,6 +89,22 @@
                         </div>
                     <?php endif; ?>
 
+                    <?php if ((string) $job['status'] === 'completed'): ?>
+                        <div style="margin: 1rem 0; padding: 1rem; background: #f6fff6; border: 1px solid #d4ecd4; border-radius: 8px;">
+                            <p style="margin-top: 0;"><strong>Job Completed.</strong></p>
+                            <?php if (isset($job['payment'])): ?>
+                                <p>Payment Status: <span class="badge" style="background: <?= $job['payment']['status'] === 'paid' ? '#28a745' : '#ffc107'; ?>;"><?= escape((string) $job['payment']['status']); ?></span></p>
+                                <?php if ($job['payment']['status'] === 'unpaid'): ?>
+                                    <form action="/payments/pay" method="POST" class="inline-form">
+                                        <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">
+                                        <input type="hidden" name="job_id" value="<?= escape((string) $job['_id']); ?>">
+                                        <button type="submit" class="btn btn-small">Pay Now (<?= escape((string) $job['payment']['amount']); ?>)</button>
+                                    </form>
+                                <?php endif; ?>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
+
                     <?php if (isset($job['selected_provider'])): ?>
                         <div style="margin: 1rem 0; padding: 1rem; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px;">
                             <h4 style="margin: 0 0 0.5rem 0;">Assigned Provider</h4>
