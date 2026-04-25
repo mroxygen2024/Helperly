@@ -79,43 +79,58 @@
                         </div>
                     <?php endif; ?>
 
-                    <div class="applicants-section" style="margin-top: 1rem; border-top: 1px solid #eee; padding-top: 1rem;">
-                        <h4 style="margin-bottom: 0.5rem;">Applicants</h4>
-                        <?php if (empty($job['applicants'])): ?>
-                            <p class="muted">No applicants yet.</p>
-                        <?php else: ?>
-                            <div class="grid" style="--grid-cols: 1;">
-                                <?php foreach ($job['applicants'] as $application): ?>
-                                    <div class="card" style="background: #fdfdfd; border: 1px solid #f0f0f0;">
-                                        <div class="flex-between">
-                                            <div>
-                                                <strong style="display: block;"><?= escape((string) ($application['provider']['name'] ?? 'Unknown')); ?></strong>
-                                                <span class="muted small"><?= escape((string) ($application['provider']['phone'] ?? '')); ?></span>
-                                            </div>
-                                            <span class="badge"><?= escape((string) ($application['status'] ?? 'pending')); ?></span>
-                                        </div>
-
-                                        <?php if ((string) $job['status'] === 'open' && (string) $application['status'] === 'pending'): ?>
-                                            <div class="flex-row gap-small" style="margin-top: 1rem;">
-                                                <form action="/jobs/accept" method="POST" class="inline-form">
-                                                    <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">
-                                                    <input type="hidden" name="job_id" value="<?= escape((string) $job['_id']); ?>">
-                                                    <input type="hidden" name="provider_id" value="<?= escape((string) $application['provider_id']); ?>">
-                                                    <button type="submit" class="btn btn-small">Accept</button>
-                                                </form>
-                                                <form action="/jobs/reject" method="POST" class="inline-form">
-                                                    <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">
-                                                    <input type="hidden" name="job_id" value="<?= escape((string) $job['_id']); ?>">
-                                                    <input type="hidden" name="provider_id" value="<?= escape((string) $application['provider_id']); ?>">
-                                                    <button type="submit" class="btn btn-small btn-outline">Reject</button>
-                                                </form>
-                                            </div>
-                                        <?php endif; ?>
-                                    </div>
-                                <?php endforeach; ?>
+                    <?php if (isset($job['selected_provider'])): ?>
+                        <div style="margin: 1rem 0; padding: 1rem; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px;">
+                            <h4 style="margin: 0 0 0.5rem 0;">Assigned Provider</h4>
+                            <div class="flex-between">
+                                <div>
+                                    <strong><?= escape((string) ($job['selected_provider']['name'] ?? 'Unknown')); ?></strong>
+                                    <p class="muted small" style="margin: 0;"><?= escape((string) ($job['selected_provider']['phone'] ?? '')); ?></p>
+                                </div>
+                                <a href="/messages?job_id=<?= escape((string) $job['_id']); ?>" class="btn btn-small btn-outline">Message</a>
                             </div>
-                        <?php endif; ?>
-                    </div>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (!isset($job['selected_provider_id'])): ?>
+                        <div class="applicants-section" style="margin-top: 1rem; border-top: 1px solid #eee; padding-top: 1rem;">
+                            <h4 style="margin-bottom: 0.5rem;">Applicants</h4>
+                            <?php if (empty($job['applicants'])): ?>
+                                <p class="muted">No applicants yet.</p>
+                            <?php else: ?>
+                                <div class="grid" style="--grid-cols: 1;">
+                                    <?php foreach ($job['applicants'] as $application): ?>
+                                        <div class="card" style="background: #fdfdfd; border: 1px solid #f0f0f0;">
+                                            <div class="flex-between">
+                                                <div>
+                                                    <strong style="display: block;"><?= escape((string) ($application['provider']['name'] ?? 'Unknown')); ?></strong>
+                                                    <span class="muted small"><?= escape((string) ($application['provider']['phone'] ?? '')); ?></span>
+                                                </div>
+                                                <span class="badge"><?= escape((string) ($application['status'] ?? 'pending')); ?></span>
+                                            </div>
+
+                                            <?php if ((string) $job['status'] === 'open' && (string) $application['status'] === 'pending'): ?>
+                                                <div class="flex-row gap-small" style="margin-top: 1rem;">
+                                                    <form action="/jobs/accept" method="POST" class="inline-form">
+                                                        <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">
+                                                        <input type="hidden" name="job_id" value="<?= escape((string) $job['_id']); ?>">
+                                                        <input type="hidden" name="provider_id" value="<?= escape((string) $application['provider_id']); ?>">
+                                                        <button type="submit" class="btn btn-small">Accept</button>
+                                                    </form>
+                                                    <form action="/jobs/reject" method="POST" class="inline-form">
+                                                        <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">
+                                                        <input type="hidden" name="job_id" value="<?= escape((string) $job['_id']); ?>">
+                                                        <input type="hidden" name="provider_id" value="<?= escape((string) $application['provider_id']); ?>">
+                                                        <button type="submit" class="btn btn-small btn-outline">Reject</button>
+                                                    </form>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
                 </article>
             <?php endforeach; ?>
         </div>

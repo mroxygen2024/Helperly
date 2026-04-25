@@ -32,10 +32,16 @@ class JobController
             redirect('/servants');
         }
 
+        $providerProfile = $this->servantProfiles->getProfileByUserId($providerId);
+        $employerProfiles = new EmployerProfile();
+        $employerProfile = $employerProfiles->getProfileByUserId((string) ($_SESSION['user_id'] ?? ''));
+
         renderView('jobs/book', [
             'title' => 'Book Provider',
             'csrfToken' => csrfToken(),
             'provider_id' => $providerId,
+            'provider' => $providerProfile,
+            'employer_location' => $employerProfile['location'] ?? '',
         ]);
     }
 
