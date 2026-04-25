@@ -246,20 +246,44 @@ class ServantProfile
                 ]
             ];
         }
-        
-        if ((isset($filters['min_price']) && $filters['min_price'] !== '') || (isset($filters['max_price']) && $filters['max_price'] !== '')) {
-            $pipeline[] = [
-                '$addFields' => [
-                    'numeric_rate' => [
-                        '$convert' => [
-                            'input' => '$hourly_rate',
-                            'to' => 'double',
-                            'onError' => 0.0,
-                            'onNull' => 0.0
-                        ]
+
+        // Add ranking/scoring fields
+        $pipeline[] = [
+            '$addFields' => [
+                'numeric_experience' => [
+                    '$convert' => [
+                        'input' => [
+                            '$trim' => [
+                                'input' => ['$arrayElemAt' => [['$split' => [['$trim' => ['input' => '$experience']], ' ']], 0]],
+                                'chars' => '+'
+                            ]
+                        ],
+                        'to' => 'double',
+                        'onError' => 0.0,
+                        'onNull' => 0.0
+                    ]
+                ],
+                'numeric_rating' => [
+                    '$convert' => [
+                        'input' => '$rating',
+                        'to' => 'double',
+                        'onError' => 0.0,
+                        'onNull' => 0.0
+                    ]
+                ],
+                'numeric_rate' => [
+                    '$convert' => [
+                        'input' => '$hourly_rate',
+                        'to' => 'double',
+                        'onError' => 0.0,
+                        'onNull' => 0.0
                     ]
                 ]
-            ];
+            ]
+        ];
+
+        // Price filter if applicable
+        if ((isset($filters['min_price']) && $filters['min_price'] !== '') || (isset($filters['max_price']) && $filters['max_price'] !== '')) {
             $priceFilter = [];
             if (isset($filters['min_price']) && $filters['min_price'] !== '') {
                 $priceFilter['$gte'] = (float)$filters['min_price'];
@@ -267,13 +291,35 @@ class ServantProfile
             if (isset($filters['max_price']) && $filters['max_price'] !== '') {
                 $priceFilter['$lte'] = (float)$filters['max_price'];
             }
-            $pipeline[] = [
-                '$match' => [
-                    'numeric_rate' => $priceFilter
-                ]
-            ];
+            $pipeline[] = ['$match' => ['numeric_rate' => $priceFilter]];
         }
 
+        // Ranking Logic
+        $filterLocation = trim($filters['location'] ?? '');
+        $filterAvailability = trim($filters['availability'] ?? '');
+
+        $pipeline[] = [
+            '$addFields' => [
+                'match_score' => [
+                    '$add' => [
+                        ['$cond' => [['$eq' => ['$location', $filterLocation]], 100, 0]],
+                        ['$multiply' => ['$numeric_rating', 15]],
+                        ['$multiply' => ['$numeric_experience', 10]],
+                        ['$cond' => [
+                            ['$regexMatch' => [
+                                'input' => '$availability',
+                                'regex' => preg_quote($filterAvailability),
+                                'options' => 'i'
+                            ]], 
+                            30, 
+                            0
+                        ]],
+                    ]
+                ]
+            ]
+        ];
+
+        $pipeline[] = ['$sort' => ['match_score' => -1, 'created_at' => -1]];
         $pipeline[] = ['$limit' => $limit];
 
         $pipeline[] = ['$project' => [

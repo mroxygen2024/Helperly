@@ -41,10 +41,16 @@ class MarketplaceController
         $jobs = $this->jobs->getJobsByParentId($parentId);
 
         $jobsWithApplicants = [];
+        $userModel = new User();
         foreach ($jobs as $job) {
             $jobId = (string) $job['_id'];
             $jobArray = (array) $job;
             $jobArray['applicants'] = $this->applications->getApplicationsForJob($jobId);
+
+            if (isset($job['selected_provider_id'])) {
+                $jobArray['selected_provider'] = $userModel->findUserById((string) $job['selected_provider_id']);
+            }
+
             $jobsWithApplicants[] = $jobArray;
         }
 

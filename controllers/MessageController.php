@@ -99,6 +99,10 @@ class MessageController
         }
 
         $receiverId = ($userId === $parentId) ? $providerId : $parentId;
+        if (!$receiverId) {
+            setFlash('error', 'A provider has not been selected for this job yet.');
+            redirect('/?page=dashboard');
+        }
         
         try {
             $this->messages->sendMessage($userId, $receiverId, $jobId, $messageText);

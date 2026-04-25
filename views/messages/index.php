@@ -50,8 +50,11 @@
         }
     });
 
-    // Optional MVP auto-refresh every 10 seconds simply by reloading the page
-    setTimeout(() => {
-        window.location.reload();
+    // Refresh-based updates (MVP): reloads only if the user is not typing.
+    setInterval(() => {
+        var input = document.querySelector('input[name="message"]');
+        if (input && input.value.trim() === "") {
+            window.location.reload();
+        }
     }, 10000);
 </script>
