@@ -17,18 +17,8 @@
     </div>
 </div>
 
-<div class="grid grid-cols-2 gap-6">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     <div id="all-jobs" class="card">
-        <div class="card-header">
-            <h2 class="card-title">Recent Activity</h2>
-        </div>
-        <div class="text-center py-12">
-            <span class="material-symbols-outlined text-muted" style="font-size: 3rem;">monitoring</span>
-            <p class="text-muted mt-2">Activity tracking logs will appear here.</p>
-        </div>
-    </div>
-
-    <div class="card">
         <div class="card-header">
             <h2 class="card-title">Recent Activity</h2>
         </div>

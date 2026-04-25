@@ -34,7 +34,6 @@
                     <option value="">Select your role</option>
                     <option value="service_provider" <?= normalizeRole(old('role')) === 'service_provider' ? 'selected' : ''; ?>>Service Provider</option>
                     <option value="parent" <?= normalizeRole(old('role')) === 'parent' ? 'selected' : ''; ?>>Parent (Customer)</option>
-                    <option value="administrator" <?= normalizeRole(old('role')) === 'administrator' ? 'selected' : ''; ?>>Administrator</option>
                 </select>
             </div>
         </div>

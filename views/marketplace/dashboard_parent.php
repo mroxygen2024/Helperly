@@ -57,7 +57,7 @@
 
                 <button type="submit" class="btn btn-primary w-full">
                     <span class="material-symbols-outlined">add</span>
-                    Post Requirement
+                    Post Job Now
                 </button>
             </form>
         </div>

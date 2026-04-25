@@ -10,8 +10,8 @@
         <p class="stat-value"><?= count($activeJobs ?? []); ?></p>
     </div>
     <div class="card stat-card">
-        <p class="stat-label">Earnings</p>
-        <p class="stat-value text-success">0 BDT</p>
+        <p class="stat-label">Applications</p>
+        <p class="stat-value"><?= count($applicationsList ?? []); ?></p>
     </div>
     <div class="card stat-card">
         <p class="stat-label">Status</p>

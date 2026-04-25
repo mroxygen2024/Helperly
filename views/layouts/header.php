@@ -24,26 +24,20 @@ $currentPage = $_GET['page'] ?? 'dashboard';
     if ($role === 'parent') {
         $navItems = [
             'dashboard' => ['label' => 'Dashboard', 'url' => '/dashboard', 'icon' => 'dashboard'],
-            'search' => ['label' => 'Search', 'url' => '/servants', 'icon' => 'search'],
-            'jobs' => ['label' => 'My Jobs', 'url' => '/dashboard#my-jobs', 'icon' => 'work'],
+            'search' => ['label' => 'Find Help', 'url' => '/servants', 'icon' => 'search'],
             'messages' => ['label' => 'Messages', 'url' => '/messages', 'icon' => 'chat'],
-            'profile' => ['label' => 'Profile', 'url' => '/profile/account', 'icon' => 'person'],
         ];
     } elseif ($role === 'service_provider') {
         $navItems = [
             'dashboard' => ['label' => 'Dashboard', 'url' => '/dashboard', 'icon' => 'dashboard'],
-            'jobs' => ['label' => 'Jobs', 'url' => '/dashboard#available-jobs', 'icon' => 'explore'],
-            'applications' => ['label' => 'My Applications', 'url' => '/servant/requests', 'icon' => 'assignment'],
-            'active_jobs' => ['label' => 'Active Jobs', 'url' => '/dashboard#active-jobs', 'icon' => 'play_circle'],
-            'profile' => ['label' => 'Profile', 'url' => '/profile/servant', 'icon' => 'badge'],
+            'profile' => ['label' => 'My Profile', 'url' => '/profile/servant', 'icon' => 'badge'],
+            'messages' => ['label' => 'Messages', 'url' => '/messages', 'icon' => 'chat'],
         ];
     } elseif ($role === 'administrator') {
         $navItems = [
             'dashboard' => ['label' => 'Dashboard', 'url' => '/dashboard', 'icon' => 'dashboard'],
-            'users' => ['label' => 'Users', 'url' => '/admin/users', 'icon' => 'group'],
+            'users' => ['label' => 'User Management', 'url' => '/admin/users', 'icon' => 'group'],
             'verifications' => ['label' => 'Verifications', 'url' => '/admin/verifications', 'icon' => 'verified_user'],
-            'jobs' => ['label' => 'Jobs', 'url' => '/dashboard#all-jobs', 'icon' => 'work'],
-            'stats' => ['label' => 'Stats', 'url' => '/dashboard#stats', 'icon' => 'monitoring'],
         ];
     }
 
@@ -88,7 +82,7 @@ $currentPage = $_GET['page'] ?? 'dashboard';
 
             <div class="nav-group mt-auto">
                 <p class="nav-label">Settings</p>
-                <a href="/profile/account" class="nav-item <?= $currentUri === '/profile/account' ? 'active' : '' ?>">
+                <a href="/profile/account" class="nav-item <?= $pathOnly === '/profile/account' ? 'active' : '' ?>">
                     <span class="material-symbols-outlined">settings</span>
                     Account Settings
                 </a>

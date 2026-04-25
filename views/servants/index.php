@@ -92,18 +92,10 @@
                     </div>
 
                     <div class="flex gap-2">
-                        <a href="/job/book?provider_id=<?= escape((string) ($profile['user_id'] ?? '')); ?>" class="btn btn-primary btn-sm flex-1">
+                        <a href="/job/book?provider_id=<?= escape((string) ($profile['user_id'] ?? '')); ?>" class="btn btn-primary btn-sm w-full">
                             <span class="material-symbols-outlined" style="font-size: 18px;">calendar_today</span>
                             Book Now
                         </a>
-                        <form action="/hire-requests" method="POST" class="flex-1">
-                            <input type="hidden" name="csrf_token" value="<?= escape($csrfToken ?? csrfToken()); ?>">
-                            <input type="hidden" name="servant_id" value="<?= escape((string) ($profile['user_id'] ?? '')); ?>">
-                            <button type="submit" class="btn btn-outline btn-sm w-full">
-                                <span class="material-symbols-outlined" style="font-size: 18px;">mail</span>
-                                Send Invitation
-                            </button>
-                        </form>
                     </div>
                 </div>
             </div>
