@@ -78,6 +78,11 @@
                     </div>
                     <div class="pill-row">
                         <span class="pill"><?= escape((string) ($profile['location'] ?? 'Unknown location')); ?></span>
+                        <?php if (isset($profile['rating']) && (float)$profile['rating'] > 0): ?>
+                            <span class="pill" style="background: #fff9e6; color: #f39c12; border-color: #f39c12;">
+                                <?= number_format((float)$profile['rating'], 1); ?> ★ (<?= (int)($profile['rating_count'] ?? 0); ?>)
+                            </span>
+                        <?php endif; ?>
                     </div>
                 </header>
 

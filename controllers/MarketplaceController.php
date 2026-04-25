@@ -73,6 +73,9 @@ class MarketplaceController
         requireRole('service_provider');
         $providerId = (string) ($_SESSION['user_id'] ?? '');
 
+        $servantProfileModel = new ServantProfile();
+        $profile = $servantProfileModel->getProfileByUserId($providerId);
+
         renderView('marketplace/index', [
             'title' => 'Servant Dashboard',
             'listings' => $this->listings->getLatest(20),
@@ -80,6 +83,7 @@ class MarketplaceController
             'activeJobs' => $this->jobs->getActiveJobsByProvider($providerId),
             'appliedJobIds' => $this->applications->getAppliedJobIdsByProvider($providerId),
             'user' => authUser(),
+            'profile' => $profile,
         ]);
     }
 

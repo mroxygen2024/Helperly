@@ -380,4 +380,24 @@ class ServantProfile
 
         return iterator_to_array($cursor, false);
     }
+
+    public function updateCachedRating(string $userId, float $average, int $count): bool
+    {
+        if (!$this->isValidObjectId($userId)) {
+            return false;
+        }
+
+        $result = $this->collection->updateOne(
+            ['user_id' => new ObjectId($userId)],
+            [
+                '$set' => [
+                    'rating' => $average,
+                    'rating_count' => $count,
+                    'updated_at' => new UTCDateTime()
+                ]
+            ]
+        );
+
+        return $result->getMatchedCount() > 0;
+    }
 }

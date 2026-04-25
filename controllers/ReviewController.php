@@ -55,6 +55,11 @@ class ReviewController
         try {
             $success = $this->reviews->createReview($jobId, $providerId, $parentId, $rating, $reviewText);
             if ($success) {
+                // Recalculate and update cached rating in profile
+                $agg = $this->reviews->calculateAverageRating($providerId);
+                $servantProfile = new ServantProfile();
+                $servantProfile->updateCachedRating($providerId, $agg['average'], $agg['count']);
+
                 setFlash('success', 'Thank you for your feedback!');
             } else {
                 setFlash('error', 'You have already reviewed this job.');

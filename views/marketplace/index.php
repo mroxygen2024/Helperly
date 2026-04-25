@@ -193,6 +193,34 @@
 <?php endif; ?>
 
 <?php if (normalizeRole((string) (($user['role'] ?? ''))) === 'service_provider'): ?>
+<section class="card stack" style="border-top: 5px solid #2c7ef2;">
+    <div class="flex-between">
+        <div>
+            <h2>Welcome back, <?= escape((string) ($user['name'] ?? 'Servant')); ?>!</h2>
+            <p class="muted">Your current standing and active tasks.</p>
+        </div>
+        <div style="text-align: right;">
+            <?php if (isset($profile)): ?>
+                <div class="rating-display" style="margin-bottom: 0.5rem;">
+                    <?php if (isset($profile['rating']) && (float)$profile['rating'] > 0): ?>
+                        <span style="font-size: 1.5rem; color: #f39c12; font-weight: bold;">
+                            <?= number_format((float)$profile['rating'], 1); ?> ★
+                        </span>
+                        <span class="muted small">(<?= (int)($profile['rating_count'] ?? 0); ?> reviews)</span>
+                    <?php else: ?>
+                        <span class="muted small">No ratings yet</span>
+                    <?php endif; ?>
+                </div>
+                <div>
+                    <span class="badge" style="background: <?= (string)($profile['verification_status'] ?? '') === 'approved' ? '#28a745' : '#ffc107'; ?>;">
+                        <?= ServantProfile::verificationStatusLabel($profile['verification_status'] ?? ''); ?>
+                    </span>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+</section>
+
 <?php if (!empty($activeJobs)): ?>
 <section class="card stack">
     <h2>Active Assignments</h2>

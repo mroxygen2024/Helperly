@@ -88,4 +88,34 @@ class Review
         $cursor = $this->collection->find(['provider_id' => new ObjectId($providerId)], ['sort' => ['created_at' => -1]]);
         return iterator_to_array($cursor, false);
     }
+
+    public function calculateAverageRating(string $providerId): array
+    {
+        if (!$this->isValidObjectId($providerId)) {
+            return ['average' => 0, 'count' => 0];
+        }
+
+        $pipeline = [
+            ['$match' => ['provider_id' => new ObjectId($providerId)]],
+            [
+                '$group' => [
+                    '_id' => '$provider_id',
+                    'average' => ['$avg' => '$rating'],
+                    'count' => ['$sum' => 1]
+                ]
+            ]
+        ];
+
+        $cursor = $this->collection->aggregate($pipeline);
+        $result = iterator_to_array($cursor, false);
+
+        if (empty($result)) {
+            return ['average' => 0, 'count' => 0];
+        }
+
+        return [
+            'average' => (float) $result[0]['average'],
+            'count' => (int) $result[0]['count']
+        ];
+    }
 }
