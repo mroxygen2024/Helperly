@@ -17,87 +17,88 @@ $currentPage = $_GET['page'] ?? 'dashboard';
 </head>
 <body>
 
-<?php if ($currentUser): ?>
+<?php if ($currentUser): 
+    $navItems = [];
+    
+    // Define navigation based on role
+    if ($role === 'parent') {
+        $navItems = [
+            'dashboard' => ['label' => 'Dashboard', 'url' => '/dashboard', 'icon' => 'dashboard'],
+            'search' => ['label' => 'Search', 'url' => '/servants', 'icon' => 'search'],
+            'jobs' => ['label' => 'My Jobs', 'url' => '/dashboard#my-jobs', 'icon' => 'work'],
+            'messages' => ['label' => 'Messages', 'url' => '/messages', 'icon' => 'chat'],
+            'profile' => ['label' => 'Profile', 'url' => '/profile/account', 'icon' => 'person'],
+        ];
+    } elseif ($role === 'service_provider') {
+        $navItems = [
+            'dashboard' => ['label' => 'Dashboard', 'url' => '/dashboard', 'icon' => 'dashboard'],
+            'jobs' => ['label' => 'Jobs', 'url' => '/dashboard#available-jobs', 'icon' => 'explore'],
+            'applications' => ['label' => 'My Applications', 'url' => '/servant/requests', 'icon' => 'assignment'],
+            'active_jobs' => ['label' => 'Active Jobs', 'url' => '/dashboard#active-jobs', 'icon' => 'play_circle'],
+            'profile' => ['label' => 'Profile', 'url' => '/profile/servant', 'icon' => 'badge'],
+        ];
+    } elseif ($role === 'administrator') {
+        $navItems = [
+            'dashboard' => ['label' => 'Dashboard', 'url' => '/dashboard', 'icon' => 'dashboard'],
+            'users' => ['label' => 'Users', 'url' => '/admin/users', 'icon' => 'group'],
+            'verifications' => ['label' => 'Verifications', 'url' => '/admin/verifications', 'icon' => 'verified_user'],
+            'jobs' => ['label' => 'Jobs', 'url' => '/dashboard#all-jobs', 'icon' => 'work'],
+            'stats' => ['label' => 'Stats', 'url' => '/dashboard#stats', 'icon' => 'monitoring'],
+        ];
+    }
+
+    // Determine active item
+    $currentUri = $_SERVER['REQUEST_URI'] ?? '/';
+    $pathOnly = explode('?', $currentUri)[0];
+    $activeKey = '';
+    
+    foreach ($navItems as $key => $item) {
+        $baseUrl = explode('#', $item['url'])[0];
+        if ($pathOnly === $baseUrl) {
+            $activeKey = $key;
+            break;
+        }
+    }
+    
+    // Default to dashboard if no match
+    if ($activeKey === '' && $pathOnly === '/dashboard') {
+        $activeKey = 'dashboard';
+    }
+?>
 <div class="app-container">
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-header">
-            <span class="material-symbols-outlined" style="color: var(--primary); font-size: 2rem;">guardian</span>
-            <a href="/dashboard" class="sidebar-logo">Helperly</a>
+            <div class="logo-container">
+                <span class="material-symbols-outlined logo-icon">guardian</span>
+                <a href="/dashboard" class="sidebar-logo">Helperly</a>
+            </div>
         </div>
         
         <nav class="sidebar-nav">
             <div class="nav-group">
-                <p class="nav-label">Main Menu</p>
-                <a href="/dashboard" class="nav-item <?= $currentPage === 'dashboard' ? 'active' : '' ?>">
-                    <span class="material-symbols-outlined">dashboard</span>
-                    Dashboard
-                </a>
-
-                <?php if ($role === 'parent'): ?>
-                    <a href="/servants" class="nav-item <?= $currentPage === 'listings' ? 'active' : '' ?>">
-                        <span class="material-symbols-outlined">search</span>
-                        Find Servants
+                <p class="nav-label">Menu</p>
+                <?php foreach ($navItems as $key => $item): ?>
+                    <a href="<?= escape($item['url']); ?>" class="nav-item <?= $activeKey === $key ? 'active' : '' ?>">
+                        <span class="material-symbols-outlined"><?= escape($item['icon']); ?></span>
+                        <?= escape($item['label']); ?>
                     </a>
-                    <a href="/dashboard" class="nav-item">
-                        <span class="material-symbols-outlined">work</span>
-                        My Jobs
-                    </a>
-                <?php endif; ?>
-
-                <?php if ($role === 'service_provider'): ?>
-                    <a href="/dashboard" class="nav-item">
-                        <span class="material-symbols-outlined">explore</span>
-                        Browse Jobs
-                    </a>
-                    <a href="/services" class="nav-item">
-                        <span class="material-symbols-outlined">home_repair_service</span>
-                        My Services
-                    </a>
-                <?php endif; ?>
-
-                <?php if ($role === 'administrator'): ?>
-                    <a href="/admin/users" class="nav-item">
-                        <span class="material-symbols-outlined">group</span>
-                        User Management
-                    </a>
-                    <a href="/admin/verifications" class="nav-item">
-                        <span class="material-symbols-outlined">verified_user</span>
-                        Verifications
-                    </a>
-                <?php endif; ?>
-
-                <a href="/messages" class="nav-item">
-                    <span class="material-symbols-outlined">chat</span>
-                    Messages
-                </a>
+                <?php endforeach; ?>
             </div>
 
-            <div class="nav-group">
+            <div class="nav-group mt-auto">
                 <p class="nav-label">Settings</p>
-                <a href="/profile/account" class="nav-item">
-                    <span class="material-symbols-outlined">person</span>
-                    My Account
+                <a href="/profile/account" class="nav-item <?= $currentUri === '/profile/account' ? 'active' : '' ?>">
+                    <span class="material-symbols-outlined">settings</span>
+                    Account Settings
                 </a>
-                <?php if ($role === 'service_provider'): ?>
-                    <a href="/profile/servant" class="nav-item">
-                        <span class="material-symbols-outlined">badge</span>
-                        Service Profile
-                    </a>
-                <?php endif; ?>
-                <?php if ($role === 'parent'): ?>
-                    <a href="/profile/employer" class="nav-item">
-                        <span class="material-symbols-outlined">description</span>
-                        Employer Profile
-                    </a>
-                <?php endif; ?>
             </div>
         </nav>
 
         <div class="sidebar-footer">
             <form action="/logout" method="POST">
                 <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">
-                <button type="submit" class="nav-item" style="background: none; border: none; width: 100%; color: var(--danger); cursor: pointer;">
+                <button type="submit" class="logout-btn">
                     <span class="material-symbols-outlined">logout</span>
                     Logout
                 </button>
@@ -109,15 +110,18 @@ $currentPage = $_GET['page'] ?? 'dashboard';
         <!-- Topbar -->
         <header class="topbar">
             <div class="topbar-left">
-                <h1 class="card-title"><?= escape($title ?? 'Dashboard'); ?></h1>
+                <button id="sidebar-toggle" class="sidebar-toggle-btn">
+                    <span class="material-symbols-outlined">menu</span>
+                </button>
+                <h1 class="page-title"><?= escape($title ?? 'Dashboard'); ?></h1>
             </div>
             <div class="topbar-right">
-                <div class="user-profile">
-                    <div class="user-avatar"><?= mb_substr(escape($currentUser['name']), 0, 1); ?></div>
-                    <div class="flex flex-col">
-                        <span class="text-sm font-600"><?= escape($currentUser['name']); ?></span>
-                        <span class="text-sm text-muted" style="font-size: 0.75rem;"><?= ucfirst($role); ?></span>
+                <div class="user-profile-header">
+                    <div class="user-info">
+                        <span class="user-name"><?= escape($currentUser['name']); ?></span>
+                        <span class="user-role"><?= ucfirst(str_replace('_', ' ', $role)); ?></span>
                     </div>
+                    <div class="user-avatar-rect"><?= mb_substr(escape($currentUser['name']), 0, 1); ?></div>
                 </div>
             </div>
         </header>

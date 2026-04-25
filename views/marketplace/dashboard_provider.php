@@ -25,7 +25,7 @@
 
 <div class="grid grid-cols-2 gap-4">
     <!-- Active Assignments -->
-    <div class="flex flex-col gap-4">
+    <div id="active-jobs" class="flex flex-col gap-4">
         <div class="card">
             <div class="card-header">
                 <h2 class="card-title">My Active Assignments</h2>
@@ -85,7 +85,7 @@
     </div>
 
     <!-- Available Jobs -->
-    <div class="card">
+    <div id="available-jobs" class="card">
         <div class="card-header">
             <h2 class="card-title">Opportunities Near You</h2>
         </div>

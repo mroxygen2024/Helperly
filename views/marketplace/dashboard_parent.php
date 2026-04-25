@@ -64,11 +64,10 @@
     </div>
 
     <!-- My Jobs List -->
-    <div style="grid-column: span 2;">
+    <div id="my-jobs" style="grid-column: span 2;">
         <div class="card">
             <div class="card-header">
                 <h2 class="card-title">My Recent Jobs</h2>
-                <a href="/servants" class="btn btn-outline btn-sm">Find More Servants</a>
             </div>
 
             <?php if (empty($jobs)): ?>
