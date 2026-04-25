@@ -113,4 +113,26 @@ class MessageController
 
         redirect('/messages?job_id=' . $jobId);
     }
+    public function inbox(): void
+    {
+        requireAuth();
+        $userId = (string) ($_SESSION['user_id'] ?? '');
+
+        $conversations = $this->messages->getRecentConversations($userId);
+
+        foreach ($conversations as &$conv) {
+            $latest = $conv['latest_message'];
+            $otherPartyId = ((string) $latest['sender_id'] === $userId) 
+                ? (string) $latest['receiver_id'] 
+                : (string) $latest['sender_id'];
+            
+            $conv['other_party'] = $this->users->findUserById($otherPartyId);
+        }
+
+        renderView('messages/inbox', [
+            'title' => 'My Conversations',
+            'conversations' => $conversations,
+            'userId' => $userId,
+        ]);
+    }
 }

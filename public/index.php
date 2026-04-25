@@ -320,6 +320,11 @@ try {
         return;
     }
 
+    if ($method === 'GET' && $path === '/inbox') {
+        $messageController->inbox();
+        return;
+    }
+
     if ($method === 'POST' && $path === '/messages') {
         $messageController->store($_POST);
         return;
