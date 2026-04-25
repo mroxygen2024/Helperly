@@ -60,9 +60,8 @@ class MarketplaceController
             $jobsWithApplicants[] = $jobArray;
         }
 
-        renderView('marketplace/index', [
-            'title' => 'Employer Dashboard',
-            'listings' => $this->listings->getLatest(20),
+        renderView('marketplace/dashboard_parent', [
+            'title' => 'Parent Dashboard',
             'jobs' => $jobsWithApplicants,
             'user' => authUser(),
         ]);
@@ -76,9 +75,8 @@ class MarketplaceController
         $servantProfileModel = new ServantProfile();
         $profile = $servantProfileModel->getProfileByUserId($providerId);
 
-        renderView('marketplace/index', [
-            'title' => 'Servant Dashboard',
-            'listings' => $this->listings->getLatest(20),
+        renderView('marketplace/dashboard_provider', [
+            'title' => 'Provider Dashboard',
             'jobs' => $this->jobs->getOpenJobs(),
             'activeJobs' => $this->jobs->getActiveJobsByProvider($providerId),
             'appliedJobIds' => $this->applications->getAppliedJobIdsByProvider($providerId),
@@ -102,14 +100,13 @@ class MarketplaceController
             'total_providers' => $servantProfileModel->countTotalProviders(),
         ];
 
-        renderView('marketplace/index', [
-            'title' => 'Administrator Dashboard',
-            'listings' => $this->listings->getLatest(20),
+        renderView('marketplace/dashboard_admin', [
+            'title' => 'Admin Dashboard',
             'user' => authUser(),
             'stats' => $stats,
             'adminSections' => [
-                ['title' => 'User Management', 'link' => '/admin/users', 'icon' => '👥'],
-                ['title' => 'Provider Verifications', 'link' => '/admin/verifications', 'icon' => '✅'],
+                ['title' => 'User Management', 'link' => '/admin/users', 'icon_name' => 'group'],
+                ['title' => 'Provider Verifications', 'link' => '/admin/verifications', 'icon_name' => 'verified_user'],
             ]
         ]);
     }

@@ -1,123 +1,112 @@
-<section class="page-header">
-    <div>
-        <h1>Servant Directory</h1>
-        <p class="muted">Browse servant profiles and narrow the list by location or skill.</p>
+<div class="card mb-6">
+    <div class="card-header">
+        <h2 class="card-title">Filter Servants</h2>
+        <p class="text-sm text-muted">Showing <?= count($servants); ?> results</p>
     </div>
-    <div class="muted">
-        Showing up to 50 profiles
-    </div>
-</section>
-
-<section class="card stack">
-    <form action="/servants" method="GET" class="form-grid filters">
-        <div>
-            <label for="name">Name</label>
-            <input id="name" name="name" type="text" value="<?= escape((string) ($filters['name'] ?? '')); ?>" placeholder="e.g. John">
+    <form action="/servants" method="GET" class="grid grid-cols-4 gap-4">
+        <div class="form-group">
+            <label class="label">Name</label>
+            <input name="name" type="text" class="input" value="<?= escape((string) ($filters['name'] ?? '')); ?>" placeholder="Search by name...">
         </div>
         
-        <div>
-            <label for="location">Location</label>
-            <input id="location" name="location" type="text" value="<?= escape((string) ($filters['location'] ?? '')); ?>" placeholder="e.g. Dhaka">
+        <div class="form-group">
+            <label class="label">Location</label>
+            <input name="location" type="text" class="input" value="<?= escape((string) ($filters['location'] ?? '')); ?>" placeholder="e.g. Dhaka">
         </div>
 
-        <div>
-            <label for="skill">Skill</label>
-            <input id="skill" name="skill" type="text" value="<?= escape((string) ($filters['skill'] ?? '')); ?>" placeholder="e.g. cleaning">
+        <div class="form-group">
+            <label class="label">Service Type</label>
+            <input name="service_type" type="text" class="input" value="<?= escape((string) ($filters['service_type'] ?? '')); ?>" placeholder="e.g. Maid">
         </div>
 
-        <div>
-            <label for="experience">Experience</label>
-            <input id="experience" name="experience" type="text" value="<?= escape((string) ($filters['experience'] ?? '')); ?>" placeholder="e.g. 2 years">
+        <div class="form-group">
+            <label class="label">Min Rating</label>
+            <select name="rating" class="select">
+                <option value="">Any Rating</option>
+                <option value="4.5" <?= ($filters['rating'] ?? '') == '4.5' ? 'selected' : ''; ?>>4.5+ ★</option>
+                <option value="4.0" <?= ($filters['rating'] ?? '') == '4.0' ? 'selected' : ''; ?>>4.0+ ★</option>
+                <option value="3.0" <?= ($filters['rating'] ?? '') == '3.0' ? 'selected' : ''; ?>>3.0+ ★</option>
+            </select>
         </div>
 
-        <div>
-            <label for="availability">Availability</label>
-            <input id="availability" name="availability" type="text" value="<?= escape((string) ($filters['availability'] ?? '')); ?>" placeholder="e.g. full-time">
-        </div>
-
-        <div>
-            <label for="service_type">Service Type</label>
-            <input id="service_type" name="service_type" type="text" value="<?= escape((string) ($filters['service_type'] ?? '')); ?>" placeholder="e.g. Maid">
-        </div>
-
-        <div>
-            <label for="min_price">Min Hourly Rate</label>
-            <input id="min_price" name="min_price" type="number" step="0.01" value="<?= escape((string) ($filters['min_price'] ?? '')); ?>" placeholder="Min">
-        </div>
-
-        <div>
-            <label for="max_price">Max Hourly Rate</label>
-            <input id="max_price" name="max_price" type="number" step="0.01" value="<?= escape((string) ($filters['max_price'] ?? '')); ?>" placeholder="Max">
-        </div>
-
-        <div>
-            <label for="rating">Min Rating</label>
-            <input id="rating" name="rating" type="number" step="0.1" max="5" value="<?= escape((string) ($filters['rating'] ?? '')); ?>" placeholder="e.g. 4.0">
-        </div>
-
-        <div style="grid-column: 1 / -1;">
-            <button type="submit" class="btn">Apply filters</button>
+        <div class="form-group flex items-end" style="grid-column: span 4; justify-content: flex-end; margin-bottom: 0;">
+            <button type="submit" class="btn btn-primary">
+                <span class="material-symbols-outlined">filter_list</span>
+                Apply Search Filters
+            </button>
+            <a href="/servants" class="btn btn-outline ml-2" style="margin-left: 0.5rem;">Clear</a>
         </div>
     </form>
-</section>
+</div>
 
-<section class="grid">
+<div class="grid grid-cols-2 gap-6">
     <?php if (empty($servants)): ?>
-        <article class="card empty-state">
-            <h2>No servants found</h2>
-            <p class="muted">Try changing the filters or clear them to see the full list.</p>
-        </article>
+        <div class="col-span-2 card text-center py-12">
+            <span class="material-symbols-outlined text-muted" style="font-size: 3rem;">search_off</span>
+            <h2 class="card-title mt-4">No match found</h2>
+            <p class="text-muted">Try adjusting your filters to find more providers.</p>
+        </div>
     <?php else: ?>
         <?php foreach ($servants as $servant): ?>
             <?php $profile = $servant['profile'] ?? []; ?>
-            <article class="card servant-card">
-                <header>
-                    <div>
-                        <h2><?= escape((string) ($servant['name'] ?? 'Unnamed servant')); ?></h2>
-                        <p class="muted"><?= escape((string) ($servant['phone'] ?? 'Not provided')); ?></p>
-                    </div>
-                    <div class="pill-row">
-                        <span class="pill"><?= escape((string) ($profile['location'] ?? 'Unknown location')); ?></span>
-                        <?php if (isset($profile['rating']) && (float)$profile['rating'] > 0): ?>
-                            <span class="pill" style="background: #fff9e6; color: #f39c12; border-color: #f39c12;">
-                                <?= number_format((float)$profile['rating'], 1); ?> ★ (<?= (int)($profile['rating_count'] ?? 0); ?>)
-                            </span>
-                        <?php endif; ?>
-                    </div>
-                </header>
-
-                <div class="servant-meta">
-                    <p><strong>Gender:</strong> <?= escape((string) ($profile['gender'] ?? 'Not provided')); ?></p>
-                    <p><strong>Experience:</strong> <?= escape((string) ($profile['experience'] ?? 'Not provided')); ?></p>
-                    <p><strong>Availability:</strong> <?= escape((string) ($profile['availability'] ?? 'Not provided')); ?></p>
-                    <p><strong>Hourly Rate:</strong> <?= escape((string) ($profile['hourly_rate'] ?? 'Not provided')); ?></p>
-                </div>
-
-                <?php if (!empty($profile['profile_photo'])): ?>
-                    <div>
-                        <img src="<?= escape((string) $profile['profile_photo']); ?>" alt="<?= escape((string) ($servant['name'] ?? 'Servant')); ?>" style="width:100%;max-width:220px;border-radius:12px;border:1px solid #ead9c0;">
-                    </div>
-                <?php endif; ?>
-
-                <?php $skills = $profile['skills'] ?? []; ?>
-                <div class="pill-row">
-                    <?php if (is_iterable($skills)): ?>
-                        <?php foreach ($skills as $skill): ?>
-                            <span class="pill"><?= escape((string) $skill); ?></span>
-                        <?php endforeach; ?>
+            <div class="card flex gap-6 items-start" style="margin-bottom: 0;">
+                <div style="flex-shrink: 0;">
+                    <?php if (!empty($profile['profile_photo'])): ?>
+                        <img src="<?= escape((string) $profile['profile_photo']); ?>" alt="<?= escape((string) ($servant['name'] ?? 'Servant')); ?>" style="width:120px; height:120px; object-fit: cover; border-radius: 12px; border: 1px solid var(--border);">
+                    <?php else: ?>
+                        <div class="user-avatar" style="width:120px; height:120px; border-radius: 12px; font-size: 3rem;">
+                            <?= mb_substr(escape($servant['name']), 0, 1); ?>
+                        </div>
                     <?php endif; ?>
                 </div>
 
-                <div class="flex-row gap-small" style="margin-top: 1rem;">
-                    <a href="/job/book?provider_id=<?= escape((string) ($profile['user_id'] ?? '')); ?>" class="btn">Book Directly</a>
-                    
-                    <form action="/hire-requests" method="POST" class="inline-form">
-                        <input type="hidden" name="csrf_token" value="<?= escape($csrfToken ?? csrfToken()); ?>">
-                        <input type="hidden" name="servant_id" value="<?= escape((string) ($profile['user_id'] ?? '')); ?>">
-                        <button type="submit" class="btn btn-outline">Invite to Hire</button>
-                    </form>
+                <div class="flex-1">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h2 class="card-title"><?= escape((string) ($servant['name'] ?? 'Unnamed servant')); ?></h2>
+                            <p class="text-sm text-muted mb-2">
+                                <span class="material-symbols-outlined" style="font-size: 14px; vertical-align: middle;">location_on</span>
+                                <?= escape((string) ($profile['location'] ?? 'Unknown')); ?>
+                            </p>
+                        </div>
+                        <?php if (isset($profile['rating']) && (float)$profile['rating'] > 0): ?>
+                            <div class="flex items-center gap-1 bg-warning" style="background: #fffbeb; padding: 0.25rem 0.5rem; border-radius: 6px;">
+                                <span class="text-warning font-700" style="font-size: 0.875rem;"><?= number_format((float)$profile['rating'], 1); ?></span>
+                                <span class="material-symbols-outlined text-warning" style="font-size: 16px;">star</span>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm mt-2 mb-4">
+                        <p><span class="text-muted">Exp:</span> <strong><?= escape((string) ($profile['experience'] ?? 'N/A')); ?></strong></p>
+                        <p><span class="text-muted">Rate:</span> <strong class="text-info"><?= escape((string) ($profile['hourly_rate'] ?? 'N/A')); ?> BDT/hr</strong></p>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <?php $skills = $profile['skills'] ?? []; ?>
+                        <?php if (is_iterable($skills)): ?>
+                            <?php foreach (array_slice((array)$skills, 0, 3) as $skill): ?>
+                                <span class="badge badge-secondary"><?= escape((string) $skill); ?></span>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <a href="/job/book?provider_id=<?= escape((string) ($profile['user_id'] ?? '')); ?>" class="btn btn-primary btn-sm flex-1">
+                            <span class="material-symbols-outlined" style="font-size: 18px;">calendar_today</span>
+                            Book Now
+                        </a>
+                        <form action="/hire-requests" method="POST" class="flex-1">
+                            <input type="hidden" name="csrf_token" value="<?= escape($csrfToken ?? csrfToken()); ?>">
+                            <input type="hidden" name="servant_id" value="<?= escape((string) ($profile['user_id'] ?? '')); ?>">
+                            <button type="submit" class="btn btn-outline btn-sm w-full">
+                                <span class="material-symbols-outlined" style="font-size: 18px;">mail</span>
+                                Send Invitation
+                            </button>
+                        </form>
+                    </div>
                 </div>
-            </article>
+            </div>
         <?php endforeach; ?>
     <?php endif; ?>
-</section>
+</div>
