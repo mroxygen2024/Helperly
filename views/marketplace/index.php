@@ -17,8 +17,13 @@
         </div>
 
         <div>
-            <label for="job_duration">Duration</label>
-            <input id="job_duration" name="duration" type="text" value="<?= escape(old('duration')); ?>" placeholder="e.g. 3 hours" required>
+            <label for="job_duration">Duration (Hours)</label>
+            <input id="job_duration" name="duration" type="number" step="0.5" value="<?= escape(old('duration')); ?>" placeholder="e.g. 3" required>
+        </div>
+
+        <div>
+            <label for="job_hourly_rate">Expected Hourly Rate</label>
+            <input id="job_hourly_rate" name="hourly_rate" type="number" step="1" value="<?= escape(old('hourly_rate')); ?>" placeholder="e.g. 500" required>
         </div>
 
         <div>
@@ -59,6 +64,13 @@
                         </div>
                         <p class="muted"><?= escape(isset($job['time']) && $job['time'] instanceof \MongoDB\BSON\UTCDateTime ? $job['time']->toDateTime()->format('Y-m-d H:i') : 'N/A'); ?></p>
                     </div>
+                    
+                    <div class="flex-row gap-medium" style="margin: 0.5rem 0;">
+                        <span class="small">Duration: <strong><?= escape((string) ($job['duration'] ?? '0')); ?> hrs</strong></span>
+                        <span class="small">Rate: <strong><?= escape((string) ($job['hourly_rate'] ?? '0')); ?>/hr</strong></span>
+                        <span class="small">Total: <strong style="color: #2c7ef2;"><?= escape((string) ($job['total_cost'] ?? '0')); ?></strong></span>
+                    </div>
+
                     <p style="margin: 1rem 0;"><?= nl2br(escape((string) ($job['instructions'] ?? ''))); ?></p>
 
                     <?php if ((string) $job['status'] === 'active'): ?>
@@ -76,6 +88,48 @@
                                 </button>
                                 <a href="/messages?job_id=<?= escape((string) $job['_id']); ?>" class="btn btn-outline btn-small" style="margin-left: 0.5rem;">Open Chat</a>
                             </form>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if ((string) $job['status'] === 'completed'): ?>
+                        <div style="margin: 1rem 0; padding: 1rem; background: #f6fff6; border: 1px solid #d4ecd4; border-radius: 8px;">
+                            <p style="margin-top: 0;"><strong>Job Completed.</strong></p>
+                            <?php if (isset($job['payment'])): ?>
+                                <p>Payment Status: <span class="badge" style="background: <?= $job['payment']['status'] === 'paid' ? '#28a745' : '#ffc107'; ?>;"><?= escape((string) $job['payment']['status']); ?></span></p>
+                                <?php if ($job['payment']['status'] === 'unpaid'): ?>
+                                    <form action="/payments/pay" method="POST" class="inline-form">
+                                        <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">
+                                        <input type="hidden" name="job_id" value="<?= escape((string) $job['_id']); ?>">
+                                        <button type="submit" class="btn btn-small">Pay Now (<?= escape((string) $job['payment']['amount']); ?>)</button>
+                                    </form>
+                                <?php endif; ?>
+                            <?php endif; ?>
+
+                            <hr style="margin: 1rem 0; border: 0; border-top: 1px solid #eee;">
+
+                            <?php if (isset($job['review'])): ?>
+                                <p>Your Rating: <strong style="color: #f39c12;"><?= str_repeat('★', (int) $job['review']['rating']); ?></strong></p>
+                                <p class="small muted"><?= escape((string) $job['review']['review_text']); ?></p>
+<?php else: ?>
+                                <p><strong>Rate your service provider:</strong></p>
+                                <form action="/reviews" method="POST" class="stack gap-small">
+                                    <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">
+                                    <input type="hidden" name="job_id" value="<?= escape((string) $job['_id']); ?>">
+                                    <div class="flex-row gap-small">
+                                        <label>Rating:</label>
+                                        <select name="rating" required>
+                                            <option value="">- Rate -</option>
+                                            <option value="5">5 - Excellent</option>
+                                            <option value="4">4 - Good</option>
+                                            <option value="3">3 - Average</option>
+                                            <option value="2">2 - Poor</option>
+                                            <option value="1">1 - Terrible</option>
+                                        </select>
+                                    </div>
+                                    <textarea name="review_text" placeholder="Write a short review..." rows="2"></textarea>
+                                    <button type="submit" class="btn btn-small">Submit Review</button>
+                                </form>
+                            <?php endif; ?>
                         </div>
                     <?php endif; ?>
 
@@ -189,7 +243,8 @@
                     <p><?= nl2br(escape((string) ($job['instructions'] ?? ''))); ?></p>
                     <p class="muted">Location: <?= escape((string) ($job['location'] ?? 'Unknown')); ?></p>
                     <p><strong>Time:</strong> <?= escape(isset($job['time']) && $job['time'] instanceof \MongoDB\BSON\UTCDateTime ? $job['time']->toDateTime()->format('Y-m-d H:i') : 'N/A'); ?></p>
-                    <p><strong>Duration:</strong> <?= escape((string) ($job['duration'] ?? '')); ?></p>
+                    <p><strong>Duration:</strong> <?= escape((string) ($job['duration'] ?? '')); ?> hours</p>
+                    <p><strong>Budget:</strong> <?= escape((string) ($job['total_cost'] ?? '0')); ?> (at <?= escape((string) ($job['hourly_rate'] ?? '0')); ?>/hr)</p>
 
                     <form action="/jobs/apply" method="POST" class="inline-form">
                         <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">

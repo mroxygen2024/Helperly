@@ -49,7 +49,9 @@ class Job
         string $serviceType,
         string $location,
         string $instructions,
-        ?string $selectedProviderId = null
+        ?string $selectedProviderId = null,
+        float $hourlyRate = 0.0,
+        float $totalCost = 0.0
     ): bool {
         if (!$this->isValidObjectId($parentId)) {
             throw new InvalidArgumentException('Invalid parent id provided.');
@@ -64,6 +66,8 @@ class Job
             'parent_id' => new ObjectId($parentId),
             'time' => new UTCDateTime($parsedTime * 1000),
             'duration' => $duration,
+            'hourly_rate' => $hourlyRate,
+            'total_cost' => $totalCost,
             'service_type' => $serviceType,
             'location' => $location,
             'instructions' => $instructions,
@@ -142,7 +146,7 @@ class Job
         return $result->getModifiedCount() === 1;
     }
 
-    public function acceptProvider(string $jobId, string $providerId): bool
+    public function acceptProvider(string $jobId, string $providerId, float $hourlyRate = 0.0, float $totalCost = 0.0): bool
     {
         if (!$this->isValidObjectId($jobId) || !$this->isValidObjectId($providerId)) {
             return false;
@@ -156,6 +160,8 @@ class Job
                     'status' => 'active',
                     'parent_confirmed' => false,
                     'provider_confirmed' => false,
+                    'hourly_rate' => $hourlyRate,
+                    'total_cost' => $totalCost,
                     'updated_at' => new UTCDateTime(),
                 ]
             ]
@@ -188,6 +194,12 @@ class Job
         $job = $this->collection->findOne(['_id' => new ObjectId($jobId)]);
         if ($job && ($job['parent_confirmed'] ?? false) && ($job['provider_confirmed'] ?? false)) {
             $this->updateStatus($jobId, 'completed');
+
+            // Trigger payment creation
+            if (class_exists('Payment')) {
+                $payment = new Payment();
+                $payment->createPayment($jobId, (float) ($job['total_cost'] ?? 0));
+            }
         }
 
         return true;

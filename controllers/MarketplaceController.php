@@ -42,6 +42,9 @@ class MarketplaceController
 
         $jobsWithApplicants = [];
         $userModel = new User();
+        $paymentModel = new Payment();
+        $reviewModel = new Review();
+
         foreach ($jobs as $job) {
             $jobId = (string) $job['_id'];
             $jobArray = (array) $job;
@@ -50,6 +53,9 @@ class MarketplaceController
             if (isset($job['selected_provider_id'])) {
                 $jobArray['selected_provider'] = $userModel->findUserById((string) $job['selected_provider_id']);
             }
+
+            $jobArray['payment'] = $paymentModel->getPaymentByJobId($jobId);
+            $jobArray['review'] = $reviewModel->getReviewByJobId($jobId);
 
             $jobsWithApplicants[] = $jobArray;
         }
