@@ -39,6 +39,7 @@ require_once dirname(__DIR__) . '/controllers/ServiceController.php';
 require_once dirname(__DIR__) . '/controllers/MessageController.php';
 require_once dirname(__DIR__) . '/controllers/PaymentController.php';
 require_once dirname(__DIR__) . '/controllers/ReviewController.php';
+require_once dirname(__DIR__) . '/controllers/AdminUserController.php';
 
 
 startSecureSession();
@@ -52,6 +53,7 @@ $serviceController = new ServiceController();
 $messageController = new MessageController();
 $paymentController = new PaymentController();
 $reviewController = new ReviewController();
+$adminUserController = new AdminUserController();
 
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
@@ -363,6 +365,21 @@ try {
 
     if ($method === 'POST' && $path === '/reviews') {
         $reviewController->store($_POST);
+        return;
+    }
+
+    if ($method === 'GET' && $path === '/admin/users') {
+        $adminUserController->index();
+        return;
+    }
+
+    if ($method === 'POST' && $path === '/admin/users/toggle-block') {
+        $adminUserController->toggleBlock($_POST);
+        return;
+    }
+
+    if ($method === 'POST' && $path === '/admin/users/delete') {
+        $adminUserController->delete($_POST);
         return;
     }
 

@@ -95,6 +95,10 @@ class MarketplaceController
             'title' => 'Administrator Dashboard',
             'listings' => $this->listings->getLatest(20),
             'user' => authUser(),
+            'adminSections' => [
+                ['title' => 'User Management', 'link' => '/admin/users', 'icon' => '👥'],
+                ['title' => 'Provider Verifications', 'link' => '/admin/verifications', 'icon' => '✅'],
+            ]
         ]);
     }
 }

@@ -288,6 +288,31 @@
 </section>
 <?php endif; ?>
 
+<?php if (normalizeRole((string) (($user['role'] ?? ''))) === 'administrator'): ?>
+<section class="card stack">
+    <h2>Management Modules</h2>
+    <p class="muted">Access restricted administrative tools to manage the marketplace.</p>
+    
+    <div class="grid" style="--grid-cols: 2;">
+        <?php foreach ($adminSections ?? [] as $section): ?>
+            <a href="<?= escape($section['link']); ?>" class="card border clickable-card" style="text-decoration: none; color: inherit; transition: transform 0.2s;">
+                <div style="font-size: 2rem; margin-bottom: 0.5rem;"><?= escape($section['icon']); ?></div>
+                <h3 style="margin: 0;"><?= escape($section['title']); ?></h3>
+                <p class="muted small">Quick access to <?= strtolower(escape($section['title'])); ?>.</p>
+            </a>
+        <?php endforeach; ?>
+    </div>
+</section>
+
+<style>
+    .clickable-card:hover {
+        transform: translateY(-4px);
+        border-color: #2c7ef2;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+</style>
+<?php endif; ?>
+
 <section class="grid">
     <?php if (empty($listings)): ?>
         <article class="card">

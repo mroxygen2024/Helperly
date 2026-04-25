@@ -34,6 +34,7 @@ $currentUser = authUser();
                 <a href="/?page=profiles">Profiles</a>
                 <a href="/?page=listings">Listings</a>
                 <?php if (normalizeRole((string) ($currentUser['role'] ?? '')) === 'administrator'): ?>
+                    <a href="/admin/users">Users</a>
                     <a href="/admin/verifications">Verifications</a>
                 <?php endif; ?>
                 <?php if (normalizeRole((string) ($currentUser['role'] ?? '')) === 'service_provider'): ?>
