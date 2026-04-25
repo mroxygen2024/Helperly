@@ -10,6 +10,11 @@
   --danger: #ef4444;
   --warning: #f59e0b;
   --info: #3b82f6;
+  --success-soft: #ecfdf5;
+  --danger-soft: #fef2f2;
+  --warning-soft: #fffbeb;
+  --info-soft: #eff6ff;
+  --secondary-soft: #f8fafc;
   
   --bg-main: #f8fafc;
   --bg-card: #ffffff;
