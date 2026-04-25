@@ -82,6 +82,7 @@ class MarketplaceController
             'jobs' => $this->jobs->getOpenJobs(),
             'activeJobs' => $this->jobs->getActiveJobsByProvider($providerId),
             'appliedJobIds' => $this->applications->getAppliedJobIdsByProvider($providerId),
+            'applicationsList' => $this->applications->getApplicationsByProvider($providerId),
             'user' => authUser(),
             'profile' => $profile,
         ]);

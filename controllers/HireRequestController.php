@@ -65,57 +65,57 @@ class HireRequestController
         redirect('/servants');
     }
 
-    public function showIncomingRequests(): void
+    public function index(): void
     {
-        requireRole(['service_provider', 'administrator']);
-
-        $servantId = (string) ($_SESSION['user_id'] ?? '');
-        if ($servantId === '') {
-            setFlash('error', 'User session is invalid. Please login again.');
+        $user = authUser();
+        if (!$user) {
             redirect('/login');
         }
 
-        if (!$this->servantProfiles->isApprovedByUserId($servantId)) {
-            setFlash('error', 'Only approved service providers can access hire requests.');
-            redirect('/profile/servant');
-        }
+        $userId = (string) ($_SESSION['user_id'] ?? '');
+        $role = normalizeRole((string) ($user['role'] ?? ''));
 
-        $requests = $this->hireRequests->getRequestsForServant($servantId);
-
-        $employerIds = [];
-        foreach ($requests as $request) {
-            $employerId = (string) ($request['employer_id'] ?? '');
-            if ($employerId !== '') {
-                $employerIds[] = $employerId;
-            }
-        }
-
-        $employersById = $this->users->findUsersByIds($employerIds);
-
-        $incomingRequests = [];
-        foreach ($requests as $request) {
-            $employerId = (string) ($request['employer_id'] ?? '');
-            $createdAt = $request['created_at'] ?? null;
-            $createdAtText = 'Unknown';
-
-            if ($createdAt instanceof UTCDateTime) {
-                $dateTime = $createdAt->toDateTime();
-                $dateTime->setTimezone(new DateTimeZone(date_default_timezone_get() ?: 'UTC'));
-                $createdAtText = $dateTime->format('Y-m-d H:i');
+        if ($role === 'service_provider') {
+            $requests = $this->hireRequests->getRequestsForServant($userId);
+            $otherPartyIds = array_unique(array_map(fn($r) => (string)$r['employer_id'], $requests));
+            $othersById = $this->users->findUsersByIds($otherPartyIds);
+            
+            $mappedRequests = [];
+            foreach ($requests as $request) {
+                $mappedRequests[] = [
+                    'request' => $request,
+                    'other' => $othersById[(string)$request['employer_id']] ?? [],
+                ];
             }
 
-            $incomingRequests[] = [
-                'request' => $request,
-                'employer' => $employersById[$employerId] ?? [],
-                'created_at_text' => $createdAtText,
-            ];
-        }
+            renderView('servants/requests', [
+                'title' => 'Incoming Invitations',
+                'csrfToken' => csrfToken(),
+                'requests' => $mappedRequests,
+                'role' => 'servant'
+            ]);
+        } elseif ($role === 'parent') {
+            $requests = $this->hireRequests->getRequestsByEmployer($userId);
+            $otherPartyIds = array_unique(array_map(fn($r) => (string)$r['servant_id'], $requests));
+            $othersById = $this->users->findUsersByIds($otherPartyIds);
 
-        renderView('servants/requests', [
-            'title' => 'Incoming Hire Requests',
-            'csrfToken' => csrfToken(),
-            'incomingRequests' => $incomingRequests,
-        ]);
+            $mappedRequests = [];
+            foreach ($requests as $request) {
+                $mappedRequests[] = [
+                    'request' => $request,
+                    'other' => $othersById[(string)$request['servant_id']] ?? [],
+                ];
+            }
+
+            renderView('servants/requests', [
+                'title' => 'Sent Invitations',
+                'csrfToken' => csrfToken(),
+                'requests' => $mappedRequests,
+                'role' => 'parent'
+            ]);
+        } else {
+            redirect('/?page=dashboard');
+        }
     }
 
     public function updateRequestStatus(array $payload): void

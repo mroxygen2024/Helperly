@@ -221,6 +221,32 @@
     </div>
 </section>
 
+<?php if (!empty($applicationsList)): ?>
+<section class="card stack">
+    <h2>Application Tracking</h2>
+    <p class="muted">Monitor the status of your recent job applications.</p>
+    <div class="stack gap-small">
+        <?php foreach ($applicationsList as $app): ?>
+            <?php 
+                $job = $app['job'] ?? []; 
+                $appStatus = (string)($app['status'] ?? 'pending');
+            ?>
+            <div class="card border" style="padding: 0.75rem 1rem;">
+                <div class="flex-between">
+                    <div>
+                        <h4 style="margin: 0;"><?= escape((string)($job['service_type'] ?? 'Untitled Job')); ?></h4>
+                        <p class="muted small" style="margin: 0;"><?= escape((string)($job['location'] ?? 'Unknown Location')); ?></p>
+                    </div>
+                    <span class="badge" style="background: <?= $appStatus === 'accepted' ? '#def7ec' : ($appStatus === 'rejected' ? '#fde8e8' : '#feecdc'); ?>; color: <?= $appStatus === 'accepted' ? '#03543f' : ($appStatus === 'rejected' ? '#981b1b' : '#9a3412'); ?>;">
+                        <?= ucfirst(escape($appStatus)); ?>
+                    </span>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+</section>
+<?php endif; ?>
+
 <?php if (!empty($activeJobs)): ?>
 <section class="card stack">
     <h2>Active Assignments</h2>

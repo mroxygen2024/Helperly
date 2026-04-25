@@ -157,4 +157,21 @@ class HireRequest
         $request = $this->collection->findOne(['_id' => new ObjectId($request_id)]);
         return $request ? (array) $request : null;
     }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function getRequestsByEmployer(string $employer_id): array
+    {
+        if (!$this->isValidObjectId($employer_id)) {
+            return [];
+        }
+
+        $cursor = $this->collection->find(
+            ['employer_id' => new ObjectId($employer_id)],
+            ['sort' => ['created_at' => -1]]
+        );
+
+        return iterator_to_array($cursor, false);
+    }
 }

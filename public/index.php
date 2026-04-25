@@ -304,7 +304,7 @@ try {
     }
 
     if ($method === 'GET' && $path === '/servant/requests') {
-        $hireRequestController->showIncomingRequests();
+        $hireRequestController->index();
         return;
     }
 
