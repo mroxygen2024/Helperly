@@ -56,11 +56,23 @@ class JobController
 
         $parentId = (string) ($_SESSION['user_id'] ?? '');
         $time = sanitizeInput($payload['time'] ?? null);
-        $duration = sanitizeInput($payload['duration'] ?? null);
-        $serviceType = sanitizeInput($payload['service_type'] ?? null);
-        $location = sanitizeInput($payload['location'] ?? null);
-        $instructions = sanitizeInput($payload['instructions'] ?? null);
+        $duration = sanitizeInput($payload['duration'] ?? '');
+        $serviceType = sanitizeInput($payload['service_type'] ?? '');
+        $location = sanitizeInput($payload['location'] ?? '');
+        $instructions = sanitizeInput($payload['instructions'] ?? '');
         $selectedProviderId = sanitizeInput($payload['selected_provider_id'] ?? null);
+        $hourlyRate = (float) ($payload['hourly_rate'] ?? 0);
+
+        // If direct booking, we pull the rate from the provider profile to be safe
+        if ($selectedProviderId) {
+            $profile = $this->servantProfiles->getProfileByUserId($selectedProviderId);
+            if ($profile && isset($profile['hourly_rate'])) {
+                $hourlyRate = (float) $profile['hourly_rate'];
+            }
+        }
+
+        $numericDuration = (float) filter_var($duration, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+        $totalCost = $hourlyRate * $numericDuration;
 
         $errors = [];
 
@@ -100,7 +112,9 @@ class JobController
                 $serviceType,
                 $location,
                 $instructions,
-                $selectedProviderId ?: null
+                $selectedProviderId ?: null,
+                $hourlyRate,
+                $totalCost
             );
 
             if ($created) {
@@ -204,13 +218,19 @@ class JobController
             $updated = $this->applications->updateApplicationStatus($jobId, $providerId, 'accepted');
 
             if ($updated) {
-                // Mark job as active and record the provider
-                $this->jobs->acceptProvider($jobId, $providerId);
+                // Fetch provider details to get their hourly rate
+                $profile = $this->servantProfiles->getProfileByUserId($providerId);
+                $hourlyRate = (float) ($profile['hourly_rate'] ?? 0);
+                $numericDuration = (float) filter_var($job['duration'] ?? '', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+                $totalCost = $hourlyRate * $numericDuration;
+
+                // Mark job as active and record the provider with the calculated cost
+                $this->jobs->acceptProvider($jobId, $providerId, $hourlyRate, $totalCost);
 
                 // Reject other applicants
                 $this->applications->rejectOtherApplicants($jobId, $providerId);
 
-                setFlash('success', 'Applicant accepted. The job is now active.');
+                setFlash('success', 'Applicant accepted. The job is now active at a total cost of ' . $totalCost);
             } else {
                 setFlash('error', 'Could not accept applicant. Please try again.');
             }

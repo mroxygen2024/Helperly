@@ -17,8 +17,13 @@
         </div>
 
         <div>
-            <label for="job_duration">Duration</label>
-            <input id="job_duration" name="duration" type="text" value="<?= escape(old('duration')); ?>" placeholder="e.g. 3 hours" required>
+            <label for="job_duration">Duration (Hours)</label>
+            <input id="job_duration" name="duration" type="number" step="0.5" value="<?= escape(old('duration')); ?>" placeholder="e.g. 3" required>
+        </div>
+
+        <div>
+            <label for="job_hourly_rate">Expected Hourly Rate</label>
+            <input id="job_hourly_rate" name="hourly_rate" type="number" step="1" value="<?= escape(old('hourly_rate')); ?>" placeholder="e.g. 500" required>
         </div>
 
         <div>
@@ -58,6 +63,11 @@
                             <p class="muted" style="margin: 0;">Status: <span class="badge"><?= escape((string) ($job['status'] ?? '')); ?></span></p>
                         </div>
                         <p class="muted"><?= escape(isset($job['time']) && $job['time'] instanceof \MongoDB\BSON\UTCDateTime ? $job['time']->toDateTime()->format('Y-m-d H:i') : 'N/A'); ?></p>
+                    </div>
+                    <div class="flex-row gap-medium" style="margin: 0.5rem 0;">
+                        <span class="small">Duration: <strong><?= escape((string) ($job['duration'] ?? '0')); ?> hrs</strong></span>
+                        <span class="small">Rate: <strong><?= escape((string) ($job['hourly_rate'] ?? '0')); ?>/hr</strong></span>
+                        <span class="small">Total: <strong style="color: #2c7ef2;"><?= escape((string) ($job['total_cost'] ?? '0')); ?></strong></span>
                     </div>
                     <p style="margin: 1rem 0;"><?= nl2br(escape((string) ($job['instructions'] ?? ''))); ?></p>
 
@@ -189,7 +199,8 @@
                     <p><?= nl2br(escape((string) ($job['instructions'] ?? ''))); ?></p>
                     <p class="muted">Location: <?= escape((string) ($job['location'] ?? 'Unknown')); ?></p>
                     <p><strong>Time:</strong> <?= escape(isset($job['time']) && $job['time'] instanceof \MongoDB\BSON\UTCDateTime ? $job['time']->toDateTime()->format('Y-m-d H:i') : 'N/A'); ?></p>
-                    <p><strong>Duration:</strong> <?= escape((string) ($job['duration'] ?? '')); ?></p>
+                    <p><strong>Duration:</strong> <?= escape((string) ($job['duration'] ?? '')); ?> hours</p>
+                    <p><strong>Budget:</strong> <?= escape((string) ($job['total_cost'] ?? '0')); ?> (at <?= escape((string) ($job['hourly_rate'] ?? '0')); ?>/hr)</p>
 
                     <form action="/jobs/apply" method="POST" class="inline-form">
                         <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">
