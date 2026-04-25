@@ -28,6 +28,15 @@ class PaymentController
         }
 
         try {
+            $jobModel = new Job();
+            $job = $jobModel->getJobById($jobId);
+            $parentId = (string) ($_SESSION['user_id'] ?? '');
+
+            if (!$job || (string) $job['parent_id'] !== $parentId) {
+                setFlash('error', 'Unauthorized access.');
+                redirect('/?page=dashboard');
+            }
+
             $updated = $this->payments->updateStatus($jobId, 'paid');
             if ($updated) {
                 setFlash('success', 'Payment processed successfully.');
