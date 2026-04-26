@@ -1,32 +1,52 @@
 <div id="stats" class="grid grid-cols-4 gap-8 mb-12">
-    <div class="card stat-card">
+    <a href="/admin/users" class="card stat-card stat-card-link" id="stat-total-users">
         <span class="material-symbols-outlined stat-icon">group</span>
         <p class="stat-label">Total Users</p>
         <p class="stat-value"><?= number_format($stats['total_users']); ?></p>
-    </div>
+        <span class="stat-link-hint">
+            <span class="material-symbols-outlined" style="font-size: 14px;">arrow_forward</span>
+            View All Users
+        </span>
+    </a>
     
-    <div class="card stat-card">
+    <a href="/admin/jobs?status=active" class="card stat-card stat-card-link" id="stat-active-jobs">
         <span class="material-symbols-outlined stat-icon" style="color: var(--info);">work</span>
         <p class="stat-label">Active Jobs</p>
         <p class="stat-value"><?= number_format($stats['total_jobs']); ?></p>
-    </div>
+        <span class="stat-link-hint">
+            <span class="material-symbols-outlined" style="font-size: 14px;">arrow_forward</span>
+            View Active Jobs
+        </span>
+    </a>
 
-    <div class="card stat-card">
+    <a href="/admin/providers" class="card stat-card stat-card-link" id="stat-total-providers">
         <span class="material-symbols-outlined stat-icon" style="color: var(--secondary);">badge</span>
         <p class="stat-label">Total Providers</p>
         <p class="stat-value"><?= $stats['total_providers']; ?></p>
-    </div>
+        <span class="stat-link-hint">
+            <span class="material-symbols-outlined" style="font-size: 14px;">arrow_forward</span>
+            View All Providers
+        </span>
+    </a>
 
-    <div class="card stat-card">
+    <a href="/admin/providers?verified=approved" class="card stat-card stat-card-link" id="stat-verified-providers">
         <span class="material-symbols-outlined stat-icon" style="color: var(--success);">verified</span>
         <p class="stat-label">Verified</p>
         <p class="stat-value"><?= $stats['verified_providers']; ?></p>
-    </div>
+        <span class="stat-link-hint">
+            <span class="material-symbols-outlined" style="font-size: 14px;">arrow_forward</span>
+            View Verified
+        </span>
+    </a>
 </div>
 
 <div class="card md:col-span-2">
     <div class="card-header">
         <h2 class="card-title">Recent Jobs</h2>
+        <a href="/admin/jobs" class="btn btn-outline btn-sm">
+            <span class="material-symbols-outlined" style="font-size: 16px;">list</span>
+            View All
+        </a>
     </div>
     
     <?php if (empty($recentJobs)): ?>
@@ -68,9 +88,9 @@
                                 <?= isset($job['created_at']) ? (is_string($job['created_at']) ? date('M d, Y', strtotime($job['created_at'])) : ($job['created_at'] instanceof \MongoDB\BSON\UTCDateTime ? $job['created_at']->toDateTime()->format('M d, Y') : 'N/A')) : 'N/A'; ?>
                             </td>
                             <td style="text-align: right;">
-                                <button type="button" class="btn btn-outline btn-sm" data-open-modal="job_modal_<?= escape((string)$job['_id']); ?>" title="View Details">
+                                <a href="/admin/jobs/detail?id=<?= escape((string)$job['_id']); ?>" class="btn btn-outline btn-sm" title="View Details">
                                     <span class="material-symbols-outlined" style="font-size: 16px;">visibility</span> Details
-                                </button>
+                                </a>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -81,116 +101,48 @@
 </div>
 </div>
 
-<?php if (!empty($recentJobs)): ?>
-    <?php foreach ($recentJobs as $job): ?>
-        <div id="job_modal_<?= escape((string)$job['_id']); ?>" class="modal-overlay" data-modal>
-            <div class="modal-content" style="max-width: 600px;">
-                <div class="modal-header" style="background: white; border-bottom: 2px solid var(--border-light);">
-                    <div class="flex items-center gap-4">
-                        <div class="user-avatar-rect" style="width: 48px; height: 48px; background: var(--grad-primary);">
-                            <span class="material-symbols-outlined" style="color: white;">work</span>
-                        </div>
-                        <div>
-                            <h2 class="card-title" style="margin: 0;"><?= escape($job['service_type'] ?? 'General Service'); ?> Job</h2>
-                            <p class="text-sm text-muted">ID: <?= escape((string)$job['_id']); ?></p>
-                        </div>
-                    </div>
-                    <button type="button" class="btn btn-outline btn-sm" data-close-modal="job_modal_<?= escape((string)$job['_id']); ?>" style="border:none; padding: 0.5rem; border-radius: 50%;">
-                        <span class="material-symbols-outlined">close</span>
-                    </button>
-                </div>
-                <div class="modal-body" style="background: #F8FAFC; padding: 2rem;">
-                    <div class="grid grid-cols-2 gap-4 text-sm mb-6">
-                        <div class="flex flex-col">
-                            <span class="text-xs text-muted font-600">Location</span>
-                            <span class="font-700"><?= escape($job['location'] ?? 'N/A'); ?></span>
-                        </div>
-                        <div class="flex flex-col">
-                            <span class="text-xs text-muted font-600">Time</span>
-                            <span class="font-700"><?= isset($job['time']) ? (is_string($job['time']) ? date('M d, Y h:i A', strtotime($job['time'])) : ($job['time'] instanceof \MongoDB\BSON\UTCDateTime ? $job['time']->toDateTime()->format('M d, Y h:i A') : 'N/A')) : 'N/A'; ?></span>
-                        </div>
-                        <div class="flex flex-col">
-                            <span class="text-xs text-muted font-600">Duration</span>
-                            <span class="font-700"><?= escape($job['duration'] ?? 'N/A'); ?></span>
-                        </div>
-                        <div class="flex flex-col">
-                            <span class="text-xs text-muted font-600">Status</span>
-                            <span class="font-700"><?= escape(ucfirst($job['status'] ?? 'Open')); ?></span>
-                        </div>
-                        <div class="flex flex-col">
-                            <span class="text-xs text-muted font-600">Hourly Rate</span>
-                            <span class="font-700"><?= number_format((float)($job['hourly_rate'] ?? 0), 2); ?> BDT</span>
-                        </div>
-                        <div class="flex flex-col">
-                            <span class="text-xs text-muted font-600">Total Cost</span>
-                            <span class="font-700"><?= number_format((float)($job['total_cost'] ?? 0), 2); ?> BDT</span>
-                        </div>
-                    </div>
-                    
-                    <div class="flex flex-col mb-4">
-                        <span class="text-xs text-muted font-600 mb-1">Instructions</span>
-                        <div class="p-3 bg-white border border-slate-200 rounded-lg text-sm text-slate-700" style="white-space: pre-wrap;">
-                            <?= escape($job['instructions'] ?? 'No instructions provided.'); ?>
-                        </div>
-                    </div>
-                    
-                    <?php if (isset($job['parent_id'])): ?>
-                    <div class="flex flex-col mb-4 bg-white p-3 rounded-lg border border-slate-100">
-                        <span class="text-xs text-muted font-600 mb-1">Parent (Entity) Details</span>
-                        <div class="flex items-center gap-3">
-                             <div class="user-avatar" style="width: 24px; height: 24px; font-size: 10px;"><?= mb_substr(escape($job['parent']['name'] ?? 'P'), 0, 1); ?></div>
-                             <div>
-                                 <p class="text-sm font-700 m-0"><?= escape($job['parent']['name'] ?? 'Unknown Parent'); ?></p>
-                                 <p class="text-xs text-muted m-0"><?= escape($job['parent']['email'] ?? 'N/A'); ?></p>
-                             </div>
-                        </div>
-                    </div>
-                    <?php endif; ?>
-                    
-                    <?php if (isset($job['selected_provider_id'])): ?>
-                    <div class="flex flex-col mb-0 bg-white p-3 rounded-lg border border-slate-100">
-                        <span class="text-xs text-muted font-600 mb-1">Selected Provider</span>
-                        <div class="flex items-center gap-3">
-                             <div class="user-avatar" style="width: 24px; height: 24px; font-size: 10px; background: var(--secondary);"><?= mb_substr(escape($job['provider']['name'] ?? 'S'), 0, 1); ?></div>
-                             <div>
-                                 <p class="text-sm font-700 m-0"><?= escape($job['provider']['name'] ?? 'Unknown Servant'); ?></p>
-                                 <p class="text-xs text-muted m-0"><?= escape($job['provider']['email'] ?? 'N/A'); ?></p>
-                             </div>
-                        </div>
-                    </div>
-                    <?php endif; ?>
-                </div>
-                <div class="modal-footer" style="padding: 1.5rem 2.5rem; background: white; border-top: 1px solid var(--border-base);">
-                    <button type="button" class="btn btn-outline w-full" data-close-modal="job_modal_<?= escape((string)$job['_id']); ?>">Close Details</button>
-                </div>
-            </div>
-        </div>
-    <?php endforeach; ?>
-<?php endif; ?>
+<style>
+.stat-card-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    position: relative;
+}
 
-<script>
-(() => {
-    const openButtons = document.querySelectorAll('[data-open-modal]');
-    const closeButtons = document.querySelectorAll('[data-close-modal]');
+.stat-card-link:hover {
+    border-color: var(--primary);
+    box-shadow: 0 12px 28px -8px rgba(79, 70, 229, 0.25);
+    transform: translateY(-6px);
+}
 
-    openButtons.forEach(btn => {
-        btn.onclick = () => {
-            const modal = document.getElementById(btn.dataset.openModal);
-            if (modal) modal.classList.add('open');
-        }
-    });
+.stat-card-link:hover .stat-icon {
+    transform: scale(1.15);
+    transition: transform 0.3s;
+}
 
-    closeButtons.forEach(btn => {
-        btn.onclick = () => {
-            const modal = document.getElementById(btn.dataset.closeModal);
-            if (modal) modal.classList.remove('open');
-        }
-    });
+.stat-card-link:hover .stat-value {
+    color: var(--primary);
+    transition: color 0.3s;
+}
 
-    window.onclick = (event) => {
-        if (event.target.classList.contains('modal-overlay')) {
-            event.target.classList.remove('open');
-        }
-    };
-})();
-</script>
+.stat-link-hint {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 1rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--primary);
+    opacity: 0;
+    transform: translateY(6px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stat-card-link:hover .stat-link-hint {
+    opacity: 1;
+    transform: translateY(0);
+}
+</style>

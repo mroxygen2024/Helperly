@@ -113,11 +113,48 @@ class AdminUserController
         redirect('/admin/users');
     }
 
+    public function showUserDetail(): void
+    {
+        requireRole('administrator');
+
+        $userId = sanitizeInput($_GET['id'] ?? '');
+        if (!$userId) {
+            setFlash('error', 'User ID is required.');
+            redirect('/admin/users');
+        }
+
+        $user = $this->users->findUserById($userId);
+        if (!$user) {
+            setFlash('error', 'User not found.');
+            redirect('/admin/users');
+        }
+
+        $userArray = (array)$user;
+        $role = normalizeRole((string)($user['role'] ?? ''));
+
+        if ($role === 'service_provider') {
+            $servantProfile = new ServantProfile();
+            $userArray['profile'] = $servantProfile->getProfileByUserId($userId);
+        } elseif ($role === 'parent') {
+            $employerProfile = new EmployerProfile();
+            $userArray['profile'] = $employerProfile->getProfileByUserId($userId);
+        }
+
+        renderView('admin/user_detail', [
+            'title' => 'User Details',
+            'user' => $userArray,
+            'csrfToken' => csrfToken(),
+            'currentUser' => authUser(),
+        ]);
+    }
+
     public function listProviders(): void
     {
         requireRole('administrator');
 
-        $users = $this->users->getAllUsers(200);
+        $verifiedFilter = sanitizeInput($_GET['verified'] ?? '');
+
+        $users = $this->users->getAllUsers(500);
         $providers = [];
         $servantProfile = new ServantProfile();
 
@@ -125,7 +162,16 @@ class AdminUserController
             $role = normalizeRole((string)($u['role'] ?? ''));
             if ($role === 'service_provider') {
                 $userArray = (array)$u;
-                $userArray['profile'] = $servantProfile->getProfileByUserId((string)$u['_id']);
+                $profile = $servantProfile->getProfileByUserId((string)$u['_id']);
+                $userArray['profile'] = $profile;
+
+                $vStatus = (string)($profile['verification_status'] ?? 'pending');
+                
+                // Apply verified filter if provided
+                if ($verifiedFilter !== '' && $vStatus !== $verifiedFilter) {
+                    continue;
+                }
+
                 $providers[] = $userArray;
             }
         }
@@ -133,7 +179,36 @@ class AdminUserController
         renderView('admin/providers', [
             'title' => 'Service Provider Management',
             'providers' => $providers,
+            'verifiedFilter' => $verifiedFilter,
             'csrfToken' => csrfToken(),
+        ]);
+    }
+
+    public function showProviderDetail(): void
+    {
+        requireRole('administrator');
+
+        $providerId = sanitizeInput($_GET['id'] ?? '');
+        if (!$providerId) {
+            setFlash('error', 'Provider ID is required.');
+            redirect('/admin/providers');
+        }
+
+        $user = $this->users->findUserById($providerId);
+        if (!$user || normalizeRole((string)($user['role'] ?? '')) !== 'service_provider') {
+            setFlash('error', 'Provider not found.');
+            redirect('/admin/providers');
+        }
+
+        $userArray = (array)$user;
+        $servantProfile = new ServantProfile();
+        $userArray['profile'] = $servantProfile->getProfileByUserId($providerId);
+
+        renderView('admin/provider_detail', [
+            'title' => 'Provider Details',
+            'provider' => $userArray,
+            'csrfToken' => csrfToken(),
+            'currentUser' => authUser(),
         ]);
     }
 }

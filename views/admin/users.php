@@ -1,55 +1,61 @@
-<div class="card">
-    <div class="card-header">
-        <h2 class="card-title">All Registered Users</h2>
-        <div class="text-sm text-muted">Total: <?= count($users); ?> users</div>
+<div class="flex justify-between items-center mb-8">
+    <div>
+        <h1 class="card-title" style="font-size: 2rem;">User Management</h1>
+        <p class="text-sm text-muted">Manage all registered users across the platform</p>
     </div>
+    <div class="badge badge-info"><?= count($users); ?> Total Users</div>
+</div>
 
+<div class="card p-0 overflow-hidden">
     <?php if (empty($users)): ?>
         <p class="text-muted text-center py-8">No users found in the database.</p>
     <?php else: ?>
-        <div class="table-container">
-            <table class="table">
-                <thead>
+        <div class="table-container" style="overflow-x: auto;">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-slate-50">
                     <tr>
-                        <th>User</th>
-                        <th>Role</th>
-                        <th>Status</th>
-                        <th>Created</th>
-                        <th style="text-align: right;">Actions</th>
+                        <th class="p-4 text-xs font-800 uppercase text-muted letter-spacing-lg border-b">User</th>
+                        <th class="p-4 text-xs font-800 uppercase text-muted letter-spacing-lg border-b">Phone</th>
+                        <th class="p-4 text-xs font-800 uppercase text-muted letter-spacing-lg border-b">Role</th>
+                        <th class="p-4 text-xs font-800 uppercase text-muted letter-spacing-lg border-b">Status</th>
+                        <th class="p-4 text-xs font-800 uppercase text-muted letter-spacing-lg border-b">Created</th>
+                        <th class="p-4 text-xs font-800 uppercase text-muted letter-spacing-lg border-b text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($users as $u): ?>
-                        <tr>
-                            <td>
+                        <tr class="hover:bg-slate-50 transition-colors border-b last:border-0">
+                            <td class="p-4">
                                 <div class="flex items-center gap-3">
-                                    <div class="user-avatar"><?= mb_substr(escape($u['name'] ?? '?'), 0, 1); ?></div>
+                                    <div class="user-avatar" style="width: 36px; height: 36px; border-radius: 10px; font-size: 13px;"><?= mb_substr(escape($u['name'] ?? '?'), 0, 1); ?></div>
                                     <div class="flex flex-col">
                                         <span class="font-600"><?= escape($u['name'] ?? 'N/A'); ?></span>
-                                        <span class="text-sm text-muted"><?= escape($u['email'] ?? 'N/A'); ?></span>
+                                        <span class="text-xs text-muted"><?= escape($u['email'] ?? 'N/A'); ?></span>
                                     </div>
                                 </div>
                             </td>
-                            <td>
-                                <span class="badge badge-secondary"><?= escape($u['role'] ?? 'N/A'); ?></span>
+                            <td class="p-4 text-sm"><?= escape($u['phone'] ?? 'N/A'); ?></td>
+                            <td class="p-4">
+                                <span class="badge badge-secondary"><?= escape(ucfirst($u['role'] ?? 'N/A')); ?></span>
                             </td>
-                            <td>
+                            <td class="p-4">
                                 <?php if ((bool)($u['is_blocked'] ?? false)): ?>
                                     <span class="badge badge-danger">Blocked</span>
                                 <?php else: ?>
                                     <span class="badge badge-success">Active</span>
                                 <?php endif; ?>
                             </td>
-                            <td class="text-muted text-sm">
+                            <td class="p-4 text-muted text-sm">
                                 <?= isset($u['created_at']) ? (is_string($u['created_at']) ? date('M d, Y', strtotime($u['created_at'])) : ($u['created_at'] instanceof \MongoDB\BSON\UTCDateTime ? $u['created_at']->toDateTime()->format('M d, Y') : 'N/A')) : 'N/A'; ?>
                             </td>
-                            <td>
+                            <td class="p-4">
                                 <div class="flex justify-end gap-2">
+                                    <a href="/admin/users/detail?id=<?= escape((string)$u['_id']); ?>" class="btn btn-outline btn-sm" title="View Details">
+                                        <span class="material-symbols-outlined" style="font-size: 16px;">visibility</span>
+                                        Details
+                                    </a>
                                     <?php if ((string)$u['_id'] !== (string)$currentUser['id']): ?>
-                                        <button type="button" class="btn btn-outline btn-sm" data-open-modal="user_modal_<?= escape((string)$u['_id']); ?>" title="View Details">
-                                            <span class="material-symbols-outlined" style="font-size: 16px;">visibility</span>
-                                        </button>
-                                        <form action="/admin/users/toggle-block" method="POST">
+                                        <form action="/admin/users/toggle-block" method="POST" style="display:inline;">
                                             <input type="hidden" name="csrf_token" value="<?= escape($csrfToken); ?>">
                                             <input type="hidden" name="user_id" value="<?= escape((string)$u['_id']); ?>">
                                             <input type="hidden" name="block" value="<?= (bool)($u['is_blocked'] ?? false) ? '0' : '1'; ?>">
@@ -57,10 +63,9 @@
                                                 <span class="material-symbols-outlined" style="font-size: 16px;">
                                                     <?= (bool)($u['is_blocked'] ?? false) ? 'lock_open' : 'block'; ?>
                                                 </span>
-                                                <?= (bool)($u['is_blocked'] ?? false) ? 'Unblock' : 'Block'; ?>
                                             </button>
                                         </form>
-                                        <form action="/admin/users/delete" method="POST" onsubmit="return confirm('Delete this user forever?');">
+                                        <form action="/admin/users/delete" method="POST" onsubmit="return confirm('Delete this user forever?');" style="display:inline;">
                                             <input type="hidden" name="csrf_token" value="<?= escape($csrfToken); ?>">
                                             <input type="hidden" name="user_id" value="<?= escape((string)$u['_id']); ?>">
                                             <button type="submit" class="btn btn-danger btn-sm">
@@ -68,7 +73,7 @@
                                             </button>
                                         </form>
                                     <?php else: ?>
-                                        <span class="text-sm text-muted">You</span>
+                                        <span class="text-sm text-muted" style="padding: 0.5rem;">You</span>
                                     <?php endif; ?>
                                 </div>
                             </td>
@@ -79,123 +84,3 @@
         </div>
     <?php endif; ?>
 </div>
-
-<?php foreach ($users as $u): ?>
-    <div id="user_modal_<?= escape((string)$u['_id']); ?>" class="modal-overlay" data-modal>
-        <div class="modal-content" style="max-width: 600px;">
-            <div class="modal-header" style="background: white; border-bottom: 2px solid var(--border-light);">
-                <div class="flex items-center gap-4">
-                    <div class="user-avatar-rect" style="width: 48px; height: 48px; background: var(--grad-primary);">
-                        <?= mb_substr(escape($u['name'] ?? 'U'), 0, 1); ?>
-                    </div>
-                    <div>
-                        <h2 class="card-title" style="margin: 0;">User Details</h2>
-                        <p class="text-sm text-muted">ID: <?= escape((string)$u['_id']); ?></p>
-                    </div>
-                </div>
-                <button type="button" class="btn btn-outline btn-sm" data-close-modal="user_modal_<?= escape((string)$u['_id']); ?>" style="border:none; padding: 0.5rem; border-radius: 50%;">
-                    <span class="material-symbols-outlined">close</span>
-                </button>
-            </div>
-            <div class="modal-body" style="background: #F8FAFC; padding: 2rem;">
-                <div class="grid grid-cols-2 gap-4 text-sm">
-                    <div class="flex flex-col">
-                        <span class="text-xs text-muted font-600">Name</span>
-                        <span class="font-700"><?= escape($u['name'] ?? 'N/A'); ?></span>
-                    </div>
-                    <div class="flex flex-col">
-                        <span class="text-xs text-muted font-600">Email</span>
-                        <span class="font-700"><?= escape($u['email'] ?? 'N/A'); ?></span>
-                    </div>
-                    <div class="flex flex-col">
-                        <span class="text-xs text-muted font-600">Role</span>
-                        <span class="font-700"><?= escape($u['role'] ?? 'N/A'); ?></span>
-                    </div>
-                    <div class="flex flex-col">
-                        <span class="text-xs text-muted font-600">Status</span>
-                        <span class="font-700"><?= (bool)($u['is_blocked'] ?? false) ? 'Blocked' : 'Active'; ?></span>
-                    </div>
-                    <div class="flex flex-col">
-                        <span class="text-xs text-muted font-600">Joined</span>
-                        <span class="font-700"><?= isset($u['created_at']) ? (is_string($u['created_at']) ? date('M d, Y h:i A', strtotime($u['created_at'])) : ($u['created_at'] instanceof \MongoDB\BSON\UTCDateTime ? $u['created_at']->toDateTime()->format('M d, Y h:i A') : 'N/A')) : 'N/A'; ?></span>
-                    </div>
-                </div>
-
-                <?php if (!empty($u['profile'])): ?>
-                <div class="mt-8 pt-6 border-t border-slate-200">
-                    <h3 class="text-xs font-800 uppercase letter-spacing-lg mb-4 text-primary">Full Profile Info</h3>
-                    <div class="grid grid-cols-2 gap-4 text-sm mb-6">
-                        <div class="flex flex-col">
-                            <span class="text-xs text-muted font-600">Location</span>
-                            <span class="font-700"><?= escape($u['profile']['location'] ?? 'N/A'); ?></span>
-                        </div>
-                        <?php if (normalizeRole((string)$u['role']) === 'service_provider'): ?>
-                        <div class="flex flex-col">
-                            <span class="text-xs text-muted font-600">Hourly Rate</span>
-                            <span class="font-700"><?= escape($u['profile']['hourly_rate'] ?? 'N/A'); ?> BDT</span>
-                        </div>
-                        <div class="flex flex-col col-span-2">
-                            <span class="text-xs text-muted font-600">Skills</span>
-                            <div class="flex flex-wrap gap-1 mt-1">
-                                <?php if (!empty($u['profile']['skills'])): ?>
-                                    <?php foreach ($u['profile']['skills'] as $skill): ?>
-                                        <span class="badge badge-secondary" style="font-size: 10px;"><?= escape($skill); ?></span>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                        <?php endif; ?>
-                    </div>
-                    <?php if (normalizeRole((string)$u['role']) === 'service_provider'): ?>
-                    <div class="flex flex-col gap-2">
-                        <p class="text-xs font-800 uppercase letter-spacing-lg text-muted">Identity Validation</p>
-                        <div class="flex gap-2">
-                            <?php if (!empty($u['profile']['selfie_url'])): ?>
-                                <img src="<?= escape($u['profile']['selfie_url']); ?>" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
-                            <?php endif; ?>
-                            <?php if (!empty($u['profile']['fayda_id_front_url'])): ?>
-                                <img src="<?= escape($u['profile']['fayda_id_front_url']); ?>" style="width: 120px; height: 80px; object-fit: cover; border-radius: 8px;">
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                    <?php endif; ?>
-                </div>
-                <?php else: ?>
-                <div class="mt-8 pt-6 border-t border-slate-200 text-center">
-                    <p class="text-sm text-muted italic">No detailed profile has been created yet.</p>
-                </div>
-                <?php endif; ?>
-            </div>
-            <div class="modal-footer" style="padding: 1.5rem 2.5rem; background: white; border-top: 1px solid var(--border-base);">
-                <button type="button" class="btn btn-outline w-full" data-close-modal="user_modal_<?= escape((string)$u['_id']); ?>">Close</button>
-            </div>
-        </div>
-    </div>
-<?php endforeach; ?>
-
-<script>
-(() => {
-    const openButtons = document.querySelectorAll('[data-open-modal]');
-    const closeButtons = document.querySelectorAll('[data-close-modal]');
-
-    openButtons.forEach(btn => {
-        btn.onclick = () => {
-            const modal = document.getElementById(btn.dataset.openModal);
-            if (modal) modal.classList.add('open');
-        }
-    });
-
-    closeButtons.forEach(btn => {
-        btn.onclick = () => {
-            const modal = document.getElementById(btn.dataset.closeModal);
-            if (modal) modal.classList.remove('open');
-        }
-    });
-
-    window.onclick = (event) => {
-        if (event.target.classList.contains('modal-overlay')) {
-            event.target.classList.remove('open');
-        }
-    };
-})();
-</script>
