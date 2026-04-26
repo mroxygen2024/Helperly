@@ -100,14 +100,28 @@ class MarketplaceController
             'total_providers' => $servantProfileModel->countTotalProviders(),
         ];
 
+        $recentJobs = $this->jobs->getAllJobs(20);
+        $enrichedJobs = [];
+        foreach ($recentJobs as $job) {
+            $jobArray = (array)$job;
+            if (isset($job['parent_id'])) {
+                $jobArray['parent'] = $userModel->findUserById((string)$job['parent_id']);
+            }
+            if (isset($job['selected_provider_id'])) {
+                $jobArray['provider'] = $userModel->findUserById((string)$job['selected_provider_id']);
+            }
+            $enrichedJobs[] = $jobArray;
+        }
+
         renderView('marketplace/dashboard_admin', [
             'title' => 'Admin Dashboard',
             'user' => authUser(),
             'stats' => $stats,
-            'recentJobs' => $this->jobs->getAllJobs(20),
+            'recentJobs' => $enrichedJobs,
             'adminSections' => [
                 ['title' => 'User Management', 'link' => '/admin/users', 'icon_name' => 'group'],
                 ['title' => 'Provider Verifications', 'link' => '/admin/verifications', 'icon_name' => 'verified_user'],
+                ['title' => 'All Jobs', 'link' => '/admin/jobs', 'icon_name' => 'work'],
             ]
         ]);
     }

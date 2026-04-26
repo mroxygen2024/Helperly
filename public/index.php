@@ -378,6 +378,37 @@ try {
         return;
     }
 
+    if ($method === 'GET' && $path === '/admin/jobs') {
+        $adminJobController = new class {
+            public function index() {
+                requireRole('administrator');
+                $jobModel = new Job();
+                $userModel = new User();
+                $jobs = $jobModel->getAllJobs(200);
+                $enriched = [];
+                foreach ($jobs as $j) {
+                    $item = (array)$j;
+                    $item['parent'] = $userModel->findUserById((string)$j['parent_id']);
+                    if (isset($j['selected_provider_id'])) {
+                        $item['provider'] = $userModel->findUserById((string)$j['selected_provider_id']);
+                    }
+                    $enriched[] = $item;
+                }
+                renderView('admin/jobs', [
+                    'title' => 'Job Management',
+                    'jobs' => $enriched
+                ]);
+            }
+        };
+        $adminJobController->index();
+        return;
+    }
+
+    if ($method === 'GET' && $path === '/admin/providers') {
+        $adminUserController->listProviders();
+        return;
+    }
+
     if ($method === 'POST' && $path === '/admin/users/delete') {
         $adminUserController->delete($_POST);
         return;

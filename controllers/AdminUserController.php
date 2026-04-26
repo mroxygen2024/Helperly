@@ -23,11 +23,28 @@ class AdminUserController
         requireRole('administrator');
 
         $users = $this->users->getAllUsers(100);
+        $enrichedUsers = [];
+        $servantProfile = new ServantProfile();
+        $employerProfile = new EmployerProfile();
+
+        foreach ($users as $u) {
+            $userArray = (array)$u;
+            $userId = (string)$u['_id'];
+            $role = normalizeRole((string)($u['role'] ?? ''));
+
+            if ($role === 'service_provider') {
+                $userArray['profile'] = $servantProfile->getProfileByUserId($userId);
+            } elseif ($role === 'parent') {
+                $userArray['profile'] = $employerProfile->getProfileByUserId($userId);
+            }
+
+            $enrichedUsers[] = $userArray;
+        }
 
         renderView('admin/users', [
             'title' => 'User Management',
             'csrfToken' => csrfToken(),
-            'users' => $users,
+            'users' => $enrichedUsers,
             'currentUser' => authUser(),
         ]);
     }
@@ -94,5 +111,29 @@ class AdminUserController
         }
 
         redirect('/admin/users');
+    }
+
+    public function listProviders(): void
+    {
+        requireRole('administrator');
+
+        $users = $this->users->getAllUsers(200);
+        $providers = [];
+        $servantProfile = new ServantProfile();
+
+        foreach ($users as $u) {
+            $role = normalizeRole((string)($u['role'] ?? ''));
+            if ($role === 'service_provider') {
+                $userArray = (array)$u;
+                $userArray['profile'] = $servantProfile->getProfileByUserId((string)$u['_id']);
+                $providers[] = $userArray;
+            }
+        }
+
+        renderView('admin/providers', [
+            'title' => 'Service Provider Management',
+            'providers' => $providers,
+            'csrfToken' => csrfToken(),
+        ]);
     }
 }

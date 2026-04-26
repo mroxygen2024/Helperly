@@ -120,6 +120,51 @@
                         <span class="font-700"><?= isset($u['created_at']) ? (is_string($u['created_at']) ? date('M d, Y h:i A', strtotime($u['created_at'])) : ($u['created_at'] instanceof \MongoDB\BSON\UTCDateTime ? $u['created_at']->toDateTime()->format('M d, Y h:i A') : 'N/A')) : 'N/A'; ?></span>
                     </div>
                 </div>
+
+                <?php if (!empty($u['profile'])): ?>
+                <div class="mt-8 pt-6 border-t border-slate-200">
+                    <h3 class="text-xs font-800 uppercase letter-spacing-lg mb-4 text-primary">Full Profile Info</h3>
+                    <div class="grid grid-cols-2 gap-4 text-sm mb-6">
+                        <div class="flex flex-col">
+                            <span class="text-xs text-muted font-600">Location</span>
+                            <span class="font-700"><?= escape($u['profile']['location'] ?? 'N/A'); ?></span>
+                        </div>
+                        <?php if (normalizeRole((string)$u['role']) === 'service_provider'): ?>
+                        <div class="flex flex-col">
+                            <span class="text-xs text-muted font-600">Hourly Rate</span>
+                            <span class="font-700"><?= escape($u['profile']['hourly_rate'] ?? 'N/A'); ?> BDT</span>
+                        </div>
+                        <div class="flex flex-col col-span-2">
+                            <span class="text-xs text-muted font-600">Skills</span>
+                            <div class="flex flex-wrap gap-1 mt-1">
+                                <?php if (!empty($u['profile']['skills'])): ?>
+                                    <?php foreach ($u['profile']['skills'] as $skill): ?>
+                                        <span class="badge badge-secondary" style="font-size: 10px;"><?= escape($skill); ?></span>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                    <?php if (normalizeRole((string)$u['role']) === 'service_provider'): ?>
+                    <div class="flex flex-col gap-2">
+                        <p class="text-xs font-800 uppercase letter-spacing-lg text-muted">Identity Validation</p>
+                        <div class="flex gap-2">
+                            <?php if (!empty($u['profile']['selfie_url'])): ?>
+                                <img src="<?= escape($u['profile']['selfie_url']); ?>" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <?php endif; ?>
+                            <?php if (!empty($u['profile']['fayda_id_front_url'])): ?>
+                                <img src="<?= escape($u['profile']['fayda_id_front_url']); ?>" style="width: 120px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+                </div>
+                <?php else: ?>
+                <div class="mt-8 pt-6 border-t border-slate-200 text-center">
+                    <p class="text-sm text-muted italic">No detailed profile has been created yet.</p>
+                </div>
+                <?php endif; ?>
             </div>
             <div class="modal-footer" style="padding: 1.5rem 2.5rem; background: white; border-top: 1px solid var(--border-base);">
                 <button type="button" class="btn btn-outline w-full" data-close-modal="user_modal_<?= escape((string)$u['_id']); ?>">Close</button>

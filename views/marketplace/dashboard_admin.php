@@ -135,16 +135,28 @@
                     </div>
                     
                     <?php if (isset($job['parent_id'])): ?>
-                    <div class="flex flex-col mb-4">
-                        <span class="text-xs text-muted font-600 mb-1">Parent Entity ID</span>
-                        <span class="font-700 text-sm"><?= escape((string)$job['parent_id']); ?></span>
+                    <div class="flex flex-col mb-4 bg-white p-3 rounded-lg border border-slate-100">
+                        <span class="text-xs text-muted font-600 mb-1">Parent (Entity) Details</span>
+                        <div class="flex items-center gap-3">
+                             <div class="user-avatar" style="width: 24px; height: 24px; font-size: 10px;"><?= mb_substr(escape($job['parent']['name'] ?? 'P'), 0, 1); ?></div>
+                             <div>
+                                 <p class="text-sm font-700 m-0"><?= escape($job['parent']['name'] ?? 'Unknown Parent'); ?></p>
+                                 <p class="text-xs text-muted m-0"><?= escape($job['parent']['email'] ?? 'N/A'); ?></p>
+                             </div>
+                        </div>
                     </div>
                     <?php endif; ?>
                     
                     <?php if (isset($job['selected_provider_id'])): ?>
-                    <div class="flex flex-col">
-                        <span class="text-xs text-muted font-600 mb-1">Selected Provider ID</span>
-                        <span class="font-700 text-sm"><?= escape((string)$job['selected_provider_id']); ?></span>
+                    <div class="flex flex-col mb-0 bg-white p-3 rounded-lg border border-slate-100">
+                        <span class="text-xs text-muted font-600 mb-1">Selected Provider</span>
+                        <div class="flex items-center gap-3">
+                             <div class="user-avatar" style="width: 24px; height: 24px; font-size: 10px; background: var(--secondary);"><?= mb_substr(escape($job['provider']['name'] ?? 'S'), 0, 1); ?></div>
+                             <div>
+                                 <p class="text-sm font-700 m-0"><?= escape($job['provider']['name'] ?? 'Unknown Servant'); ?></p>
+                                 <p class="text-xs text-muted m-0"><?= escape($job['provider']['email'] ?? 'N/A'); ?></p>
+                             </div>
+                        </div>
                     </div>
                     <?php endif; ?>
                 </div>
