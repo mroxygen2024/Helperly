@@ -104,6 +104,7 @@ class MarketplaceController
             'title' => 'Admin Dashboard',
             'user' => authUser(),
             'stats' => $stats,
+            'recentJobs' => $this->jobs->getAllJobs(20),
             'adminSections' => [
                 ['title' => 'User Management', 'link' => '/admin/users', 'icon_name' => 'group'],
                 ['title' => 'Provider Verifications', 'link' => '/admin/verifications', 'icon_name' => 'verified_user'],

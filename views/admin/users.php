@@ -46,6 +46,9 @@
                             <td>
                                 <div class="flex justify-end gap-2">
                                     <?php if ((string)$u['_id'] !== (string)$currentUser['id']): ?>
+                                        <button type="button" class="btn btn-outline btn-sm" data-open-modal="user_modal_<?= escape((string)$u['_id']); ?>" title="View Details">
+                                            <span class="material-symbols-outlined" style="font-size: 16px;">visibility</span>
+                                        </button>
                                         <form action="/admin/users/toggle-block" method="POST">
                                             <input type="hidden" name="csrf_token" value="<?= escape($csrfToken); ?>">
                                             <input type="hidden" name="user_id" value="<?= escape((string)$u['_id']); ?>">
@@ -76,3 +79,78 @@
         </div>
     <?php endif; ?>
 </div>
+
+<?php foreach ($users as $u): ?>
+    <div id="user_modal_<?= escape((string)$u['_id']); ?>" class="modal-overlay" data-modal>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header" style="background: white; border-bottom: 2px solid var(--border-light);">
+                <div class="flex items-center gap-4">
+                    <div class="user-avatar-rect" style="width: 48px; height: 48px; background: var(--grad-primary);">
+                        <?= mb_substr(escape($u['name'] ?? 'U'), 0, 1); ?>
+                    </div>
+                    <div>
+                        <h2 class="card-title" style="margin: 0;">User Details</h2>
+                        <p class="text-sm text-muted">ID: <?= escape((string)$u['_id']); ?></p>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-outline btn-sm" data-close-modal="user_modal_<?= escape((string)$u['_id']); ?>" style="border:none; padding: 0.5rem; border-radius: 50%;">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="modal-body" style="background: #F8FAFC; padding: 2rem;">
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div class="flex flex-col">
+                        <span class="text-xs text-muted font-600">Name</span>
+                        <span class="font-700"><?= escape($u['name'] ?? 'N/A'); ?></span>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-xs text-muted font-600">Email</span>
+                        <span class="font-700"><?= escape($u['email'] ?? 'N/A'); ?></span>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-xs text-muted font-600">Role</span>
+                        <span class="font-700"><?= escape($u['role'] ?? 'N/A'); ?></span>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-xs text-muted font-600">Status</span>
+                        <span class="font-700"><?= (bool)($u['is_blocked'] ?? false) ? 'Blocked' : 'Active'; ?></span>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-xs text-muted font-600">Joined</span>
+                        <span class="font-700"><?= isset($u['created_at']) ? (is_string($u['created_at']) ? date('M d, Y h:i A', strtotime($u['created_at'])) : ($u['created_at'] instanceof \MongoDB\BSON\UTCDateTime ? $u['created_at']->toDateTime()->format('M d, Y h:i A') : 'N/A')) : 'N/A'; ?></span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="padding: 1.5rem 2.5rem; background: white; border-top: 1px solid var(--border-base);">
+                <button type="button" class="btn btn-outline w-full" data-close-modal="user_modal_<?= escape((string)$u['_id']); ?>">Close</button>
+            </div>
+        </div>
+    </div>
+<?php endforeach; ?>
+
+<script>
+(() => {
+    const openButtons = document.querySelectorAll('[data-open-modal]');
+    const closeButtons = document.querySelectorAll('[data-close-modal]');
+
+    openButtons.forEach(btn => {
+        btn.onclick = () => {
+            const modal = document.getElementById(btn.dataset.openModal);
+            if (modal) modal.classList.add('open');
+        }
+    });
+
+    closeButtons.forEach(btn => {
+        btn.onclick = () => {
+            const modal = document.getElementById(btn.dataset.closeModal);
+            if (modal) modal.classList.remove('open');
+        }
+    });
+
+    window.onclick = (event) => {
+        if (event.target.classList.contains('modal-overlay')) {
+            event.target.classList.remove('open');
+        }
+    };
+})();
+</script>

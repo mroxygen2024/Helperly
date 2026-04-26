@@ -101,10 +101,17 @@
                                                                 <span class="material-symbols-outlined text-primary" style="font-size: 20px;">person</span>
                                                             </div>
                                                             <div>
-                                                                <p class="font-500 text-sm m-0">Provider ID: <?= escape(substr($applicant['provider_id'], 0, 8)); ?>...</p>
+                                                                <p class="font-600 text-sm m-0"><?= escape($applicant['user_data']['name'] ?? 'Provider'); ?></p>
+                                                                <div class="flex items-center gap-1 mt-0.5">
+                                                                    <span class="material-symbols-outlined text-warning" style="font-size: 14px;">star</span>
+                                                                    <span class="text-xs text-muted"><?= number_format((float)($applicant['profile_data']['rating'] ?? 0), 1); ?> (<?= (int)($applicant['profile_data']['rating_count'] ?? 0); ?> reviews)</span>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                         <div class="flex gap-2">
+                                                            <button type="button" class="btn btn-outline btn-sm" data-open-modal="applicant_modal_<?= escape((string)$applicant['_id']); ?>" title="View Profile">
+                                                                <span class="material-symbols-outlined" style="font-size: 16px;">visibility</span>
+                                                            </button>
                                                             <!-- Accept Form -->
                                                             <form action="/jobs/accept" method="POST" class="inline">
                                                                 <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">
@@ -153,9 +160,14 @@
                                     <span class="material-symbols-outlined text-muted" style="font-size: 18px;">history</span>
                                     <span><?= escape($job['service_type']); ?></span>
                                 </div>
-                                <span class="badge badge-<?= $job['status'] === 'completed' ? 'success' : ($job['status'] === 'active' ? 'warning' : 'info'); ?>">
-                                    <?= escape($job['status']); ?>
-                                </span>
+                                <div class="flex items-center gap-2">
+                                    <span class="badge badge-<?= $job['status'] === 'completed' ? 'success' : ($job['status'] === 'active' ? 'warning' : 'info'); ?>">
+                                        <?= escape($job['status']); ?>
+                                    </span>
+                                    <button type="button" class="btn btn-ghost btn-sm" data-open-modal="job_modal_<?= escape((string)$job['_id']); ?>" title="View Details">
+                                        <span class="material-symbols-outlined" style="font-size: 18px;">info</span>
+                                    </button>
+                                </div>
                             </div>
                         <?php endforeach; ?>
                     </div>
@@ -233,3 +245,172 @@
         </div>
     </div>
 </div>
+
+<!-- Job Details Modals -->
+<?php foreach ($jobs as $job): ?>
+    <div id="job_modal_<?= escape((string)$job['_id']); ?>" class="modal-overlay" data-modal>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <div class="flex items-center gap-4">
+                    <div class="user-avatar-rect" style="background: var(--grad-primary);">
+                        <span class="material-symbols-outlined" style="color: white;">work</span>
+                    </div>
+                    <div>
+                        <h2 class="card-title" style="margin: 0;"><?= escape($job['service_type']); ?> Details</h2>
+                        <span class="badge badge-<?= $job['status'] === 'completed' ? 'success' : ($job['status'] === 'active' ? 'warning' : 'info'); ?>"><?= escape(ucfirst($job['status'])); ?></span>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-outline btn-sm" data-close-modal="job_modal_<?= escape((string)$job['_id']); ?>" style="border:none; padding: 0.5rem; border-radius: 50%;">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="modal-body" style="background: #F8FAFC; padding: 2rem;">
+                <div class="grid grid-cols-2 gap-4 text-sm mb-6">
+                    <div class="flex flex-col">
+                        <span class="text-xs text-muted font-600">Location</span>
+                        <span class="font-700"><?= escape($job['location'] ?? 'N/A'); ?></span>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-xs text-muted font-600">Start Time</span>
+                        <span class="font-700"><?= isset($job['time']) ? (is_string($job['time']) ? date('M d, Y h:i A', strtotime($job['time'])) : ($job['time'] instanceof \MongoDB\BSON\UTCDateTime ? $job['time']->toDateTime()->format('M d, Y h:i A') : 'N/A')) : 'N/A'; ?></span>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-xs text-muted font-600">Duration</span>
+                        <span class="font-700"><?= escape($job['duration'] ?? 'N/A'); ?> Hours</span>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-xs text-muted font-600">Total Cost</span>
+                        <span class="font-700 text-primary"><?= number_format((float)($job['total_cost'] ?? 0), 2); ?> BDT</span>
+                    </div>
+                </div>
+                <div class="flex flex-col mb-4">
+                    <span class="text-xs text-muted font-600 mb-1">Instructions</span>
+                    <div class="p-3 bg-white border border-slate-200 rounded-lg text-sm text-slate-700" style="white-space: pre-wrap;"><?= escape($job['instructions'] ?? 'No special instructions.'); ?></div>
+                </div>
+                <?php if (isset($job['selected_provider'])): ?>
+                <div class="p-4 bg-white rounded-xl border border-slate-200 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                         <div class="user-avatar" style="width: 32px; height: 32px;"><?= mb_substr(escape($job['selected_provider']['name'] ?? 'P'), 0, 1); ?></div>
+                         <div>
+                             <p class="text-xs text-muted font-600">Assigned Provider</p>
+                             <p class="text-sm font-700"><?= escape($job['selected_provider']['name'] ?? 'N/A'); ?></p>
+                         </div>
+                    </div>
+                    <a href="/messages?job_id=<?= escape((string)$job['_id']); ?>" class="btn btn-outline btn-sm">Chat</a>
+                </div>
+                <?php endif; ?>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline w-full" data-close-modal="job_modal_<?= escape((string)$job['_id']); ?>">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Applicant Profile Modals -->
+    <?php if (!empty($job['applicants'])): ?>
+        <?php foreach ($job['applicants'] as $applicant): ?>
+            <div id="applicant_modal_<?= escape((string)$applicant['_id']); ?>" class="modal-overlay" data-modal>
+                <div class="modal-content" style="max-width: 600px;">
+                    <div class="modal-header">
+                        <div class="flex items-center gap-4">
+                            <div class="user-avatar-rect" style="width: 64px; height: 64px; background: var(--grad-primary);">
+                                <?php if (!empty($applicant['profile_data']['profile_photo'])): ?>
+                                    <img src="<?= escape($applicant['profile_data']['profile_photo']); ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                                <?php else: ?>
+                                    <?= mb_substr(escape($applicant['user_data']['name'] ?? 'P'), 0, 1); ?>
+                                <?php endif; ?>
+                            </div>
+                            <div>
+                                <h2 class="card-title" style="margin: 0;"><?= escape($applicant['user_data']['name'] ?? 'Provider'); ?></h2>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <span class="badge badge-success">Verified</span>
+                                    <div class="flex items-center gap-1 text-sm">
+                                        <span class="material-symbols-outlined text-warning" style="font-size: 16px;">star</span>
+                                        <span class="font-600"><?= number_format((float)($applicant['profile_data']['rating'] ?? 0), 1); ?></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-outline btn-sm" data-close-modal="applicant_modal_<?= escape((string)$applicant['_id']); ?>" style="border:none; padding: 0.5rem; border-radius: 50%;">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" style="background: #F8FAFC; padding: 2rem;">
+                        <div class="grid grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <span class="text-xs text-muted font-800 uppercase letter-spacing-lg mb-2 block">Skills</span>
+                                <div class="flex flex-wrap gap-2">
+                                    <?php if (!empty($applicant['profile_data']['skills'])): ?>
+                                        <?php foreach ($applicant['profile_data']['skills'] as $skill): ?>
+                                            <span class="badge badge-secondary"><?= escape($skill); ?></span>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <span class="text-sm text-muted italic">No skills listed</span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="text-xs text-muted font-800 uppercase letter-spacing-lg mb-2 block">Experience</span>
+                                <p class="text-sm font-600"><?= escape($applicant['profile_data']['experience'] ?? 'N/A'); ?></p>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-3 gap-4 text-xs bg-white p-4 rounded-xl border border-slate-200">
+                             <div class="flex flex-col">
+                                 <span class="text-muted font-600 mb-1">Hourly Rate</span>
+                                 <span class="font-700"><?= escape($applicant['profile_data']['hourly_rate'] ?? 'N/A'); ?> BDT</span>
+                             </div>
+                             <div class="flex flex-col">
+                                 <span class="text-muted font-600 mb-1">Location</span>
+                                 <span class="font-700"><?= escape($applicant['profile_data']['location'] ?? 'N/A'); ?></span>
+                             </div>
+                             <div class="flex flex-col">
+                                 <span class="text-muted font-600 mb-1">Availability</span>
+                                 <span class="font-700"><?= escape($applicant['profile_data']['availability'] ?? 'N/A'); ?></span>
+                             </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="padding: 1.5rem 2.5rem; background: white; border-top: 1px solid var(--border-base);">
+                        <button type="button" class="btn btn-outline" data-close-modal="applicant_modal_<?= escape((string)$applicant['_id']); ?>">Close</button>
+                        <form action="/jobs/accept" method="POST" class="inline">
+                            <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">
+                            <input type="hidden" name="job_id" value="<?= escape((string)$job['_id']); ?>">
+                            <input type="hidden" name="provider_id" value="<?= escape((string)$applicant['provider_id']); ?>">
+                            <button type="submit" class="btn btn-success" style="padding-inline: 2rem;">
+                                <span class="material-symbols-outlined">check</span> Accept Applicant
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    <?php endif; ?>
+<?php endforeach; ?>
+
+<script>
+(() => {
+    const openButtons = document.querySelectorAll('[data-open-modal]');
+    const closeButtons = document.querySelectorAll('[data-close-modal]');
+
+    openButtons.forEach(btn => {
+        btn.onclick = (e) => {
+            e.preventDefault();
+            const modal = document.getElementById(btn.dataset.openModal);
+            if (modal) modal.classList.add('open');
+        }
+    });
+
+    closeButtons.forEach(btn => {
+        btn.onclick = () => {
+            const modal = document.getElementById(btn.dataset.closeModal);
+            if (modal) modal.classList.remove('open');
+        }
+    });
+
+    window.onclick = (event) => {
+        if (event.target.classList.contains('modal-overlay')) {
+            event.target.classList.remove('open');
+        }
+    };
+})();
+</script>

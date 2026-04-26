@@ -130,7 +130,10 @@
                     </div>
 
                     <div class="flex gap-2">
-                        <a href="/job/book?provider_id=<?= escape((string) ($profile['user_id'] ?? '')); ?>" class="btn btn-primary btn-sm w-full">
+                        <button type="button" class="btn btn-outline btn-sm w-1/3" data-open-modal="profile_modal_<?= escape((string)$profile['user_id']); ?>">
+                           Preview
+                        </button>
+                        <a href="/job/book?provider_id=<?= escape((string) ($profile['user_id'] ?? '')); ?>" class="btn btn-primary btn-sm w-2/3">
                             <span class="material-symbols-outlined" style="font-size: 18px;">calendar_today</span>
                             Book Now
                         </a>
@@ -140,3 +143,112 @@
         <?php endforeach; ?>
     <?php endif; ?>
 </div>
+
+<!-- Servant Profile Modals -->
+<?php foreach ($servants as $servant): ?>
+    <?php $profile = $servant['profile'] ?? []; ?>
+    <?php $uid = (string)($profile['user_id'] ?? ''); ?>
+    <div id="profile_modal_<?= escape($uid); ?>" class="modal-overlay" data-modal>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <div class="flex items-center gap-4">
+                    <div class="user-avatar-rect" style="width: 64px; height: 64px; background: var(--grad-primary);">
+                        <?php if (!empty($profile['profile_photo'])): ?>
+                            <img src="<?= escape($profile['profile_photo']); ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                        <?php else: ?>
+                            <?= mb_substr(escape($servant['name'] ?? 'P'), 0, 1); ?>
+                        <?php endif; ?>
+                    </div>
+                    <div>
+                        <h2 class="card-title" style="margin: 0;"><?= escape($servant['name'] ?? 'Provider'); ?></h2>
+                        <div class="flex items-center gap-2 mt-1">
+                            <span class="badge badge-success">Verified</span>
+                            <?php if (isset($profile['rating']) && (float)$profile['rating'] > 0): ?>
+                            <div class="flex items-center gap-1 text-sm bg-warning-soft px-2 rounded">
+                                <span class="material-symbols-outlined text-warning" style="font-size: 16px;">star</span>
+                                <span class="font-600"><?= number_format((float)$profile['rating'], 1); ?></span>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-outline btn-sm" data-close-modal="profile_modal_<?= escape($uid); ?>" style="border:none; padding: 0.5rem; border-radius: 50%;">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="modal-body" style="background: #F8FAFC; padding: 2rem;">
+                <div class="grid grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <span class="text-xs text-muted font-800 uppercase letter-spacing-lg mb-2 block">All Skills</span>
+                        <div class="flex flex-wrap gap-2">
+                            <?php if (!empty($profile['skills'])): ?>
+                                <?php foreach ($profile['skills'] as $skill): ?>
+                                    <span class="badge badge-secondary"><?= escape($skill); ?></span>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <span class="text-sm text-muted italic">No skills listed</span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="text-xs text-muted font-800 uppercase letter-spacing-lg mb-2 block">Experience</span>
+                        <p class="text-sm font-600"><?= escape($profile['experience'] ?? 'N/A'); ?></p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-4 text-xs bg-white p-4 rounded-xl border border-slate-200 mb-6">
+                     <div class="flex flex-col">
+                         <span class="text-muted font-600 mb-1">Hourly Rate</span>
+                         <span class="font-700 text-sm"><?= escape($profile['hourly_rate'] ?? 'N/A'); ?> BDT</span>
+                     </div>
+                     <div class="flex flex-col">
+                         <span class="text-muted font-600 mb-1">Location</span>
+                         <span class="font-700 text-sm"><?= escape($profile['location'] ?? 'N/A'); ?></span>
+                     </div>
+                     <div class="flex flex-col">
+                         <span class="text-muted font-600 mb-1">Availability</span>
+                         <span class="font-700 text-sm"><?= escape($profile['availability'] ?? 'N/A'); ?></span>
+                     </div>
+                </div>
+
+                <div class="p-4 bg-primary-soft rounded-xl text-sm italic">
+                    "<?= escape($servant['name'] ?? 'This provider'); ?> is one of our top-rated specialists in <?= escape($profile['location'] ?? 'your area'); ?>."
+                </div>
+            </div>
+            <div class="modal-footer" style="padding: 1.5rem 2.5rem; background: white; border-top: 1px solid var(--border-base);">
+                <button type="button" class="btn btn-outline" data-close-modal="profile_modal_<?= escape($uid); ?>">Close</button>
+                <a href="/job/book?provider_id=<?= escape($uid); ?>" class="btn btn-primary" style="padding-inline: 2rem;">
+                    <span class="material-symbols-outlined">calendar_today</span> Book Now
+                </a>
+            </div>
+        </div>
+    </div>
+<?php endforeach; ?>
+
+<script>
+(() => {
+    const openButtons = document.querySelectorAll('[data-open-modal]');
+    const closeButtons = document.querySelectorAll('[data-close-modal]');
+
+    openButtons.forEach(btn => {
+        btn.onclick = (e) => {
+            e.preventDefault();
+            const modal = document.getElementById(btn.dataset.openModal);
+            if (modal) modal.classList.add('open');
+        }
+    });
+
+    closeButtons.forEach(btn => {
+        btn.onclick = () => {
+            const modal = document.getElementById(btn.dataset.closeModal);
+            if (modal) modal.classList.remove('open');
+        }
+    });
+
+    window.onclick = (event) => {
+        if (event.target.classList.contains('modal-overlay')) {
+            event.target.classList.remove('open');
+        }
+    };
+})();
+</script>

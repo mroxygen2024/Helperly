@@ -233,6 +233,16 @@ class Job
         return iterator_to_array($cursor, false);
     }
 
+    public function getAllJobs(int $limit = 50): array
+    {
+        $cursor = $this->collection->find(
+            [],
+            ['sort' => ['created_at' => -1], 'limit' => $limit]
+        );
+
+        return iterator_to_array($cursor, false);
+    }
+
     public function countJobs(): int
     {
         return $this->collection->countDocuments();

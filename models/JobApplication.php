@@ -106,11 +106,23 @@ class JobApplication
                     'from' => 'users',
                     'localField' => 'provider_id',
                     'foreignField' => '_id',
-                    'as' => 'provider'
+                    'as' => 'user_data'
                 ]
             ],
             ['$unwind' => [
-                'path' => '$provider',
+                'path' => '$user_data',
+                'preserveNullAndEmptyArrays' => true
+            ]],
+            [
+                '$lookup' => [
+                    'from' => 'servant_profiles',
+                    'localField' => 'provider_id',
+                    'foreignField' => 'user_id',
+                    'as' => 'profile_data'
+                ]
+            ],
+            ['$unwind' => [
+                'path' => '$profile_data',
                 'preserveNullAndEmptyArrays' => true
             ]],
             ['$sort' => ['created_at' => -1]]
