@@ -138,7 +138,7 @@ try {
                 $user = authUser();
 
                 if (!$user) {
-                    redirect('/?page=login');
+                    redirect('/login');
                 }
 
                 $role = normalizeRole((string) ($user['role'] ?? ''));
@@ -165,7 +165,7 @@ try {
                 $user = authUser();
 
                 if (!$user) {
-                    redirect('/?page=login');
+                    redirect('/login');
                 }
 
                 $role = normalizeRole((string) ($user['role'] ?? ''));

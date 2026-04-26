@@ -30,13 +30,13 @@ class MessageController
         $jobId = sanitizeInput($query['job_id'] ?? '');
         if (!$jobId) {
             setFlash('error', 'No job specified for chat.');
-            redirect('/?page=dashboard');
+            redirect('/dashboard');
         }
 
         $job = $this->jobs->getJobById($jobId);
         if (!$job) {
             setFlash('error', 'Job not found.');
-            redirect('/?page=dashboard');
+            redirect('/dashboard');
         }
 
         $parentId = (string) ($job['parent_id'] ?? '');
@@ -44,13 +44,13 @@ class MessageController
 
         if ($userId !== $parentId && $userId !== $providerId) {
             setFlash('error', 'You are not authorized to view this chat. Chat is only available for active/booked jobs between the parent and provider.');
-            redirect('/?page=dashboard');
+            redirect('/dashboard');
         }
 
         $otherPartyId = ($userId === $parentId) ? $providerId : $parentId;
         if (!$otherPartyId) {
             setFlash('error', 'A provider has not been selected for this job yet.');
-            redirect('/?page=dashboard');
+            redirect('/dashboard');
         }
 
         $otherParty = $this->users->findUserById($otherPartyId);
@@ -72,7 +72,7 @@ class MessageController
         requireAuth();
         if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
             setFlash('error', 'Invalid request token.');
-            redirect('/?page=dashboard');
+            redirect('/dashboard');
         }
 
         $userId = (string) ($_SESSION['user_id'] ?? '');
@@ -87,7 +87,7 @@ class MessageController
         $job = $this->jobs->getJobById($jobId);
         if (!$job) {
             setFlash('error', 'Job not found.');
-            redirect('/?page=dashboard');
+            redirect('/dashboard');
         }
 
         $parentId = (string) ($job['parent_id'] ?? '');
@@ -95,13 +95,13 @@ class MessageController
 
         if ($userId !== $parentId && $userId !== $providerId) {
             setFlash('error', 'You are not authorized to send messages for this job.');
-            redirect('/?page=dashboard');
+            redirect('/dashboard');
         }
 
         $receiverId = ($userId === $parentId) ? $providerId : $parentId;
         if (!$receiverId) {
             setFlash('error', 'A provider has not been selected for this job yet.');
-            redirect('/?page=dashboard');
+            redirect('/dashboard');
         }
         
         try {

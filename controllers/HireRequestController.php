@@ -114,7 +114,7 @@ class HireRequestController
                 'role' => 'parent'
             ]);
         } else {
-            redirect('/?page=dashboard');
+            redirect('/dashboard');
         }
     }
 

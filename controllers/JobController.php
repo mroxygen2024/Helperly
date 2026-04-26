@@ -51,7 +51,7 @@ class JobController
 
         if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
             setFlash('error', 'Invalid request token. Please try again.');
-            redirect('/?page=dashboard');
+            redirect('/dashboard');
         }
 
         $parentId = (string) ($_SESSION['user_id'] ?? '');
@@ -106,7 +106,7 @@ class JobController
                 'hourly_rate' => $hourlyRate
             ]);
             setFlash('error', implode(' ', $errors));
-            redirect('/?page=dashboard');
+            redirect('/dashboard');
         }
 
         try {
@@ -142,7 +142,7 @@ class JobController
             setFlash('error', 'Could not create job right now. Please try again.');
         }
 
-        redirect('/?page=dashboard');
+        redirect('/dashboard');
     }
 
     public function apply(array $payload): void
@@ -151,7 +151,7 @@ class JobController
 
         if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
             setFlash('error', 'Invalid request token. Please try again.');
-            redirect('/?page=dashboard');
+            redirect('/dashboard');
         }
 
         $providerId = (string) ($_SESSION['user_id'] ?? '');
@@ -159,18 +159,18 @@ class JobController
 
         if ($providerId === '' || $jobId === '') {
             setFlash('error', 'Missing job application data.');
-            redirect('/?page=dashboard');
+            redirect('/dashboard');
         }
 
         if (!$this->servantProfiles->isApprovedByUserId($providerId)) {
             setFlash('error', 'Only verified service providers can apply to jobs.');
-            redirect('/?page=dashboard');
+            redirect('/dashboard');
         }
 
         $job = $this->jobs->getJobById($jobId);
         if (!$job || (string) ($job['status'] ?? '') !== 'open') {
             setFlash('error', 'Selected job is not available.');
-            redirect('/?page=dashboard');
+            redirect('/dashboard');
         }
 
         try {
@@ -187,7 +187,7 @@ class JobController
             setFlash('error', 'Could not submit application right now. Please try again.');
         }
 
-        redirect('/?page=dashboard');
+        redirect('/dashboard');
     }
 
     public function accept(array $payload): void
@@ -196,7 +196,7 @@ class JobController
 
         if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
             setFlash('error', 'Invalid request token.');
-            redirect('/?page=dashboard');
+            redirect('/dashboard');
         }
 
         $jobId = sanitizeInput($payload['job_id'] ?? null);
@@ -205,18 +205,18 @@ class JobController
 
         if (!$jobId || !$providerId) {
             setFlash('error', 'Missing required data.');
-            redirect('/?page=dashboard');
+            redirect('/dashboard');
         }
 
         $job = $this->jobs->getJobById($jobId);
         if (!$job || (string) $job['parent_id'] !== $parentId) {
             setFlash('error', 'You are not authorized to accept applicants for this job.');
-            redirect('/?page=dashboard');
+            redirect('/dashboard');
         }
 
         if ((string) $job['status'] !== 'open') {
             setFlash('error', 'This job is no longer open.');
-            redirect('/?page=dashboard');
+            redirect('/dashboard');
         }
 
         try {
@@ -244,7 +244,7 @@ class JobController
             setFlash('error', 'An error occurred while accepting the applicant.');
         }
 
-        redirect('/?page=dashboard');
+        redirect('/dashboard');
     }
 
     public function reject(array $payload): void
@@ -253,7 +253,7 @@ class JobController
 
         if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
             setFlash('error', 'Invalid request token.');
-            redirect('/?page=dashboard');
+            redirect('/dashboard');
         }
 
         $jobId = sanitizeInput($payload['job_id'] ?? null);
@@ -262,13 +262,13 @@ class JobController
 
         if (!$jobId || !$providerId) {
             setFlash('error', 'Missing required data.');
-            redirect('/?page=dashboard');
+            redirect('/dashboard');
         }
 
         $job = $this->jobs->getJobById($jobId);
         if (!$job || (string) $job['parent_id'] !== $parentId) {
             setFlash('error', 'You are not authorized to reject applicants for this job.');
-            redirect('/?page=dashboard');
+            redirect('/dashboard');
         }
 
         try {
@@ -283,19 +283,19 @@ class JobController
             setFlash('error', 'An error occurred while rejecting the applicant.');
         }
 
-        redirect('/?page=dashboard');
+        redirect('/dashboard');
     }
 
     public function confirm(array $payload): void
     {
         $user = authUser();
         if (!$user) {
-            redirect('/?page=login');
+            redirect('/login');
         }
 
         if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
             setFlash('error', 'Invalid request token.');
-            redirect('/?page=dashboard');
+            redirect('/dashboard');
         }
 
         $jobId = sanitizeInput($payload['job_id'] ?? null);
@@ -304,13 +304,13 @@ class JobController
 
         if (!$jobId) {
             setFlash('error', 'Missing job ID.');
-            redirect('/?page=dashboard');
+            redirect('/dashboard');
         }
 
         $job = $this->jobs->getJobById($jobId);
         if (!$job || (string) ($job['status'] ?? '') !== 'active') {
             setFlash('error', 'This job is not in a state that can be confirmed.');
-            redirect('/?page=dashboard');
+            redirect('/dashboard');
         }
 
         try {
@@ -325,6 +325,6 @@ class JobController
             setFlash('error', 'An error occurred during confirmation.');
         }
 
-        redirect('/?page=dashboard');
+        redirect('/dashboard');
     }
 }

@@ -17,14 +17,14 @@ class PaymentController
 
         if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
             setFlash('error', 'Invalid request token.');
-            redirect('/?page=dashboard');
+            redirect('/dashboard');
         }
 
         $jobId = sanitizeInput($payload['job_id'] ?? '');
 
         if (!$jobId) {
             setFlash('error', 'Missing job ID for payment.');
-            redirect('/?page=dashboard');
+            redirect('/dashboard');
         }
 
         try {
@@ -34,7 +34,7 @@ class PaymentController
 
             if (!$job || (string) $job['parent_id'] !== $parentId) {
                 setFlash('error', 'Unauthorized access.');
-                redirect('/?page=dashboard');
+                redirect('/dashboard');
             }
 
             $updated = $this->payments->updateStatus($jobId, 'paid');

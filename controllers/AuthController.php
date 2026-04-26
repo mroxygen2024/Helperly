@@ -299,18 +299,8 @@ class AuthController
 
         clearOldInput();
 
+        // The dashboard route acts as a central hub and routes to the correct dashboard based on role
         $redirectPath = '/dashboard';
-        if ($userRole === 'parent') {
-            $redirectPath = '/parent/dashboard';
-        }
-
-        if ($userRole === 'service_provider') {
-            $redirectPath = '/service-provider/dashboard';
-        }
-
-        if ($userRole === 'administrator') {
-            $redirectPath = '/admin/dashboard';
-        }
 
         setFlash('success', 'Welcome back, ' . $_SESSION['auth_user']['name'] . '.');
         redirect($redirectPath);

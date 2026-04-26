@@ -26,7 +26,7 @@ class ReviewController
 
         if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
             setFlash('error', 'Invalid request token.');
-            redirect('/?page=dashboard');
+            redirect('/dashboard');
         }
 
         $jobId = sanitizeInput($payload['job_id'] ?? null);
@@ -36,18 +36,18 @@ class ReviewController
 
         if (!$jobId || $rating < 1 || $rating > 5) {
             setFlash('error', 'Please provide a valid rating between 1 and 5.');
-            redirect('/?page=dashboard');
+            redirect('/dashboard');
         }
 
         $job = $this->jobs->getJobById($jobId);
         if (!$job || (string) $job['parent_id'] !== $parentId) {
             setFlash('error', 'Unauthorized access.');
-            redirect('/?page=dashboard');
+            redirect('/dashboard');
         }
 
         if ((string) ($job['status'] ?? '') !== 'completed') {
             setFlash('error', 'Reviews can only be submitted for completed jobs.');
-            redirect('/?page=dashboard');
+            redirect('/dashboard');
         }
 
         $providerId = (string) ($job['selected_provider_id'] ?? '');
