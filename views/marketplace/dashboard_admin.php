@@ -1,42 +1,26 @@
-<div id="stats" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-    <div class="card stat-card border-none shadow-sm bg-white">
-        <p class="stat-label">Total Platform Users</p>
-        <div class="flex items-center gap-3 mt-2">
-            <div class="p-2 bg-primary-soft text-primary rounded-lg">
-                <span class="material-symbols-outlined">group</span>
-            </div>
-            <p class="stat-value"><?= number_format($stats['total_users']); ?></p>
-        </div>
+<div id="stats" class="grid grid-cols-4 gap-8 mb-12">
+    <div class="card stat-card">
+        <span class="material-symbols-outlined stat-icon">group</span>
+        <p class="stat-label">Total Users</p>
+        <p class="stat-value"><?= number_format($stats['total_users']); ?></p>
     </div>
     
-    <div class="card stat-card border-none shadow-sm bg-white">
-        <p class="stat-label">Active Job Postings</p>
-        <div class="flex items-center gap-3 mt-2">
-            <div class="p-2 bg-info-soft text-info rounded-lg">
-                <span class="material-symbols-outlined">work</span>
-            </div>
-            <p class="stat-value"><?= number_format($stats['total_jobs']); ?></p>
-        </div>
+    <div class="card stat-card">
+        <span class="material-symbols-outlined stat-icon" style="color: var(--info);">work</span>
+        <p class="stat-label">Active Jobs</p>
+        <p class="stat-value"><?= number_format($stats['total_jobs']); ?></p>
     </div>
 
-    <div class="card stat-card border-none shadow-sm bg-white">
+    <div class="card stat-card">
+        <span class="material-symbols-outlined stat-icon" style="color: var(--secondary);">badge</span>
         <p class="stat-label">Total Providers</p>
-        <div class="flex items-center gap-3 mt-2">
-            <div class="p-2 bg-secondary-soft text-secondary rounded-lg">
-                <span class="material-symbols-outlined">badge</span>
-            </div>
-            <p class="stat-value"><?= $stats['total_providers']; ?></p>
-        </div>
+        <p class="stat-value"><?= $stats['total_providers']; ?></p>
     </div>
 
-    <div class="card stat-card border-none shadow-sm bg-white">
-        <p class="stat-label">Verified Providers</p>
-        <div class="flex items-center gap-3 mt-2">
-            <div class="p-2 bg-success-soft text-success rounded-lg">
-                <span class="material-symbols-outlined">verified</span>
-            </div>
-            <p class="stat-value"><?= $stats['verified_providers']; ?></p>
-        </div>
+    <div class="card stat-card">
+        <span class="material-symbols-outlined stat-icon" style="color: var(--success);">verified</span>
+        <p class="stat-label">Verified</p>
+        <p class="stat-value"><?= $stats['verified_providers']; ?></p>
     </div>
 </div>
 

@@ -58,52 +58,86 @@
     <?php $profile = $provider['profile'] ?? []; ?>
     <?php $uid = (string) ($profile['user_id'] ?? ''); ?>
     <div id="verification_modal_<?= escape($uid); ?>" class="modal-overlay" data-modal>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="card-title">Verification: <?= escape((string)($provider['name'] ?? 'Provider')); ?></h2>
-                <button type="button" class="btn btn-outline btn-sm" data-close-modal="verification_modal_<?= escape($uid); ?>" style="border:none; padding: 0.25rem;">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header" style="background: white; border-bottom: 2px solid var(--border-light);">
+                <div class="flex items-center gap-4">
+                    <div class="user-avatar-rect" style="width: 48px; height: 48px; background: var(--grad-primary);">
+                        <?= mb_substr(escape($provider['name'] ?? 'P'), 0, 1); ?>
+                    </div>
+                    <div>
+                        <h2 class="card-title" style="margin: 0;"><?= escape((string)($provider['name'] ?? 'Provider')); ?></h2>
+                        <p class="text-sm text-muted">Awaiting Identity Verification</p>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-outline btn-sm" data-close-modal="verification_modal_<?= escape($uid); ?>" style="border:none; padding: 0.5rem; border-radius: 50%;">
                     <span class="material-symbols-outlined">close</span>
                 </button>
             </div>
-            <div class="modal-body">
-                <div class="grid grid-cols-3 gap-4 mb-6">
-                    <div>
-                        <p class="label mb-2">ID Front</p>
-                        <?php if (!empty($profile['fayda_id_front_url'])): ?>
-                            <a href="<?= escape($profile['fayda_id_front_url']); ?>" target="_blank">
-                                <img src="<?= escape($profile['fayda_id_front_url']); ?>" class="w-full rounded-lg border">
-                            </a>
-                        <?php else: ?>
-                            <div class="bg-gray-100 rounded-lg py-12 text-center text-muted">No Image</div>
-                        <?php endif; ?>
+            <div class="modal-body" style="background: #F8FAFC; padding: 2rem;">
+                <div class="grid grid-cols-3 gap-6 mb-8">
+                    <div class="flex flex-col gap-2">
+                        <p class="text-xs font-800 uppercase letter-spacing-lg text-muted">ID Front</p>
+                        <div class="identity-card-preview" style="aspect-ratio: 3/2; overflow: hidden; border-radius: 12px; border: 2px solid white; box-shadow: var(--shadow-md);">
+                            <?php if (!empty($profile['fayda_id_front_url'])): ?>
+                                <a href="<?= escape($profile['fayda_id_front_url']); ?>" target="_blank">
+                                    <img src="<?= escape($profile['fayda_id_front_url']); ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                                </a>
+                            <?php else: ?>
+                                <div class="flex flex-col items-center justify-center h-full bg-slate-100 text-muted">
+                                    <span class="material-symbols-outlined">image_not_supported</span>
+                                </div>
+                            <?php endif; ?>
+                        </div>
                     </div>
-                    <div>
-                        <p class="label mb-2">ID Back</p>
-                        <?php if (!empty($profile['fayda_id_back_url'])): ?>
-                            <a href="<?= escape($profile['fayda_id_back_url']); ?>" target="_blank">
-                                <img src="<?= escape($profile['fayda_id_back_url']); ?>" class="w-full rounded-lg border">
-                            </a>
-                        <?php else: ?>
-                            <div class="bg-gray-100 rounded-lg py-12 text-center text-muted">No Image</div>
-                        <?php endif; ?>
+                    <div class="flex flex-col gap-2">
+                        <p class="text-xs font-800 uppercase letter-spacing-lg text-muted">ID Back</p>
+                        <div class="identity-card-preview" style="aspect-ratio: 3/2; overflow: hidden; border-radius: 12px; border: 2px solid white; box-shadow: var(--shadow-md);">
+                            <?php if (!empty($profile['fayda_id_back_url'])): ?>
+                                <a href="<?= escape($profile['fayda_id_back_url']); ?>" target="_blank">
+                                    <img src="<?= escape($profile['fayda_id_back_url']); ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                                </a>
+                            <?php else: ?>
+                                <div class="flex flex-col items-center justify-center h-full bg-slate-100 text-muted">
+                                    <span class="material-symbols-outlined">image_not_supported</span>
+                                </div>
+                            <?php endif; ?>
+                        </div>
                     </div>
-                    <div>
-                        <p class="label mb-2">Selfie</p>
-                        <?php if (!empty($profile['selfie_url'])): ?>
-                            <a href="<?= escape($profile['selfie_url']); ?>" target="_blank">
-                                <img src="<?= escape($profile['selfie_url']); ?>" class="w-full rounded-lg border">
-                            </a>
-                        <?php else: ?>
-                            <div class="bg-gray-100 rounded-lg py-12 text-center text-muted">No Image</div>
-                        <?php endif; ?>
+                    <div class="flex flex-col gap-2">
+                        <p class="text-xs font-800 uppercase letter-spacing-lg text-muted">Live Selfie</p>
+                        <div class="identity-card-preview" style="aspect-ratio: 3/2; overflow: hidden; border-radius: 12px; border: 2px solid white; box-shadow: var(--shadow-md);">
+                            <?php if (!empty($profile['selfie_url'])): ?>
+                                <a href="<?= escape($profile['selfie_url']); ?>" target="_blank">
+                                    <img src="<?= escape($profile['selfie_url']); ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                                </a>
+                            <?php else: ?>
+                                <div class="flex flex-col items-center justify-center h-full bg-slate-100 text-muted">
+                                    <span class="material-symbols-outlined">no_photography</span>
+                                </div>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </div>
 
-                <div class="p-4 bg-primary-soft rounded-lg mb-6">
-                    <h3 class="text-sm font-600 mb-1">Provider Summary</h3>
-                    <div class="grid grid-cols-2 text-sm">
-                        <p><span class="text-muted">National ID:</span> <?= escape($profile['national_id'] ?? 'N/A'); ?></p>
-                        <p><span class="text-muted">Skills:</span> <?= is_array($profile['skills'] ?? null) ? implode(', ', $profile['skills']) : 'N/A'; ?></p>
+                <div class="p-6 bg-white rounded-xl mb-8 border border-slate-200">
+                    <h3 class="text-sm font-800 uppercase letter-spacing-lg mb-4 text-primary">Application Details</h3>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div class="flex flex-col">
+                            <span class="text-xs text-muted font-600">National ID</span>
+                            <span class="font-700"><?= escape($profile['national_id'] ?? 'N/A'); ?></span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-xs text-muted font-600">Skills</span>
+                            <span class="font-700"><?= is_array($profile['skills'] ?? null) ? implode(', ', $profile['skills']) : 'N/A'; ?></span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-xs text-muted font-600">Location</span>
+                            <span class="font-700"><?= escape($profile['location'] ?? 'N/A'); ?></span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-xs text-muted font-600">Hourly Rate</span>
+                            <span class="font-700"><?= escape($profile['hourly_rate'] ?? 'N/A'); ?> BDT</span>
+                        </div>
                     </div>
                 </div>
 
@@ -113,15 +147,21 @@
                     <input type="hidden" id="status_input_<?= escape($uid); ?>" name="verification_status" value="approved">
                     
                     <div class="form-group">
-                        <label class="label">Rejection Reason (Required if rejecting)</label>
-                        <textarea name="verification_notes" class="textarea" rows="2" placeholder="e.g. ID image is blurry..."></textarea>
+                        <label for="notes_<?= escape($uid); ?>" class="label">Review Notes / Reason for Rejection</label>
+                        <textarea id="notes_<?= escape($uid); ?>" name="verification_notes" class="textarea" rows="3" placeholder="Provide specific feedback to the provider..."></textarea>
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline" data-close-modal="verification_modal_<?= escape($uid); ?>">Cancel</button>
-                <button type="button" class="btn btn-danger" onclick="submitVerification('<?= $uid; ?>', 'rejected')">Reject</button>
-                <button type="button" class="btn btn-primary" onclick="submitVerification('<?= $uid; ?>', 'approved')">Approve Provider</button>
+            <div class="modal-footer" style="padding: 1.5rem 2.5rem; background: white; border-top: 1px solid var(--border-base);">
+                <button type="button" class="btn btn-outline" data-close-modal="verification_modal_<?= escape($uid); ?>" style="border:none;">Cancel</button>
+                <div class="flex gap-3">
+                    <button type="button" class="btn btn-danger" onclick="submitVerification('<?= $uid; ?>', 'rejected')" style="padding-inline: 2rem;">
+                        <span class="material-symbols-outlined">block</span> Reject
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="submitVerification('<?= $uid; ?>', 'approved')" style="padding-inline: 2rem;">
+                        <span class="material-symbols-outlined">verified</span> Approve Provider
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -129,6 +169,12 @@
 
 <script>
 function submitVerification(uid, status) {
+    const notesInput = document.getElementById('notes_' + uid);
+    if (status === 'rejected' && notesInput.value.trim() === '') {
+        alert('Please provide a reason for rejection.');
+        notesInput.focus();
+        return;
+    }
     document.getElementById('status_input_' + uid).value = status;
     document.getElementById('action_form_' + uid).submit();
 }
@@ -158,3 +204,4 @@ function submitVerification(uid, status) {
     };
 })();
 </script>
+

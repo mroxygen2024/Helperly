@@ -1,28 +1,21 @@
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
     <!-- Main Content: Active and Recent Jobs -->
     <div class="md:col-span-2 flex flex-col gap-6">
-        <!-- Stats Summary -->
-        <div class="grid grid-cols-3 gap-4">
+        <div class="grid grid-cols-3 gap-6">
             <div class="card stat-card">
+                <span class="material-symbols-outlined stat-icon" style="color: var(--warning);">pending_actions</span>
                 <p class="stat-label">Active Jobs</p>
-                <div class="flex items-center gap-2 mt-1">
-                    <span class="material-symbols-outlined text-warning">pending_actions</span>
-                    <p class="stat-value"><?= count(array_filter($jobs ?? [], fn($j) => $j['status'] === 'active')); ?></p>
-                </div>
+                <p class="stat-value"><?= count(array_filter($jobs ?? [], fn($j) => $j['status'] === 'active')); ?></p>
             </div>
             <div class="card stat-card">
+                <span class="material-symbols-outlined stat-icon" style="color: var(--info);">assignment</span>
                 <p class="stat-label">Total Posted</p>
-                <div class="flex items-center gap-2 mt-1">
-                    <span class="material-symbols-outlined text-info">assignment</span>
-                    <p class="stat-value"><?= count($jobs ?? []); ?></p>
-                </div>
+                <p class="stat-value"><?= count($jobs ?? []); ?></p>
             </div>
             <div class="card stat-card">
+                <span class="material-symbols-outlined stat-icon" style="color: var(--success);">payments</span>
                 <p class="stat-label">Total Spend</p>
-                <div class="flex items-center gap-2 mt-1">
-                    <span class="material-symbols-outlined text-success">payments</span>
-                    <p class="stat-value"><?= array_sum(array_column($jobs ?? [], 'total_cost')); ?></p>
-                </div>
+                <p class="stat-value"><?= number_format(array_sum(array_column($jobs ?? [], 'total_cost'))); ?></p>
             </div>
         </div>
 
@@ -97,29 +90,49 @@
 
     <!-- Sidebar: Quick Post & Actions -->
     <div class="flex flex-col gap-6">
-        <div class="card bg-primary text-white border-none shadow-lg">
-            <h2 class="font-700 text-lg mb-2">Need help?</h2>
-            <p class="text-sm opacity-90 mb-6">Post a new job requirement and find verified providers in minutes.</p>
+        <div class="card" style="background: var(--grad-primary); border: none; padding: 2rem; position: relative; overflow: hidden;">
+            <!-- Background Decorative Element -->
+            <span class="material-symbols-outlined" style="position: absolute; right: -20px; top: -10px; font-size: 8rem; opacity: 0.1; color: white; transform: rotate(-15deg);">rocket_launch</span>
             
-            <form action="/jobs" method="POST" class="flex flex-col gap-3">
+            <h2 class="card-title" style="color: white; margin-bottom: 0.5rem; font-size: 1.5rem; position: relative;">Post a Requirement</h2>
+            <p class="text-sm opacity-90 mb-6" style="color: rgba(255,255,255,0.8); position: relative;">Find the perfect helper for your needs in minutes.</p>
+            
+            <form action="/jobs" method="POST" class="flex flex-col gap-4" style="position: relative;">
                 <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">
                 
-                <input name="service_type" type="text" class="input" placeholder="What do you need?" required style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                <div class="form-group mb-0">
+                    <input name="service_type" type="text" class="input-field" placeholder="What do you need? (e.g. Cooking)" required 
+                           style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; height: 48px;">
+                </div>
                 
-                <div class="grid grid-cols-2 gap-2">
-                    <input name="hourly_rate" type="number" class="input" placeholder="Rate/Hr" required style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
-                    <input name="duration" type="number" step="0.5" class="input" placeholder="Hrs" required style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-group mb-0">
+                        <input name="hourly_rate" type="number" class="input-field" placeholder="Rate/Hr" required 
+                               style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; height: 48px;">
+                    </div>
+                    <div class="form-group mb-0">
+                        <input name="duration" type="number" step="0.5" class="input-field" placeholder="Hrs" required 
+                               style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; height: 48px;">
+                    </div>
                 </div>
 
-                <input name="location" type="text" class="input" placeholder="Location" required style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
-                <input name="time" type="datetime-local" class="input" required style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                <div class="form-group mb-0">
+                    <input name="location" type="text" class="input-field" placeholder="Work Location" required 
+                           style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; height: 48px;">
+                </div>
 
-                <button type="submit" class="btn btn-outline w-full" style="background: white; color: var(--primary); font-weight: 700; border: none; margin-top: 0.5rem;">
-                    <span class="material-symbols-outlined">add_circle</span>
+                <div class="form-group mb-0">
+                    <input name="time" type="datetime-local" class="input-field" required 
+                           style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; height: 48px;">
+                </div>
+
+                <button type="submit" class="btn" style="background: white; color: var(--primary); font-weight: 800; border: none; padding: 1rem; margin-top: 0.5rem; transition: transform 0.2s;">
+                    <span class="material-symbols-outlined">bolt</span>
                     Post Job Now
                 </button>
             </form>
         </div>
+
 
         <div class="card">
             <div class="card-header border-b mb-4 pb-4">

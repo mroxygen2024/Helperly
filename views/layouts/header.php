@@ -130,11 +130,11 @@ $currentPage = $_GET['page'] ?? 'dashboard';
 <?php else: ?>
     <!-- Public Header for Login/Register -->
     <header class="topbar" style="position: static; border-bottom: none; background: transparent;">
-        <div class="container flex justify-between items-center" style="max-width: 1200px; margin: 0 auto; width: 100%; height: 80px;">
-            <a href="/" class="sidebar-logo" style="color: var(--primary); font-size: 1.5rem;">Helperly</a>
+        <div class="flex justify-between items-center" style="max-width: 1200px; margin: 0 auto; width: 100%; height: 80px; padding: 0 2rem;">
+            <a href="/" class="sidebar-logo" style="color: var(--primary); font-size: 1.75rem;">Helperly</a>
             <div class="flex gap-4">
-                <a href="/login" class="btn btn-outline">Login</a>
-                <a href="/register" class="btn btn-primary">Join Now</a>
+                <a href="/login" class="btn btn-outline" style="border-radius: 99px;">Login</a>
+                <a href="/register" class="btn btn-primary" style="border-radius: 99px;">Join Now</a>
             </div>
         </div>
     </header>

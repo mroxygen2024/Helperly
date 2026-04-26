@@ -1,43 +1,81 @@
-<div class="card mb-6">
-    <div class="card-header">
-        <h2 class="card-title">Filter Servants</h2>
-        <p class="text-sm text-muted">Showing <?= count($servants); ?> results</p>
+<div class="card mb-8">
+    <div class="card-header" style="border-bottom: 2px solid var(--border-light); padding-bottom: 1.5rem; margin-bottom: 1.5rem;">
+        <div class="flex justify-between items-end">
+            <div>
+                <h2 class="card-title">Find Help</h2>
+                <p class="text-sm text-muted">Filter through our verified service providers</p>
+            </div>
+            <div class="badge badge-info"><?= count($servants); ?> Providers Available</div>
+        </div>
     </div>
-    <form action="/servants" method="GET" class="grid grid-cols-4 gap-4">
-        <div class="form-group">
-            <label class="label">Name</label>
-            <input name="name" type="text" class="input" value="<?= escape((string) ($filters['name'] ?? '')); ?>" placeholder="Search by name...">
-        </div>
-        
-        <div class="form-group">
-            <label class="label">Location</label>
-            <input name="location" type="text" class="input" value="<?= escape((string) ($filters['location'] ?? '')); ?>" placeholder="e.g. Dhaka">
+    
+    <form action="/servants" method="GET" class="p-2">
+        <div class="grid grid-cols-4 gap-6">
+            <div class="form-group">
+                <label for="filter_name" class="label">Name</label>
+                <div class="input-wrapper" style="position: relative;">
+                    <input id="filter_name" name="name" type="text" class="input-field" 
+                           value="<?= escape((string) ($filters['name'] ?? '')); ?>" 
+                           placeholder="Search by name..." style="padding-left: 2.75rem;">
+                    <span class="material-symbols-outlined" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.25rem;">
+                        search
+                    </span>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="filter_location" class="label">Location</label>
+                <div class="input-wrapper" style="position: relative;">
+                    <input id="filter_location" name="location" type="text" class="input-field" 
+                           value="<?= escape((string) ($filters['location'] ?? '')); ?>" 
+                           placeholder="e.g. Dhaka" style="padding-left: 2.75rem;">
+                    <span class="material-symbols-outlined" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.25rem;">
+                        location_on
+                    </span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="filter_service" class="label">Service Type</label>
+                <div class="input-wrapper" style="position: relative;">
+                    <input id="filter_service" name="service_type" type="text" class="input-field" 
+                           value="<?= escape((string) ($filters['service_type'] ?? '')); ?>" 
+                           placeholder="e.g. Cook, Maid" style="padding-left: 2.75rem;">
+                    <span class="material-symbols-outlined" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.25rem;">
+                        category
+                    </span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="filter_rating" class="label">Minimum Rating</label>
+                <div class="input-wrapper" style="position: relative;">
+                    <select id="filter_rating" name="rating" class="select" style="padding-left: 2.75rem;">
+                        <option value="">Any Rating</option>
+                        <option value="4.5" <?= ($filters['rating'] ?? '') == '4.5' ? 'selected' : ''; ?>>4.5+ ★ Superior</option>
+                        <option value="4.0" <?= ($filters['rating'] ?? '') == '4.0' ? 'selected' : ''; ?>>4.0+ ★ Great</option>
+                        <option value="3.0" <?= ($filters['rating'] ?? '') == '3.0' ? 'selected' : ''; ?>>3.0+ ★ Good</option>
+                    </select>
+                    <span class="material-symbols-outlined" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.25rem;">
+                        star
+                    </span>
+                </div>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label class="label">Service Type</label>
-            <input name="service_type" type="text" class="input" value="<?= escape((string) ($filters['service_type'] ?? '')); ?>" placeholder="e.g. Maid">
-        </div>
-
-        <div class="form-group">
-            <label class="label">Min Rating</label>
-            <select name="rating" class="select">
-                <option value="">Any Rating</option>
-                <option value="4.5" <?= ($filters['rating'] ?? '') == '4.5' ? 'selected' : ''; ?>>4.5+ ★</option>
-                <option value="4.0" <?= ($filters['rating'] ?? '') == '4.0' ? 'selected' : ''; ?>>4.0+ ★</option>
-                <option value="3.0" <?= ($filters['rating'] ?? '') == '3.0' ? 'selected' : ''; ?>>3.0+ ★</option>
-            </select>
-        </div>
-
-        <div class="form-group flex items-end" style="grid-column: span 4; justify-content: flex-end; margin-bottom: 0;">
-            <button type="submit" class="btn btn-primary">
-                <span class="material-symbols-outlined">filter_list</span>
-                Apply Search Filters
+        <div class="flex justify-end gap-3 mt-4 pt-4" style="border-top: 1px solid var(--border-light);">
+            <a href="/servants" class="btn btn-outline" style="min-width: 120px;">
+                <span class="material-symbols-outlined">restart_alt</span>
+                Reset
+            </a>
+            <button type="submit" class="btn btn-primary" style="min-width: 200px;">
+                <span class="material-symbols-outlined">filter_alt</span>
+                Apply Filters
             </button>
-            <a href="/servants" class="btn btn-outline ml-2" style="margin-left: 0.5rem;">Clear</a>
         </div>
     </form>
 </div>
+
 
 <div class="grid grid-cols-2 gap-6">
     <?php if (empty($servants)): ?>
@@ -49,13 +87,13 @@
     <?php else: ?>
         <?php foreach ($servants as $servant): ?>
             <?php $profile = $servant['profile'] ?? []; ?>
-            <div class="card flex gap-6 items-start" style="margin-bottom: 0;">
+            <div class="card flex gap-6 items-start">
                 <div style="flex-shrink: 0;">
                     <?php if (!empty($profile['profile_photo'])): ?>
-                        <img src="<?= escape((string) $profile['profile_photo']); ?>" alt="<?= escape((string) ($servant['name'] ?? 'Servant')); ?>" style="width:120px; height:120px; object-fit: cover; border-radius: 12px; border: 1px solid var(--border);">
+                        <img src="<?= escape((string) $profile['profile_photo']); ?>" alt="<?= escape((string) ($servant['name'] ?? 'Servant')); ?>" style="width:120px; height:120px; object-fit: cover; border-radius: 18px; border: 2px solid var(--border-base);">
                     <?php else: ?>
-                        <div class="user-avatar" style="width:120px; height:120px; border-radius: 12px; font-size: 3rem;">
-                            <?= mb_substr(escape($servant['name']), 0, 1); ?>
+                        <div class="user-avatar-rect" style="width:120px; height:120px; border-radius: 18px; font-size: 3rem; background: var(--grad-primary);">
+                            <?= mb_substr(escape($servant['name'] ?? 'U'), 0, 1); ?>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -63,26 +101,26 @@
                 <div class="flex-1">
                     <div class="flex justify-between items-start">
                         <div>
-                            <h2 class="card-title"><?= escape((string) ($servant['name'] ?? 'Unnamed servant')); ?></h2>
-                            <p class="text-sm text-muted mb-2">
-                                <span class="material-symbols-outlined" style="font-size: 14px; vertical-align: middle;">location_on</span>
+                            <h3 class="card-title" style="margin-bottom: 0.25rem;"><?= escape((string) ($servant['name'] ?? 'Unnamed servant')); ?></h3>
+                            <p class="text-sm text-muted mb-2 flex items-center gap-1">
+                                <span class="material-symbols-outlined" style="font-size: 16px;">location_on</span>
                                 <?= escape((string) ($profile['location'] ?? 'Unknown')); ?>
                             </p>
                         </div>
                         <?php if (isset($profile['rating']) && (float)$profile['rating'] > 0): ?>
-                            <div class="flex items-center gap-1 bg-warning" style="background: #fffbeb; padding: 0.25rem 0.5rem; border-radius: 6px;">
-                                <span class="text-warning font-700" style="font-size: 0.875rem;"><?= number_format((float)$profile['rating'], 1); ?></span>
-                                <span class="material-symbols-outlined text-warning" style="font-size: 16px;">star</span>
+                            <div class="flex items-center gap-1 bg-warning-soft" style="background: #fffbeb; padding: 0.35rem 0.65rem; border-radius: 8px; border: 1px solid #FEF3C7;">
+                                <span class="text-warning" style="font-weight: 800; font-size: 0.95rem;"><?= number_format((float)$profile['rating'], 1); ?></span>
+                                <span class="material-symbols-outlined text-warning" style="font-size: 18px; font-variation-settings: 'FILL' 1;">star</span>
                             </div>
                         <?php endif; ?>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm mt-2 mb-4">
+                    <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm mt-3 mb-4">
                         <p><span class="text-muted">Exp:</span> <strong><?= escape((string) ($profile['experience'] ?? 'N/A')); ?></strong></p>
-                        <p><span class="text-muted">Rate:</span> <strong class="text-info"><?= escape((string) ($profile['hourly_rate'] ?? 'N/A')); ?> BDT/hr</strong></p>
+                        <p><span class="text-muted">Rate:</span> <strong class="text-primary"><?= escape((string) ($profile['hourly_rate'] ?? 'N/A')); ?> BDT/hr</strong></p>
                     </div>
 
-                    <div class="flex flex-wrap gap-2 mb-4">
+                    <div class="flex flex-wrap gap-2 mb-6">
                         <?php $skills = $profile['skills'] ?? []; ?>
                         <?php if (is_iterable($skills)): ?>
                             <?php foreach (array_slice((array)$skills, 0, 3) as $skill): ?>
