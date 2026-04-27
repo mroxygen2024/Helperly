@@ -117,7 +117,10 @@
     const fetchMessages = async () => {
         if (document.hidden) return;
         try {
-            const resp = await fetch(`/api/messages?job_id=${jobId}&_t=${Date.now()}`, { cache: 'no-store' });
+            const resp = await fetch(`/api/messages?job_id=${jobId}&_t=${Date.now()}`, { 
+                cache: 'no-store',
+                credentials: 'same-origin' 
+            });
             const data = await resp.json();
             if (data.messages) {
                 renderMessages(data.messages);
