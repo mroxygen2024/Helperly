@@ -360,6 +360,11 @@ try {
         return;
     }
 
+    if ($method === 'POST' && $path === '/jobs/stop') {
+        $jobController->stop($_POST);
+        return;
+    }
+
     if ($method === 'POST' && $path === '/payments/pay') {
         $paymentController->processPayment($_POST);
         return;

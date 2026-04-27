@@ -233,6 +233,29 @@ class Job
         return iterator_to_array($cursor, false);
     }
 
+    public function stopJob(string $jobId, string $parentId): bool
+    {
+        if (!$this->isValidObjectId($jobId) || !$this->isValidObjectId($parentId)) {
+            return false;
+        }
+
+        $result = $this->collection->updateOne(
+            [
+                '_id' => new ObjectId($jobId),
+                'parent_id' => new ObjectId($parentId),
+                'status' => ['$in' => ['open', 'active']],
+            ],
+            [
+                '$set' => [
+                    'status' => 'cancelled',
+                    'updated_at' => new UTCDateTime(),
+                ]
+            ]
+        );
+
+        return $result->getModifiedCount() === 1;
+    }
+
     public function getAllJobs(int $limit = 50): array
     {
         $cursor = $this->collection->find(
