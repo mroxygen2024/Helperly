@@ -26,11 +26,56 @@ class MessageController
     {
         requireAuth();
         $userId = (string) ($_SESSION['user_id'] ?? '');
+        $role = normalizeRole((string) ($_SESSION['role'] ?? ''));
 
         $jobId = sanitizeInput($query['job_id'] ?? '');
+        
+        // If no job_id is specified, show the Inbox (list of conversations)
         if (!$jobId) {
-            setFlash('error', 'No job specified for chat.');
-            redirect('/dashboard');
+            $db = getMongoDatabase();
+            
+            // Query jobs where user is parent or selected provider
+            $queryCriteria = [
+                '$or' => [
+                    ['parent_id' => new \MongoDB\BSON\ObjectId($userId)],
+                    ['selected_provider_id' => new \MongoDB\BSON\ObjectId($userId)]
+                ],
+                // Typically messages are for active or completed jobs
+                'status' => ['$in' => ['active', 'completed']]
+            ];
+            
+            $cursor = $db->selectCollection('jobs')->find($queryCriteria, ['sort' => ['updated_at' => -1]]);
+            $jobs = iterator_to_array($cursor, false);
+            
+            $conversations = [];
+            foreach ($jobs as $job) {
+                $parentId = (string)($job['parent_id'] ?? '');
+                $providerId = (string)($job['selected_provider_id'] ?? '');
+                $otherId = ($userId === $parentId) ? $providerId : $parentId;
+                
+                if ($otherId) {
+                    $otherParty = $this->users->findUserById($otherId);
+                    
+                    // Get last message
+                    $lastMsgDoc = $db->selectCollection('messages')->findOne(
+                        ['job_id' => $job['_id']],
+                        ['sort' => ['created_at' => -1]]
+                    );
+                    
+                    $conversations[] = [
+                        'job' => $job,
+                        'other_party' => $otherParty,
+                        'last_message' => $lastMsgDoc['message'] ?? null
+                    ];
+                }
+            }
+
+            renderView('messages/inbox', [
+                'title' => 'Inbox',
+                'conversations' => $conversations,
+                'userId' => $userId
+            ]);
+            return;
         }
 
         $job = $this->jobs->getJobById($jobId);
@@ -43,7 +88,7 @@ class MessageController
         $providerId = (string) ($job['selected_provider_id'] ?? '');
 
         if ($userId !== $parentId && $userId !== $providerId) {
-            setFlash('error', 'You are not authorized to view this chat. Chat is only available for active/booked jobs between the parent and provider.');
+            setFlash('error', 'You are not authorized to view this chat.');
             redirect('/dashboard');
         }
 
@@ -54,7 +99,6 @@ class MessageController
         }
 
         $otherParty = $this->users->findUserById($otherPartyId);
-
         $messages = $this->messages->getMessagesByJobId($jobId);
 
         renderView('messages/index', [

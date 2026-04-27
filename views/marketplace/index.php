@@ -6,9 +6,26 @@
         Helperly connects families with verified service providers for household tasks, cleaning, child care, and more.
     </p>
 
+    <div class="mt-10" style="max-width: 600px; margin-inline: auto;">
+        <form action="/servants" method="GET" class="flex items-center bg-white p-2 rounded-2xl shadow-xl border border-slate-200">
+            <div class="flex-1 flex items-center px-4 border-r border-slate-100">
+                <span class="material-symbols-outlined text-muted mr-2">location_on</span>
+                <input type="text" name="location" placeholder="Which city?" class="w-full border-none focus:ring-0 text-sm py-3" style="outline: none;">
+            </div>
+            <div class="flex-1 flex items-center px-4">
+                <span class="material-symbols-outlined text-muted mr-2">construction</span>
+                <input type="text" name="skill" placeholder="What skill?" class="w-full border-none focus:ring-0 text-sm py-3" style="outline: none;">
+            </div>
+            <button type="submit" class="btn btn-primary" style="border-radius: 12px; padding: 0.75rem 1.5rem;">
+                <span class="material-symbols-outlined">search</span>
+            </button>
+        </form>
+        <p class="text-xs text-muted mt-4">Popular: Cleaning, Baby Sitting, Home Tutor, Gardening</p>
+    </div>
+
     <div class="flex justify-center gap-4 mt-8">
-        <a href="/register" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.125rem;">Get Started Today</a>
-        <a href="/servants" class="btn btn-outline" style="padding: 1rem 2rem; font-size: 1.125rem;">Browse Providers</a>
+        <a href="/register" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.125rem;">Join as Client</a>
+        <a href="/profile/servant" class="btn btn-outline" style="padding: 1rem 2rem; font-size: 1.125rem;">Apply as Provider</a>
     </div>
 
     <!-- Featured Providers Section -->

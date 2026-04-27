@@ -72,6 +72,8 @@ $pathToPage = [
     '/profile/account' => 'profile-account',
     '/profiles' => 'profiles',
     '/listings' => 'listings',
+    '/servants' => 'listings',
+    '/messages' => 'messages',
 ];
 
 if ($method === 'GET' && str_starts_with($path, '/assets/')) {
@@ -195,13 +197,18 @@ try {
 
             case 'listings':
                 $user = authUser();
+                $role = $user ? normalizeRole((string) ($user['role'] ?? '')) : null;
 
-                if ($user && normalizeRole((string) ($user['role'] ?? '')) === 'parent') {
+                if ($role === 'parent' || $role === 'administrator') {
                     $profileController->listServants($_GET);
                     return;
                 }
 
                 $marketplaceController->index();
+                return;
+
+            case 'messages':
+                $messageController->index($_GET);
                 return;
 
             default:
