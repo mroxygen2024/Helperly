@@ -352,6 +352,7 @@ class JobController
         }
 
         if (!in_array((string) ($job['status'] ?? ''), ['open', 'active'], true)) {
+            // Early check for user-friendly error messaging; the model also enforces this atomically.
             setFlash('error', 'This job cannot be stopped in its current state.');
             redirect('/dashboard');
         }
