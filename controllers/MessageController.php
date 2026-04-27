@@ -111,10 +111,43 @@ class MessageController
         ]);
     }
 
+    public function apiFetch(array $query): void
+    {
+        requireAuth();
+        $userId = (string) ($_SESSION['user_id'] ?? '');
+        $jobId = sanitizeInput($query['job_id'] ?? '');
+
+        if (!$jobId) {
+            jsonResponse(['error' => 'Job ID required'], 400);
+        }
+
+        $job = $this->jobs->getJobById($jobId);
+        if (!$job || ((string)$job['parent_id'] !== $userId && (string)$job['selected_provider_id'] !== $userId)) {
+            jsonResponse(['error' => 'Unauthorized'], 403);
+        }
+
+        $messages = $this->messages->getMessagesByJobId($jobId);
+        $formattedMessages = [];
+        foreach ($messages as $msg) {
+            $formattedMessages[] = [
+                'id' => (string) $msg['_id'],
+                'sender_id' => (string) $msg['sender_id'],
+                'message' => $msg['message'],
+                'created_at' => $msg['created_at'] instanceof \MongoDB\BSON\UTCDateTime ? $msg['created_at']->toDateTime()->format('g:i A') : '',
+                'is_sender' => (string)$msg['sender_id'] === $userId
+            ];
+        }
+
+        jsonResponse(['messages' => $formattedMessages]);
+    }
+
     public function store(array $payload): void
     {
         requireAuth();
+        $isAjax = isset($payload['ajax']) && $payload['ajax'] === '1';
+
         if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
+            if ($isAjax) jsonResponse(['error' => 'Invalid CSRF token'], 400);
             setFlash('error', 'Invalid request token.');
             redirect('/dashboard');
         }
@@ -124,12 +157,14 @@ class MessageController
         $messageText = sanitizeInput($payload['message'] ?? '');
 
         if (!$jobId || trim($messageText) === '') {
+            if ($isAjax) jsonResponse(['error' => 'Empty message'], 400);
             setFlash('error', 'Message cannot be empty.');
             redirect('/messages?job_id=' . $jobId);
         }
 
         $job = $this->jobs->getJobById($jobId);
         if (!$job) {
+            if ($isAjax) jsonResponse(['error' => 'Job not found'], 404);
             setFlash('error', 'Job not found.');
             redirect('/dashboard');
         }
@@ -138,20 +173,26 @@ class MessageController
         $providerId = (string) ($job['selected_provider_id'] ?? '');
 
         if ($userId !== $parentId && $userId !== $providerId) {
+            if ($isAjax) jsonResponse(['error' => 'Unauthorized'], 403);
             setFlash('error', 'You are not authorized to send messages for this job.');
             redirect('/dashboard');
         }
 
         $receiverId = ($userId === $parentId) ? $providerId : $parentId;
         if (!$receiverId) {
+            if ($isAjax) jsonResponse(['error' => 'No provider selected'], 400);
             setFlash('error', 'A provider has not been selected for this job yet.');
             redirect('/dashboard');
         }
         
         try {
             $this->messages->sendMessage($userId, $receiverId, $jobId, $messageText);
+            if ($isAjax) {
+                jsonResponse(['success' => true]);
+            }
         } catch (Throwable $exception) {
             error_log('Message send failed: ' . $exception->getMessage());
+            if ($isAjax) jsonResponse(['error' => 'Database error'], 500);
             setFlash('error', 'Could not send message.');
         }
 

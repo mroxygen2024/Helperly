@@ -94,7 +94,7 @@
                                     <?php else: ?>
                                         <div class="flex flex-col gap-3">
                                             <?php foreach ($job['applicants'] as $applicant): ?>
-                                                <?php if ($applicant['status'] === 'applied'): ?>
+                                                <?php if ($applicant['status'] === 'pending'): ?>
                                                     <div class="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
                                                         <div class="flex items-center gap-3">
                                                             <div class="bg-white p-2 rounded-full border shadow-sm flex items-center justify-center">

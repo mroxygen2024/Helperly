@@ -302,6 +302,11 @@ try {
         return;
     }
 
+    if ($method === 'GET' && $path === '/api/messages') {
+        $messageController->apiFetch($_GET);
+        return;
+    }
+
     if ($method === 'GET' && $path === '/servants') {
         $profileController->listServants($_GET);
         return;
