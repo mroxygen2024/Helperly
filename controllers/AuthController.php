@@ -106,6 +106,8 @@ class AuthController
             redirect('/register');
         }
 
+        $config = appConfig();
+        $smtpConfigured = ($config['smtp_host'] ?? '') !== '';
         $verificationToken = generateVerificationToken();
 
         try {
@@ -115,10 +117,13 @@ class AuthController
                 $phone,
                 $password,
                 $role,
-                $verificationToken
+                $verificationToken,
+                !$smtpConfigured
             );
 
-            $this->sendVerificationEmail($email, $verificationToken);
+            if ($smtpConfigured) {
+                $this->sendVerificationEmail($email, $verificationToken);
+            }
         } catch (Throwable $exception) {
             error_log('Registration failed: ' . $exception->getMessage());
             setFlash('error', 'Registration failed. Please try again.');
@@ -126,7 +131,10 @@ class AuthController
         }
 
         clearOldInput();
-        setFlash('success', 'Registration successful. Please verify your email before login.');
+        $successMessage = $smtpConfigured
+            ? 'Registration successful. Please verify your email before login.'
+            : 'Registration successful. You can now log in.';
+        setFlash('success', $successMessage);
         redirect('/login');
     }
 
@@ -324,6 +332,10 @@ class AuthController
 
         if (!$user || !password_verify($password, (string) ($user['password_hash'] ?? ''))) {
             jsonResponse(['error' => 'Invalid login credentials.'], 401);
+        }
+
+        if ((bool) ($user['is_blocked'] ?? false)) {
+            jsonResponse(['error' => 'Your account has been suspended. Please contact support.'], 403);
         }
 
         $isVerified = array_key_exists('is_verified', $user) ? (bool) $user['is_verified'] : true;
