@@ -36,13 +36,13 @@
             </div>
 
             <div class="form-group">
-                <label for="filter_service" class="label">Service Type</label>
+                <label for="filter_skill" class="label">Skills</label>
                 <div class="input-wrapper" style="position: relative;">
-                    <input id="filter_service" name="service_type" type="text" class="input-field" 
-                           value="<?= escape((string) ($filters['service_type'] ?? '')); ?>" 
-                           placeholder="e.g. Cook, Maid" style="padding-left: 2.75rem;">
+                    <input id="filter_skill" name="skill" type="text" class="input-field" 
+                           value="<?= escape((string) ($filters['skill'] ?? '')); ?>" 
+                           placeholder="e.g. Cleaning, Cooking" style="padding-left: 2.75rem;">
                     <span class="material-symbols-outlined" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.25rem;">
-                        category
+                        construction
                     </span>
                 </div>
             </div>
@@ -62,6 +62,70 @@
                 </div>
             </div>
         </div>
+
+        <!-- Second Row of Filters -->
+        <div class="grid grid-cols-4 gap-6 mt-4">
+            <div class="form-group">
+                <label for="filter_service" class="label">Service Category</label>
+                <div class="input-wrapper" style="position: relative;">
+                    <input id="filter_service" name="service_type" type="text" class="input-field" 
+                           value="<?= escape((string) ($filters['service_type'] ?? '')); ?>" 
+                           placeholder="e.g. Home Care" style="padding-left: 2.75rem;">
+                    <span class="material-symbols-outlined" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.25rem;">
+                        category
+                    </span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="filter_min_price" class="label">Min Hourly Rate</label>
+                <div class="input-wrapper" style="position: relative;">
+                    <input id="filter_min_price" name="min_price" type="number" class="input-field" 
+                           value="<?= escape((string) ($filters['min_price'] ?? '')); ?>" 
+                           placeholder="0" min="0" style="padding-left: 2.75rem;">
+                    <span class="material-symbols-outlined" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.25rem;">
+                        payments
+                    </span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="filter_max_price" class="label">Max Hourly Rate</label>
+                <div class="input-wrapper" style="position: relative;">
+                    <input id="filter_max_price" name="max_price" type="number" class="input-field" 
+                           value="<?= escape((string) ($filters['max_price'] ?? '')); ?>" 
+                           placeholder="Unbound" min="0" style="padding-left: 2.75rem;">
+                    <span class="material-symbols-outlined" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.25rem;">
+                        toll
+                    </span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="filter_experience" class="label">Min Experience</label>
+                <div class="input-wrapper" style="position: relative;">
+                    <input id="filter_experience" name="experience" type="text" class="input-field" 
+                           value="<?= escape((string) ($filters['experience'] ?? '')); ?>" 
+                           placeholder="e.g. 5+ years" style="padding-left: 2.75rem;">
+                    <span class="material-symbols-outlined" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.25rem;">
+                        history
+                    </span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="filter_availability" class="label">Availability</label>
+                <div class="input-wrapper" style="position: relative;">
+                    <input id="filter_availability" name="availability" type="text" class="input-field" 
+                           value="<?= escape((string) ($filters['availability'] ?? '')); ?>" 
+                           placeholder="e.g. Full-time" style="padding-left: 2.75rem;">
+                    <span class="material-symbols-outlined" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.25rem;">
+                        event_available
+                    </span>
+                </div>
+            </div>
+        </div>
+
 
         <div class="flex justify-end gap-3 mt-4 pt-4" style="border-top: 1px solid var(--border-light);">
             <a href="/servants" class="btn btn-outline" style="min-width: 120px;">

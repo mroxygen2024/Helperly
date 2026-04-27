@@ -14,21 +14,26 @@ class MarketplaceController
     private Listing $listings;
     private Job $jobs;
     private JobApplication $applications;
+    private ServantProfile $servantProfiles;
 
     public function __construct()
     {
         $this->listings = new Listing();
         $this->jobs = new Job();
         $this->applications = new JobApplication();
+        $this->servantProfiles = new ServantProfile();
     }
 
     public function index(): void
     {
         $this->listings->seedIfEmpty();
 
+        $featuredProviders = $this->servantProfiles->findProfilesByFilters([], 6);
+
         renderView('marketplace/index', [
             'title' => 'Marketplace',
             'listings' => $this->listings->getLatest(20),
+            'featuredProviders' => $featuredProviders,
             'user' => authUser(),
         ]);
     }
