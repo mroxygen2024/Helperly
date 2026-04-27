@@ -107,6 +107,11 @@ class AuthController
         }
 
         $verificationToken = generateVerificationToken();
+        $smtpEnabled = (appConfig()['smtp_host'] ?? '') !== '';
+
+        // When SMTP is not configured the verification email cannot be sent, so the
+        // user is marked as verified immediately so that they can log in right away.
+        $autoVerified = !$smtpEnabled;
 
         try {
             $this->users->createUser(
@@ -115,10 +120,13 @@ class AuthController
                 $phone,
                 $password,
                 $role,
-                $verificationToken
+                $verificationToken,
+                $autoVerified
             );
 
-            $this->sendVerificationEmail($email, $verificationToken);
+            if ($smtpEnabled) {
+                $this->sendVerificationEmail($email, $verificationToken);
+            }
         } catch (Throwable $exception) {
             error_log('Registration failed: ' . $exception->getMessage());
             setFlash('error', 'Registration failed. Please try again.');
@@ -126,7 +134,10 @@ class AuthController
         }
 
         clearOldInput();
-        setFlash('success', 'Registration successful. Please verify your email before login.');
+        $successMessage = $smtpEnabled
+            ? 'Registration successful. Please verify your email before login.'
+            : 'Registration successful. You can now log in.';
+        setFlash('success', $successMessage);
         redirect('/login');
     }
 
@@ -324,6 +335,10 @@ class AuthController
 
         if (!$user || !password_verify($password, (string) ($user['password_hash'] ?? ''))) {
             jsonResponse(['error' => 'Invalid login credentials.'], 401);
+        }
+
+        if ((bool) ($user['is_blocked'] ?? false)) {
+            jsonResponse(['error' => 'Your account has been suspended. Please contact support.'], 403);
         }
 
         $isVerified = array_key_exists('is_verified', $user) ? (bool) $user['is_verified'] : true;

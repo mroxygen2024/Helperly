@@ -57,7 +57,8 @@ class User
         string $phone,
         string $password,
         string $role,
-        string $verificationToken
+        string $verificationToken,
+        bool $verified = false
     ): string
     {
         $normalizedEmail = $this->normalizeEmail($email);
@@ -73,18 +74,24 @@ class User
             throw new RuntimeException('Failed to hash password.');
         }
 
+        $document = [
+            'name' => trim($name),
+            'email' => $normalizedEmail,
+            'phone' => trim($phone),
+            'password_hash' => $passwordHash,
+            'role' => $normalizedRole,
+            'is_verified' => $verified,
+            'created_at' => new UTCDateTime(),
+        ];
+
+        // Only store the verification token when the user still needs to verify via email.
+        if (!$verified) {
+            $document['verification_token'] = hashVerificationToken($verificationToken);
+            $document['verification_sent_at'] = new UTCDateTime();
+        }
+
         try {
-            $result = $this->collection->insertOne([
-                'name' => trim($name),
-                'email' => $normalizedEmail,
-                'phone' => trim($phone),
-                'password_hash' => $passwordHash,
-                'role' => $normalizedRole,
-                'is_verified' => false,
-                'verification_token' => hashVerificationToken($verificationToken),
-                'verification_sent_at' => new UTCDateTime(),
-                'created_at' => new UTCDateTime(),
-            ]);
+            $result = $this->collection->insertOne($document);
         } catch (BulkWriteException $exception) {
             // Handles race conditions where a duplicate email is inserted concurrently.
             if ($exception->getCode() === 11000) {
