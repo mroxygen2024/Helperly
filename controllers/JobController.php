@@ -62,6 +62,7 @@ class JobController
         $instructions = sanitizeInput($payload['instructions'] ?? '');
         $selectedProviderId = sanitizeInput($payload['selected_provider_id'] ?? null);
         $hourlyRate = (float) ($payload['hourly_rate'] ?? 0);
+        $paymentMethod = sanitizeInput($payload['payment_method'] ?? 'cash');
 
         // If direct booking, we pull the rate from the provider profile to be safe
         if ($selectedProviderId) {
@@ -103,7 +104,8 @@ class JobController
                 'service_type' => $serviceType,
                 'location' => $location,
                 'instructions' => $instructions,
-                'hourly_rate' => $hourlyRate
+                'hourly_rate' => $hourlyRate,
+                'payment_method' => $paymentMethod
             ]);
             setFlash('error', implode(' ', $errors));
             redirect('/dashboard');
@@ -119,7 +121,8 @@ class JobController
                 $instructions,
                 $selectedProviderId ?: null,
                 $hourlyRate,
-                $totalCost
+                $totalCost,
+                $paymentMethod
             );
 
             if ($created) {
@@ -228,9 +231,11 @@ class JobController
                 $hourlyRate = (float) ($profile['hourly_rate'] ?? 0);
                 $numericDuration = (float) filter_var($job['duration'] ?? '', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
                 $totalCost = $hourlyRate * $numericDuration;
-
+                
+                $paymentMethod = sanitizeInput($payload['payment_method'] ?? (string)($job['payment_method'] ?? 'cash'));
+                
                 // Mark job as active and record the provider with the calculated cost
-                $this->jobs->acceptProvider($jobId, $providerId, $hourlyRate, $totalCost);
+                $this->jobs->acceptProvider($jobId, $providerId, $hourlyRate, $totalCost, $paymentMethod);
 
                 // Reject other applicants
                 $this->applications->rejectOtherApplicants($jobId, $providerId);

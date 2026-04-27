@@ -189,7 +189,7 @@ $seenJobIds = [];
                     </div>
                     <div class="flex flex-col">
                         <span class="text-xs text-muted font-600">Earnings</span>
-                        <span class="font-700 text-info"><?= number_format((float)($job['total_cost'] ?? 0), 2); ?> BDT</span>
+                        <span class="font-700 text-info"><?= number_format((float)($job['total_cost'] ?? 0), 2); ?> BDT (<?= escape($job['payment_method'] ?? 'cash'); ?>)</span>
                     </div>
                 </div>
                 <div class="flex flex-col mb-4">

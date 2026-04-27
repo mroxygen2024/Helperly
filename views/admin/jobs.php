@@ -101,8 +101,11 @@
                                 <span class="text-xs text-muted"><?= escape($job['duration'] ?? 'N/A'); ?></span>
                             </div>
                         </td>
-                        <td class="p-4 font-700 text-slate-800">
-                            <?= number_format((float)($job['total_cost'] ?? 0), 2); ?> BDT
+                        <td class="p-4">
+                            <div class="flex flex-col">
+                                <span class="font-700 text-slate-800"><?= number_format((float)($job['total_cost'] ?? 0), 2); ?> BDT</span>
+                                <span class="text-xs text-muted"><?= escape(ucfirst($job['payment_method'] ?? 'cash')); ?></span>
+                            </div>
                         </td>
                         <td class="p-4 text-right">
                             <a href="/admin/jobs/detail?id=<?= escape((string)$job['_id']); ?>" class="btn btn-outline btn-sm">

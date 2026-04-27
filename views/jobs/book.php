@@ -43,14 +43,40 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="job_duration" class="label">Estimated Duration</label>
+                    <label for="job_duration" class="label">Estimated Duration (Hours)</label>
                     <div class="input-wrapper" style="position: relative;">
-                        <input id="job_duration" name="duration" type="text" class="input-field" 
-                               value="<?= escape(old('duration')); ?>" placeholder="e.g. 3 hours" required style="padding-left: 3rem;">
+                        <input id="job_duration" name="duration" type="number" step="0.5" class="input-field" 
+                               value="<?= escape(old('duration')); ?>" placeholder="e.g. 3" required style="padding-left: 3rem;">
                         <span class="material-symbols-outlined" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);">
                             schedule
                         </span>
                     </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-6">
+                <div class="form-group">
+                    <label for="payment_method" class="label">Payment Method</label>
+                    <div class="input-wrapper" style="position: relative;">
+                         <select id="payment_method" name="payment_method" class="input-field" required style="padding-left: 3rem;">
+                             <option value="" disabled selected>Select Payment Method</option>
+                             <option value="cash">Cash</option>
+                             <option value="bkash">bKash</option>
+                             <option value="nagad">Nagad</option>
+                             <option value="card">Card</option>
+                         </select>
+                         <span class="material-symbols-outlined" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);">
+                            payments
+                        </span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                     <label class="label">Estimated Total</label>
+                     <div class="p-4 rounded-xl border-2 border-dashed border-primary-soft bg-primary-soft text-primary font-700 text-lg flex items-center justify-between">
+                         <span>Total Amount:</span>
+                         <span><span id="total_cost_display">0.00</span> BDT</span>
+                     </div>
                 </div>
             </div>
 
@@ -96,4 +122,17 @@
         </form>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const durationInput = document.getElementById('job_duration');
+    const totalDisplay = document.getElementById('total_cost_display');
+    const hourlyRate = parseFloat("<?= (float)($provider['hourly_rate'] ?? 0); ?>");
+
+    durationInput.addEventListener('input', () => {
+        const duration = parseFloat(durationInput.value) || 0;
+        totalDisplay.textContent = (duration * hourlyRate).toFixed(2);
+    });
+});
+</script>
 

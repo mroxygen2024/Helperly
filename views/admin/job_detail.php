@@ -47,6 +47,10 @@ $badgeClass = match ($status) {
                 <span class="text-sm font-700 text-primary"><?= number_format((float)($job['total_cost'] ?? 0), 2); ?> BDT</span>
             </div>
             <div class="flex justify-between py-3 border-t">
+                <span class="text-sm text-muted">Payment Method</span>
+                <span class="text-sm font-600"><?= escape(ucfirst($job['payment_method'] ?? 'cash')); ?></span>
+            </div>
+            <div class="flex justify-between py-3 border-t">
                 <span class="text-sm text-muted">Scheduled Time</span>
                 <span class="text-sm font-600"><?= isset($job['time']) ? (is_string($job['time']) ? date('M d, Y h:i A', strtotime($job['time'])) : ($job['time'] instanceof \MongoDB\BSON\UTCDateTime ? $job['time']->toDateTime()->format('M d, Y h:i A') : 'N/A')) : 'N/A'; ?></span>
             </div>

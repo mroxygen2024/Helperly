@@ -195,13 +195,24 @@
                 
                 <div class="grid grid-cols-2 gap-4">
                     <div class="form-group mb-0">
-                        <input name="hourly_rate" type="number" class="input-field" placeholder="Rate/Hr" required 
+                        <input name="duration" type="number" step="0.5" id="post_duration" class="input-field" placeholder="Hrs" required 
                                style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; height: 48px;">
                     </div>
-                    <div class="form-group mb-0">
-                        <input name="duration" type="number" step="0.5" class="input-field" placeholder="Hrs" required 
-                               style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; height: 48px;">
-                    </div>
+                </div>
+
+                <div class="form-group mb-0">
+                    <select name="payment_method" class="input-field" required 
+                            style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; height: 48px;">
+                        <option value="" disabled selected style="color: black;">Payment Method</option>
+                        <option value="cash" style="color: black;">Cash</option>
+                        <option value="bkash" style="color: black;">bKash</option>
+                        <option value="nagad" style="color: black;">Nagad</option>
+                        <option value="card" style="color: black;">Card</option>
+                    </select>
+                </div>
+
+                <div id="cost_estimate" class="text-xs font-600 text-center py-2 rounded" style="background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.8); border: 1px dashed rgba(255,255,255,0.2); display: none;">
+                    Estimated Total: <span id="estimate_val">0</span> BDT
                 </div>
 
                 <div class="form-group mb-0">
@@ -280,7 +291,7 @@
                     </div>
                     <div class="flex flex-col">
                         <span class="text-xs text-muted font-600">Total Cost</span>
-                        <span class="font-700 text-primary"><?= number_format((float)($job['total_cost'] ?? 0), 2); ?> BDT</span>
+                        <span class="font-700 text-primary"><?= number_format((float)($job['total_cost'] ?? 0), 2); ?> BDT (<?= escape($job['payment_method'] ?? 'cash'); ?>)</span>
                     </div>
                 </div>
                 <div class="flex flex-col mb-4">
@@ -412,5 +423,27 @@
             event.target.classList.remove('open');
         }
     };
+
+    // Cost Calculation Logic
+    const rateInput = document.querySelector('input[name="hourly_rate"]');
+    const durationInput = document.getElementById('post_duration');
+    const estimateDiv = document.getElementById('cost_estimate');
+    const estimateVal = document.getElementById('estimate_val');
+
+    const updateEstimate = () => {
+        const rate = parseFloat(rateInput.value) || 0;
+        const duration = parseFloat(durationInput.value) || 0;
+        if (rate > 0 && duration > 0) {
+            estimateVal.textContent = (rate * duration).toFixed(2);
+            estimateDiv.style.display = 'block';
+        } else {
+            estimateDiv.style.display = 'none';
+        }
+    };
+
+    if (rateInput && durationInput) {
+        rateInput.addEventListener('input', updateEstimate);
+        durationInput.addEventListener('input', updateEstimate);
+    }
 })();
 </script>

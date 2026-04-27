@@ -41,7 +41,7 @@ class Payment
         self::$indexesEnsured = true;
     }
 
-    public function createPayment(string $jobId, float $amount): bool
+    public function createPayment(string $jobId, float $amount, string $method = 'cash'): bool
     {
         if (!$this->isValidObjectId($jobId)) {
             return false;
@@ -56,6 +56,7 @@ class Payment
         $result = $this->collection->insertOne([
             'job_id' => new ObjectId($jobId),
             'amount' => $amount,
+            'method' => $method,
             'status' => 'unpaid',
             'created_at' => new UTCDateTime(),
             'updated_at' => new UTCDateTime(),
