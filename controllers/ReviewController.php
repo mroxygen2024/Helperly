@@ -39,6 +39,11 @@ class ReviewController
             redirect('/dashboard');
         }
 
+        if (empty($reviewText)) {
+            setFlash('error', 'Review text cannot be empty.');
+            redirect('/dashboard');
+        }
+
         $job = $this->jobs->getJobById($jobId);
         if (!$job || (string) $job['parent_id'] !== $parentId) {
             setFlash('error', 'Unauthorized access.');

@@ -57,6 +57,11 @@ class Review
             throw new InvalidArgumentException('Rating must be between 1 and 5.');
         }
 
+        $existing = $this->collection->findOne(['job_id' => new ObjectId($jobId)]);
+        if ($existing) {
+            return false;
+        }
+
         $result = $this->collection->insertOne([
             'job_id' => new ObjectId($jobId),
             'provider_id' => new ObjectId($providerId),

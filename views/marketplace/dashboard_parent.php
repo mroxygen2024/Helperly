@@ -190,12 +190,19 @@
                 
                 <div class="form-group mb-0">
                     <input name="service_type" type="text" class="input-field" placeholder="What do you need? (e.g. Cooking)" required 
+                           value="<?= escape(old('service_type')); ?>"
                            style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; height: 48px;">
                 </div>
                 
                 <div class="grid grid-cols-2 gap-4">
                     <div class="form-group mb-0">
+                        <input name="hourly_rate" type="number" step="0.01" class="input-field" placeholder="Rate/Hr" required 
+                               value="<?= escape(old('hourly_rate')); ?>"
+                               style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; height: 48px;">
+                    </div>
+                    <div class="form-group mb-0">
                         <input name="duration" type="number" step="0.5" id="post_duration" class="input-field" placeholder="Hrs" required 
+                               value="<?= escape(old('duration')); ?>"
                                style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; height: 48px;">
                     </div>
                 </div>
@@ -217,12 +224,19 @@
 
                 <div class="form-group mb-0">
                     <input name="location" type="text" class="input-field" placeholder="Work Location" required 
+                           value="<?= escape(old('location')); ?>"
                            style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; height: 48px;">
                 </div>
 
                 <div class="form-group mb-0">
                     <input name="time" type="datetime-local" class="input-field" required 
+                           value="<?= escape(old('time')); ?>"
                            style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; height: 48px;">
+                </div>
+
+                <div class="form-group mb-0">
+                    <textarea name="instructions" class="input-field" placeholder="Special Instructions" required 
+                           style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; height: 80px; padding-top: 12px;"><?= escape(old('instructions')); ?></textarea>
                 </div>
 
                 <button type="submit" class="btn" style="background: white; color: var(--primary); font-weight: 800; border: none; padding: 1rem; margin-top: 0.5rem; transition: transform 0.2s;">
@@ -299,7 +313,7 @@
                     <div class="p-3 bg-white border border-slate-200 rounded-lg text-sm text-slate-700" style="white-space: pre-wrap;"><?= escape($job['instructions'] ?? 'No special instructions.'); ?></div>
                 </div>
                 <?php if (isset($job['selected_provider'])): ?>
-                <div class="p-4 bg-white rounded-xl border border-slate-200 flex items-center justify-between">
+                <div class="p-4 bg-white rounded-xl border border-slate-200 flex items-center justify-between mb-4">
                     <div class="flex items-center gap-3">
                          <div class="user-avatar" style="width: 32px; height: 32px;"><?= mb_substr(escape($job['selected_provider']['name'] ?? 'P'), 0, 1); ?></div>
                          <div>
@@ -309,6 +323,44 @@
                     </div>
                     <a href="/messages?job_id=<?= escape((string)$job['_id']); ?>" class="btn btn-outline btn-sm">Chat</a>
                 </div>
+                <?php endif; ?>
+
+                <?php if ($job['status'] === 'completed'): ?>
+                    <?php if (empty($job['review'])): ?>
+                        <div class="p-4 bg-primary-soft rounded-xl border border-primary-soft">
+                            <h4 class="font-600 text-sm mb-3">Leave a Review</h4>
+                            <form action="/reviews" method="POST" class="flex flex-col gap-3">
+                                <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">
+                                <input type="hidden" name="job_id" value="<?= escape((string)$job['_id']); ?>">
+                                
+                                <div class="form-group mb-0">
+                                    <select name="rating" class="input-field" required style="background: white;">
+                                        <option value="" disabled selected>Rate out of 5 stars</option>
+                                        <option value="5">5 - Excellent</option>
+                                        <option value="4">4 - Good</option>
+                                        <option value="3">3 - Average</option>
+                                        <option value="2">2 - Poor</option>
+                                        <option value="1">1 - Terrible</option>
+                                    </select>
+                                </div>
+                                <div class="form-group mb-0">
+                                    <textarea name="review_text" class="input-field" placeholder="Share your experience..." required style="background: white; height: 80px;"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-full">Submit Review</button>
+                            </form>
+                        </div>
+                    <?php else: ?>
+                        <div class="p-4 bg-green-50 rounded-xl border border-green-200 text-sm">
+                            <div class="flex justify-between items-center mb-2">
+                                <h4 class="font-600 text-success">Your Review</h4>
+                                <div class="flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-warning" style="font-size: 16px;">star</span>
+                                    <span class="font-700"><?= (int)$job['review']['rating']; ?> / 5</span>
+                                </div>
+                            </div>
+                            <p class="text-slate-700 italic">"<?= escape($job['review']['review_text']); ?>"</p>
+                        </div>
+                    <?php endif; ?>
                 <?php endif; ?>
             </div>
             <div class="modal-footer">
