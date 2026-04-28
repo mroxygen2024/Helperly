@@ -42,7 +42,7 @@ class HireRequestController
         }
 
         $servant = $this->users->findUserById($servantId);
-        if (!$servant || normalizeRole((string) ($servant['role'] ?? '')) !== 'service_provider') {
+        if (!$servant || normalizeRole((string) ($servant['role'] ?? '')) !== 'provider') {
             setFlash('error', 'Selected servant account was not found.');
             redirect('/servants');
         }
@@ -75,7 +75,7 @@ class HireRequestController
         $userId = (string) ($_SESSION['user_id'] ?? '');
         $role = normalizeRole((string) ($user['role'] ?? ''));
 
-        if ($role === 'service_provider') {
+        if ($role === 'provider') {
             $requests = $this->hireRequests->getRequestsForServant($userId);
             $otherPartyIds = array_unique(array_map(fn($r) => (string)$r['employer_id'], $requests));
             $othersById = $this->users->findUsersByIds($otherPartyIds);
@@ -120,7 +120,7 @@ class HireRequestController
 
     public function updateRequestStatus(array $payload): void
     {
-        requireRole('service_provider');
+        requireRole('provider');
 
         if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
             setFlash('error', 'Invalid request token. Please try again.');

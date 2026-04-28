@@ -74,7 +74,7 @@ class User
         }
 
         try {
-            $result = $this->collection->insertOne([
+            $userData = [
                 'name' => trim($name),
                 'email' => $normalizedEmail,
                 'phone' => trim($phone),
@@ -84,7 +84,13 @@ class User
                 'verification_token' => hashVerificationToken($verificationToken),
                 'verification_sent_at' => new UTCDateTime(),
                 'created_at' => new UTCDateTime(),
-            ]);
+            ];
+
+            if ($normalizedRole === 'provider') {
+                $userData['verification_status'] = 'pending';
+            }
+
+            $result = $this->collection->insertOne($userData);
         } catch (BulkWriteException $exception) {
             // Handles race conditions where a duplicate email is inserted concurrently.
             if ($exception->getCode() === 11000) {

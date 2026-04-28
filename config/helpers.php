@@ -59,7 +59,7 @@ function validatePassword(string $password): bool
 
 function canonicalRoles(): array
 {
-    return ['parent', 'service_provider', 'administrator'];
+    return ['parent', 'provider', 'administrator'];
 }
 
 function normalizeRole(string $role): string
@@ -69,7 +69,7 @@ function normalizeRole(string $role): string
     return match ($normalized) {
         // Backward compatibility for old data and legacy code paths.
         'employer' => 'parent',
-        'servant', 'provider' => 'service_provider',
+        'servant', 'service_provider' => 'provider',
         'admin' => 'administrator',
         default => $normalized,
     };

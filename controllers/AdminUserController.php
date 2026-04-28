@@ -32,7 +32,7 @@ class AdminUserController
             $userId = (string)$u['_id'];
             $role = normalizeRole((string)($u['role'] ?? ''));
 
-            if ($role === 'service_provider') {
+            if ($role === 'provider') {
                 $userArray['profile'] = $servantProfile->getProfileByUserId($userId);
             } elseif ($role === 'parent') {
                 $userArray['profile'] = $employerProfile->getProfileByUserId($userId);
@@ -160,7 +160,7 @@ class AdminUserController
 
         foreach ($users as $u) {
             $role = normalizeRole((string)($u['role'] ?? ''));
-            if ($role === 'service_provider') {
+            if ($role === 'provider') {
                 $userArray = (array)$u;
                 $profile = $servantProfile->getProfileByUserId((string)$u['_id']);
                 $userArray['profile'] = $profile;
@@ -195,7 +195,7 @@ class AdminUserController
         }
 
         $user = $this->users->findUserById($providerId);
-        if (!$user || normalizeRole((string)($user['role'] ?? '')) !== 'service_provider') {
+        if (!$user || normalizeRole((string)($user['role'] ?? '')) !== 'provider') {
             setFlash('error', 'Provider not found.');
             redirect('/admin/providers');
         }

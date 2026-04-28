@@ -27,7 +27,7 @@ $currentPage = $_GET['page'] ?? 'dashboard';
             'search' => ['label' => 'Find Help', 'url' => '/servants', 'icon' => 'search'],
             'messages' => ['label' => 'Messages', 'url' => '/messages', 'icon' => 'chat'],
         ];
-    } elseif ($role === 'service_provider') {
+    } elseif ($role === 'provider') {
         $navItems = [
             'dashboard' => ['label' => 'Dashboard', 'url' => '/dashboard', 'icon' => 'dashboard'],
             'profile' => ['label' => 'My Profile', 'url' => '/profile/servant', 'icon' => 'badge'],

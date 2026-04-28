@@ -88,7 +88,7 @@ class AuthController
         }
 
         if (!validateRole($role)) {
-            $errors[] = 'Role must be parent, service provider, or administrator.';
+            $errors[] = 'Role must be parent, provider, or administrator.';
         }
 
         if ($this->users->findUserByEmail($email)) {

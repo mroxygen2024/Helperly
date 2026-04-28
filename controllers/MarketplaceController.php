@@ -74,7 +74,7 @@ class MarketplaceController
 
     public function servantDashboard(): void
     {
-        requireRole('service_provider');
+        requireRole('provider');
         $providerId = (string) ($_SESSION['user_id'] ?? '');
 
         $servantProfileModel = new ServantProfile();

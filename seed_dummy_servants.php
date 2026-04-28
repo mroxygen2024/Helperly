@@ -43,7 +43,7 @@ $roleAccounts = [
         'name' => 'Demo Service Provider',
         'email' => 'demo.provider@example.com',
         'phone' => '+8801800000002',
-        'role' => 'service_provider',
+        'role' => 'provider',
         'password' => 'DemoPass123',
     ],
     [
@@ -67,7 +67,7 @@ for ($i = 1; $i <= 30; $i++) {
             '$set' => [
                 'name' => $name,
                 'email' => $email,
-                'role' => 'service_provider',
+                'role' => 'provider',
                 'phone' => $phone,
                 'updated_at' => $now,
             ],
@@ -121,7 +121,7 @@ for ($i = 1; $i <= 30; $i++) {
 
 $cursor = $users->find(
     [
-        'role' => 'service_provider',
+        'role' => 'provider',
         'email' => ['$regex' => '^dummy\\.servant\\d{2}@example\\.com$'],
     ],
     ['projection' => ['_id' => 1]]
@@ -173,7 +173,7 @@ foreach ($roleAccounts as $account) {
         $updatedRoleUsers++;
     }
 
-    if ($account['role'] !== 'service_provider') {
+    if ($account['role'] !== 'provider') {
         continue;
     }
 

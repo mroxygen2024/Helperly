@@ -69,7 +69,7 @@
                     <div class="input-wrapper" style="position: relative;">
                         <select id="role" name="role" class="select" required style="padding-left: 3rem;">
                             <option value="">Select your role</option>
-                            <option value="service_provider" <?= normalizeRole(old('role')) === 'service_provider' ? 'selected' : ''; ?>>Service Provider</option>
+                            <option value="provider" <?= normalizeRole(old('role')) === 'provider' ? 'selected' : ''; ?>>Service Provider</option>
                             <option value="parent" <?= normalizeRole(old('role')) === 'parent' ? 'selected' : ''; ?>>Customer (Parent)</option>
                         </select>
                         <span class="material-symbols-outlined" 

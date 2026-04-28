@@ -298,7 +298,7 @@ class ProfileController
 
     public function showServantForm(): void
     {
-        requireRole('service_provider');
+        requireRole('provider');
 
         $userId = (string) ($_SESSION['user_id'] ?? '');
         if ($userId === '') {

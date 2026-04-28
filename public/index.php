@@ -156,7 +156,7 @@ try {
                     return;
                 }
 
-                if ($role === 'service_provider') {
+                if ($role === 'provider') {
                     $marketplaceController->servantDashboard();
                     return;
                 }
@@ -183,7 +183,7 @@ try {
                     return;
                 }
 
-                if ($role === 'service_provider') {
+                if ($role === 'provider') {
                     $profileController->showServantForm();
                     return;
                 }
