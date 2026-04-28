@@ -105,7 +105,6 @@ if ($method === 'GET' && str_starts_with($path, '/assets/')) {
     readfile($requested);
     exit;
 }
-
 try {
     if ($method === 'POST' && $path === '/api/login') {
         $authController->loginApi(requestJsonBody());
@@ -115,6 +114,11 @@ try {
     if ($method === 'GET' && $path === '/api/me') {
         $claims = requireJwtAuth();
         $authController->meApi($claims);
+        return;
+    }
+
+    if ($method === 'GET' && $path === '/api/messages') {
+        $messageController->apiFetch($_GET);
         return;
     }
 
@@ -302,10 +306,6 @@ try {
         return;
     }
 
-    if ($method === 'GET' && $path === '/api/messages') {
-        $messageController->apiFetch($_GET);
-        return;
-    }
 
     if ($method === 'GET' && $path === '/servants') {
         $profileController->listServants($_GET);

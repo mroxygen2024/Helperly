@@ -164,7 +164,7 @@
             }
         } catch (e) {
             console.error('Fetch error:', e);
-            if (heartbeat) heartbeat.textContent = ' (Offline)';
+            if (heartbeat) heartbeat.textContent = ` (Offline: ${e.message})`;
         }
     };
 
