@@ -80,6 +80,11 @@ class Message
             ['sort' => ['created_at' => 1]]
         );
 
-        return iterator_to_array($cursor, false);
+        $messages = [];
+        foreach ($cursor as $doc) {
+            $messages[] = (array) $doc;
+        }
+
+        return $messages;
     }
 }

@@ -45,8 +45,13 @@ class MessageController
             ];
             
             $cursor = $db->selectCollection('jobs')->find($queryCriteria, ['sort' => ['updated_at' => -1]]);
-            $jobs = iterator_to_array($cursor, false);
+            $rawJobs = iterator_to_array($cursor, false);
             
+            $jobs = [];
+            foreach ($rawJobs as $rj) {
+                $jobs[] = (array)$rj;
+            }
+
             $conversations = [];
             foreach ($jobs as $job) {
                 $parentId = (string)($job['parent_id'] ?? '');
