@@ -50,7 +50,7 @@ class Job
         string $location,
         string $instructions,
         ?string $selectedProviderId = null,
-        float $hourlyRate = 0.0,
+        float $rate = 0.0,
         float $totalCost = 0.0,
         string $paymentMethod = 'cash'
     ): bool {
@@ -67,7 +67,7 @@ class Job
             'parent_id' => new ObjectId($parentId),
             'time' => new UTCDateTime($parsedTime * 1000),
             'duration' => $duration,
-            'hourly_rate' => $hourlyRate,
+            'rate' => $rate,
             'total_cost' => $totalCost,
             'payment_method' => $paymentMethod,
             'service_type' => $serviceType,
@@ -148,7 +148,7 @@ class Job
         return $result->getModifiedCount() === 1;
     }
 
-    public function acceptProvider(string $jobId, string $providerId, float $hourlyRate = 0.0, float $totalCost = 0.0, string $paymentMethod = 'cash'): bool
+    public function acceptProvider(string $jobId, string $providerId, float $rate = 0.0, float $totalCost = 0.0, string $paymentMethod = 'cash'): bool
     {
         if (!$this->isValidObjectId($jobId) || !$this->isValidObjectId($providerId)) {
             return false;
@@ -162,7 +162,7 @@ class Job
                     'status' => 'active',
                     'parent_confirmed' => false,
                     'provider_confirmed' => false,
-                    'hourly_rate' => $hourlyRate,
+                    'rate' => $rate,
                     'total_cost' => $totalCost,
                     'payment_method' => $paymentMethod,
                     'updated_at' => new UTCDateTime(),

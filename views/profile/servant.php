@@ -77,10 +77,10 @@
                                placeholder="e.g. 5 years" required>
                     </div>
                     <div class="form-group">
-                        <label for="hourly_rate" class="label">Expected Hourly Rate</label>
+                        <label for="rate" class="label">Expected Hourly Rate</label>
                         <div class="input-wrapper" style="position: relative;">
-                            <input id="hourly_rate" name="hourly_rate" type="text" class="input-field" 
-                                   value="<?= escape(old('hourly_rate', (string) ($profile['hourly_rate'] ?? ''))); ?>" 
+                            <input id="rate" name="rate" type="text" class="input-field" 
+                                   value="<?= escape(old('rate', (string) ($profile['rate'] ?? ''))); ?>" 
                                    placeholder="500" required style="padding-right: 4rem;">
                             <span style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); font-weight: 700; color: var(--text-muted);">BDT</span>
                         </div>

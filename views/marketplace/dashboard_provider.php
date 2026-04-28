@@ -1,3 +1,21 @@
+<!-- Profile Completion Warning -->
+<?php if (!($isProfileComplete ?? true)): ?>
+<div class="card p-4 border-none shadow-sm mb-6 bg-danger-soft">
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <div class="p-2 rounded-full bg-danger text-white">
+                <span class="material-symbols-outlined">priority_high</span>
+            </div>
+            <div>
+                <p class="font-600 text-sm">Profile Incomplete</p>
+                <p class="text-xs opacity-75">Please fill in your experience, skills, rate, and availability to attract more clients.</p>
+            </div>
+        </div>
+        <a href="/profile/servant" class="btn btn-danger btn-sm">Complete Now</a>
+    </div>
+</div>
+<?php endif; ?>
+
 <!-- Top Status Bar -->
 <div class="card p-4 border-none shadow-sm mb-6 <?= (string)($profile['verification_status'] ?? '') === 'approved' ? 'bg-success-soft' : 'bg-warning-soft'; ?>">
     <div class="flex items-center justify-between">

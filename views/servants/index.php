@@ -181,7 +181,7 @@
 
                     <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm mt-3 mb-4">
                         <p><span class="text-muted">Exp:</span> <strong><?= escape((string) ($profile['experience'] ?? 'N/A')); ?></strong></p>
-                        <p><span class="text-muted">Rate:</span> <strong class="text-primary"><?= escape((string) ($profile['hourly_rate'] ?? 'N/A')); ?> BDT/hr</strong></p>
+                        <p><span class="text-muted">Rate:</span> <strong class="text-primary"><?= escape((string) ($profile['rate'] ?? 'N/A')); ?> BDT/hr</strong></p>
                     </div>
 
                     <div class="flex flex-wrap gap-2 mb-6">
@@ -262,8 +262,8 @@
                 
                 <div class="grid grid-cols-3 gap-4 text-xs bg-white p-4 rounded-xl border border-slate-200 mb-6">
                      <div class="flex flex-col">
-                         <span class="text-muted font-600 mb-1">Hourly Rate</span>
-                         <span class="font-700 text-sm"><?= escape($profile['hourly_rate'] ?? 'N/A'); ?> BDT</span>
+                         <span class="text-muted font-600 mb-1">Rate</span>
+                         <span class="font-700 text-sm"><?= escape($profile['rate'] ?? 'N/A'); ?> BDT</span>
                      </div>
                      <div class="flex flex-col">
                          <span class="text-muted font-600 mb-1">Location</span>

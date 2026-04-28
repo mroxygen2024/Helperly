@@ -42,7 +42,7 @@ class ServantProfile
         // Support the servant directory filters without scanning the whole collection.
         $this->collection->createIndex(['location' => 1, 'skills' => 1]);
         $this->collection->createIndex(['skills' => 1]);
-        $this->collection->createIndex(['hourly_rate' => 1]);
+        $this->collection->createIndex(['rate' => 1]);
         self::$indexesEnsured = true;
     }
 
@@ -89,7 +89,7 @@ class ServantProfile
         string $experience,
         string $location,
         string $availability,
-        string $hourlyRate,
+        string $rate,
         string $profilePhoto,
         string $faydaIdFrontUrl,
         string $faydaIdBackUrl,
@@ -112,7 +112,7 @@ class ServantProfile
                     'experience' => trim($experience),
                     'location' => trim($location),
                     'availability' => trim($availability),
-                    'hourly_rate' => trim($hourlyRate),
+                    'rate' => trim($rate),
                     'profile_photo' => trim($profilePhoto),
                     'fayda_id_front_url' => trim($faydaIdFrontUrl),
                     'fayda_id_back_url' => trim($faydaIdBackUrl),
@@ -273,7 +273,7 @@ class ServantProfile
                 ],
                 'numeric_rate' => [
                     '$convert' => [
-                        'input' => '$hourly_rate',
+                        'input' => '$rate',
                         'to' => 'double',
                         'onError' => 0.0,
                         'onNull' => 0.0
@@ -330,7 +330,7 @@ class ServantProfile
             'experience' => 1,
             'location' => 1,
             'availability' => 1,
-            'hourly_rate' => 1,
+            'rate' => 1,
             'profile_photo' => 1,
             'fayda_id_front_url' => 1,
             'fayda_id_back_url' => 1,
@@ -367,6 +367,14 @@ class ServantProfile
                     'user_id' => 1,
                     'full_name' => 1,
                     'location' => 1,
+                    'skills' => 1,
+                    'experience' => 1,
+                    'rate' => 1,
+                    'availability' => 1,
+                    'national_id' => 1,
+                    'age' => 1,
+                    'gender' => 1,
+                    'profile_photo' => 1,
                     'fayda_id_front_url' => 1,
                     'fayda_id_back_url' => 1,
                     'selfie_url' => 1,
@@ -409,5 +417,24 @@ class ServantProfile
     public function countTotalProviders(): int
     {
         return $this->collection->countDocuments();
+    }
+
+    /**
+     * Check if the provider has filled all the core professional fields.
+     */
+    public function isProfileComplete(?array $profile): bool
+    {
+        if (!$profile) {
+            return false;
+        }
+
+        $required = ['experience', 'skills', 'rate', 'availability'];
+        foreach ($required as $field) {
+            if (!isset($profile[$field]) || $profile[$field] === '' || (is_array($profile[$field]) && empty($profile[$field]))) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

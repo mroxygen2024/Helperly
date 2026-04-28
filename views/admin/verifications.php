@@ -135,8 +135,8 @@
                             <span class="font-700"><?= escape($profile['location'] ?? 'N/A'); ?></span>
                         </div>
                         <div class="flex flex-col">
-                            <span class="text-xs text-muted font-600">Hourly Rate</span>
-                            <span class="font-700"><?= escape($profile['hourly_rate'] ?? 'N/A'); ?> BDT</span>
+                            <span class="text-xs text-muted font-600">Rate</span>
+                            <span class="font-700"><?= escape($profile['rate'] ?? 'N/A'); ?> BDT</span>
                         </div>
                     </div>
                 </div>

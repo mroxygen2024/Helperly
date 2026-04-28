@@ -80,6 +80,8 @@ class MarketplaceController
         $servantProfileModel = new ServantProfile();
         $profile = $servantProfileModel->getProfileByUserId($providerId);
 
+        $isComplete = $servantProfileModel->isProfileComplete($profile);
+
         renderView('marketplace/dashboard_provider', [
             'title' => 'Provider Dashboard',
             'jobs' => $this->jobs->getOpenJobs(),
@@ -88,6 +90,7 @@ class MarketplaceController
             'applicationsList' => $this->applications->getApplicationsByProvider($providerId),
             'user' => authUser(),
             'profile' => $profile,
+            'isProfileComplete' => $isComplete,
         ]);
     }
 

@@ -61,7 +61,7 @@ class JobController
         $location = sanitizeInput($payload['location'] ?? '');
         $instructions = sanitizeInput($payload['instructions'] ?? '');
         $selectedProviderId = sanitizeInput($payload['selected_provider_id'] ?? null);
-        $hourlyRate = (float) ($payload['hourly_rate'] ?? 0);
+        $rate = (float) ($payload['rate'] ?? 0);
         $paymentMethod = sanitizeInput($payload['payment_method'] ?? 'cash');
 
         // If direct booking, we pull the rate from the provider profile to be safe
@@ -71,13 +71,13 @@ class JobController
                 redirect('/servants');
             }
             $profile = $this->servantProfiles->getProfileByUserId($selectedProviderId);
-            if ($profile && isset($profile['hourly_rate'])) {
-                $hourlyRate = (float) $profile['hourly_rate'];
+            if ($profile && isset($profile['rate'])) {
+                $rate = (float) $profile['rate'];
             }
         }
 
         $numericDuration = (float) filter_var($duration, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
-        $totalCost = $hourlyRate * $numericDuration;
+        $totalCost = $rate * $numericDuration;
 
         $errors = [];
 
@@ -104,7 +104,7 @@ class JobController
                 'service_type' => $serviceType,
                 'location' => $location,
                 'instructions' => $instructions,
-                'hourly_rate' => $hourlyRate,
+                'rate' => $rate,
                 'payment_method' => $paymentMethod
             ]);
             setFlash('error', implode(' ', $errors));
@@ -120,7 +120,7 @@ class JobController
                 $location,
                 $instructions,
                 $selectedProviderId ?: null,
-                $hourlyRate,
+                $rate,
                 $totalCost,
                 $paymentMethod
             );
@@ -228,14 +228,14 @@ class JobController
             if ($updated) {
                // Fetch provider details to get their hourly rate
                 $profile = $this->servantProfiles->getProfileByUserId($providerId);
-                $hourlyRate = (float) ($profile['hourly_rate'] ?? 0);
+                $rate = (float) ($profile['rate'] ?? 0);
                 $numericDuration = (float) filter_var($job['duration'] ?? '', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
-                $totalCost = $hourlyRate * $numericDuration;
+                $totalCost = $rate * $numericDuration;
                 
                 $paymentMethod = sanitizeInput($payload['payment_method'] ?? (string)($job['payment_method'] ?? 'cash'));
                 
                 // Mark job as active and record the provider with the calculated cost
-                $this->jobs->acceptProvider($jobId, $providerId, $hourlyRate, $totalCost, $paymentMethod);
+                $this->jobs->acceptProvider($jobId, $providerId, $rate, $totalCost, $paymentMethod);
 
                 // Reject other applicants
                 $this->applications->rejectOtherApplicants($jobId, $providerId);

@@ -356,7 +356,7 @@ class ProfileController
         $experience = sanitizeInput($payload['experience'] ?? null);
         $location = sanitizeInput($payload['location'] ?? null);
         $availability = sanitizeInput($payload['availability'] ?? null);
-        $hourlyRate = sanitizeInput($payload['hourly_rate'] ?? null);
+        $rate = sanitizeInput($payload['rate'] ?? null);
         $profilePhoto = sanitizeInput($payload['profile_photo'] ?? null);
 
         $errors = [];
@@ -384,7 +384,7 @@ class ProfileController
         if (!validateRequired($availability)) {
             $errors[] = 'Availability is required.';
         }
-        if (!validateRequired($hourlyRate)) {
+        if (!validateRequired($rate)) {
             $errors[] = 'Hourly rate is required.';
         }
         if (!validateRequired($profilePhoto)) {
@@ -427,7 +427,7 @@ class ProfileController
                 'experience' => $experience,
                 'location' => $location,
                 'availability' => $availability,
-                'hourly_rate' => $hourlyRate,
+                'rate' => $rate,
                 'profile_photo' => $profilePhoto,
             ]);
             setFlash('error', implode(' ', $errors));
@@ -445,7 +445,7 @@ class ProfileController
                 $experience,
                 $location,
                 $availability,
-                $hourlyRate,
+                $rate,
                 $profilePhoto,
                 $faydaIdFrontUrl,
                 $faydaIdBackUrl,
