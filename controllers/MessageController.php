@@ -62,10 +62,11 @@ class MessageController
                     $otherParty = $this->users->findUserById($otherId);
                     
                     // Get last message
-                    $lastMsgDoc = $db->selectCollection('messages')->findOne(
+                    $lastMsgDocRaw = $db->selectCollection('messages')->findOne(
                         ['job_id' => $job['_id']],
                         ['sort' => ['created_at' => -1]]
                     );
+                    $lastMsgDoc = $lastMsgDocRaw ? (array)$lastMsgDocRaw : null;
                     
                     $conversations[] = [
                         'job' => $job,
@@ -197,8 +198,8 @@ class MessageController
             }
         } catch (Throwable $exception) {
             error_log('Message send failed: ' . $exception->getMessage());
-            if ($isAjax) jsonResponse(['error' => 'Database error'], 500);
-            setFlash('error', 'Could not send message.');
+            if ($isAjax) jsonResponse(['error' => 'Database error: ' . $exception->getMessage()], 500);
+            setFlash('error', 'Could not send message: ' . $exception->getMessage());
         }
 
         redirect('/messages?job_id=' . $jobId);

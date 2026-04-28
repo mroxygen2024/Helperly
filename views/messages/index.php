@@ -12,12 +12,18 @@
                 </div>
             </div>
             <div class="flex gap-3 items-center">
-                <div class="flex items-center gap-1.5 px-3 py-1.5 bg-success-soft text-success rounded-full" style="font-size: 0.75rem; font-weight: 700;">
+            <!-- DEBUG INFO (Hidden in production) -->
+            <div style="font-size: 10px; opacity: 0.3; text-align: right;">
+                Job: <?= substr((string)$job['_id'], -6) ?><br>
+                User: <?= substr($userId, -6) ?>
+            </div>
+            <div class="flex items-center gap-1.5 px-3 py-1.5 bg-success-soft text-success rounded-full" style="font-size: 0.75rem; font-weight: 700;">
                     <span class="relative flex h-2 w-2">
                         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
                         <span class="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
                     </span>
                     Connected
+                    <span id="heartbeat" style="margin-left: 4px; font-weight: normal; opacity: 0.5;"></span>
                 </div>
                 <a href="/dashboard" class="btn btn-outline btn-sm" style="padding: 0.5rem; display: flex;" title="Back to Dashboard">
                     <span class="material-symbols-outlined" style="font-size: 20px;">close</span>
@@ -27,7 +33,27 @@
 
         <!-- 2. Messages Area (Inner Scroll) -->
         <div id="chat-box" class="chat-messages">
-            <!-- Messages loaded via AJAX -->
+            <?php if (empty($messages)): ?>
+                <div id="empty-state" style="flex: 1; display: flex; flex-direction: column; justify-content: center; items-center; opacity: 0.5; color: var(--text-muted); align-items: center;">
+                    <span class="material-symbols-outlined" style="font-size: 4rem; margin-bottom: 1rem;">chat_bubble_outline</span>
+                    <p style="font-weight: 600; margin: 0;">No messages yet</p>
+                    <p style="font-size: 0.85rem; margin-top: 0.25rem;">Start the conversation by sending a message.</p>
+                </div>
+            <?php else: ?>
+                <?php foreach ($messages as $msg): 
+                    $isSender = (string)$msg['sender_id'] === $userId;
+                ?>
+                    <div class="msg-bubble-wrapper <?= $isSender ? 'sent' : 'received' ?>">
+                        <div class="msg-bubble">
+                            <?= str_replace("\n", "<br>", escape($msg['message'])); ?>
+                        </div>
+                        <div class="msg-meta">
+                            <?= $msg['created_at'] instanceof \MongoDB\BSON\UTCDateTime ? $msg['created_at']->toDateTime()->format('g:i A') : ''; ?>
+                            <?= $isSender ? '<span class="material-symbols-outlined" style="font-size: 14px; vertical-align: middle; margin-left: 2px;">done_all</span>' : '' ?>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
         </div>
 
         <!-- 3. Input Area -->
@@ -63,7 +89,11 @@
     const jobId = document.getElementById('current-job-id').value;
     const userId = "<?= $userId; ?>";
     
-    let lastMessageCount = 0;
+    let lastMessageCount = <?= count($messages); ?>;
+    let isInitialLoad = true;
+
+    // Scroll to bottom immediately on load
+    chatBox.scrollTop = chatBox.scrollHeight;
 
     const escapeHTML = (str) => {
         const div = document.createElement('div');
@@ -110,24 +140,31 @@
     };
 
     const fetchMessages = async () => {
-        if (document.hidden) return;
+        const heartbeat = document.getElementById('heartbeat');
         try {
             const resp = await fetch(`/api/messages?job_id=${jobId}&_t=${Date.now()}`, { 
                 cache: 'no-store',
-                credentials: 'same-origin' 
+                credentials: 'same-origin',
+                headers: { 'Pragma': 'no-cache', 'Cache-Control': 'no-cache' }
             });
             
             if (!resp.ok) {
-                console.error('Polling failed with status:', resp.status);
+                const err = await resp.json().catch(() => ({}));
+                console.error('Polling failed:', resp.status, err);
+                if (heartbeat) heartbeat.textContent = ' (Sync Error)';
                 return;
             }
 
             const data = await resp.json();
-            if (data.messages) {
+            if (heartbeat) heartbeat.textContent = ` (Last sync: ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'})})`;
+            
+            if (data.messages && (data.messages.length !== lastMessageCount || isInitialLoad)) {
+                isInitialLoad = false;
                 renderMessages(data.messages);
             }
         } catch (e) {
             console.error('Fetch error:', e);
+            if (heartbeat) heartbeat.textContent = ' (Offline)';
         }
     };
 
