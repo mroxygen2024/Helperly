@@ -207,7 +207,7 @@ class ServantProfile
     public function findProfilesByFilters(array $filters = [], int $limit = 50): array
     {
         $limit = max(1, min($limit, 100));
-        
+
         $initialMatch = ['verification_status' => 'approved'];
 
         if (!empty($filters['location'])) {
@@ -227,7 +227,7 @@ class ServantProfile
         }
         if (isset($filters['rating']) && $filters['rating'] !== '') {
             // Note: rating may need to be mapped to review collection eventually
-            $initialMatch['rating'] = ['$gte' => (float)$filters['rating']];
+            $initialMatch['rating'] = ['$gte' => (float) $filters['rating']];
         }
 
         $pipeline = [
@@ -289,10 +289,10 @@ class ServantProfile
         if ((isset($filters['min_price']) && $filters['min_price'] !== '') || (isset($filters['max_price']) && $filters['max_price'] !== '')) {
             $priceFilter = [];
             if (isset($filters['min_price']) && $filters['min_price'] !== '') {
-                $priceFilter['$gte'] = (float)$filters['min_price'];
+                $priceFilter['$gte'] = (float) $filters['min_price'];
             }
             if (isset($filters['max_price']) && $filters['max_price'] !== '') {
-                $priceFilter['$lte'] = (float)$filters['max_price'];
+                $priceFilter['$lte'] = (float) $filters['max_price'];
             }
             $pipeline[] = ['$match' => ['numeric_rate' => $priceFilter]];
         }
@@ -308,15 +308,19 @@ class ServantProfile
                         ['$cond' => [['$eq' => ['$location', $filterLocation]], 100, 0]],
                         ['$multiply' => ['$numeric_rating', 15]],
                         ['$multiply' => ['$numeric_experience', 10]],
-                        ['$cond' => [
-                            ['$regexMatch' => [
-                                'input' => '$availability',
-                                'regex' => preg_quote($filterAvailability),
-                                'options' => 'i'
-                            ]], 
-                            30, 
-                            0
-                        ]],
+                        [
+                            '$cond' => [
+                                [
+                                    '$regexMatch' => [
+                                        'input' => '$availability',
+                                        'regex' => preg_quote($filterAvailability),
+                                        'options' => 'i'
+                                    ]
+                                ],
+                                30,
+                                0
+                            ]
+                        ],
                     ]
                 ]
             ]
@@ -325,26 +329,28 @@ class ServantProfile
         $pipeline[] = ['$sort' => ['match_score' => -1, 'created_at' => -1]];
         $pipeline[] = ['$limit' => $limit];
 
-        $pipeline[] = ['$project' => [
-            'user_id' => 1,
-            'full_name' => 1,
-            'gender' => 1,
-            'skills' => 1,
-            'experience' => 1,
-            'location' => 1,
-            'availability' => 1,
-            'rate' => 1,
-            'currency' => 1,
-                    'currency' => 1,
-            'profile_photo' => 1,
-            'fayda_id_front_url' => 1,
-            'fayda_id_back_url' => 1,
-            'selfie_url' => 1,
-            'verification_status' => 1,
-            'verification_notes' => 1,
-            'created_at' => 1,
-        ]];
-        
+        $pipeline[] = [
+            '$project' => [
+                'user_id' => 1,
+                'full_name' => 1,
+                'gender' => 1,
+                'skills' => 1,
+                'experience' => 1,
+                'location' => 1,
+                'availability' => 1,
+                'rate' => 1,
+                'currency' => 1,
+                'currency' => 1,
+                'profile_photo' => 1,
+                'fayda_id_front_url' => 1,
+                'fayda_id_back_url' => 1,
+                'selfie_url' => 1,
+                'verification_status' => 1,
+                'verification_notes' => 1,
+                'created_at' => 1,
+            ]
+        ];
+
         $cursor = $this->collection->aggregate($pipeline);
         return iterator_to_array($cursor, false);
     }
@@ -434,7 +440,7 @@ class ServantProfile
         }
 
         $hasValue = static function (mixed $value): bool {
-            if (is_array($value)) {
+            if (is_iterable($value)) {
                 foreach ($value as $item) {
                     if (trim((string) $item) !== '') {
                         return true;

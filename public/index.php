@@ -386,6 +386,48 @@ try {
         return;
     }
 
+    // New public detail routes for marketplace UX
+    if ($method === 'GET' && $path === '/provider/view.php') {
+        $profileController->showServantPublic();
+        return;
+    }
+
+    if ($method === 'GET' && $path === '/parent/view.php') {
+        $profileController->showEmployerPublic();
+        return;
+    }
+
+    if ($method === 'GET' && $path === '/jobs/detail') {
+        $jobController->showDetail();
+        return;
+    }
+
+    // Back-compat parent/provider dashboard targets
+    if ($method === 'GET' && $path === '/parent/jobs.php') {
+        $jobController->showParentJobs();
+        return;
+    }
+
+    if ($method === 'GET' && $path === '/parent/payments.php') {
+        $paymentController->index();
+        return;
+    }
+
+    if ($method === 'GET' && $path === '/parent/providers.php') {
+        $profileController->listServants($_GET);
+        return;
+    }
+
+    if ($method === 'GET' && $path === '/provider/jobs.php') {
+        $jobController->showProviderJobs();
+        return;
+    }
+
+    if ($method === 'GET' && $path === '/provider/applications.php') {
+        $jobController->showProviderApplications();
+        return;
+    }
+
     if ($method === 'GET' && $path === '/admin/users') {
         $adminUserController->index();
         return;

@@ -37,6 +37,8 @@ class Payment
 
         $this->collection->createIndex(['job_id' => 1], ['unique' => true]);
         $this->collection->createIndex(['status' => 1]);
+        $this->collection->createIndex(['parent_id' => 1]);
+        $this->collection->createIndex(['provider_id' => 1]);
 
         self::$indexesEnsured = true;
     }
@@ -53,14 +55,25 @@ class Payment
             return true; 
         }
 
-        $result = $this->collection->insertOne([
+        // Fetch job to get parent/provider
+        $jobModel = new Job();
+        $job = $jobModel->getJobById($jobId);
+        
+        $document = [
             'job_id' => new ObjectId($jobId),
             'amount' => $amount,
             'method' => $method,
             'status' => 'unpaid',
             'created_at' => new UTCDateTime(),
             'updated_at' => new UTCDateTime(),
-        ]);
+        ];
+
+        if ($job) {
+            if (isset($job['parent_id'])) $document['parent_id'] = $job['parent_id'];
+            if (isset($job['selected_provider_id'])) $document['provider_id'] = $job['selected_provider_id'];
+        }
+
+        $result = $this->collection->insertOne($document);
 
         return $result->getInsertedCount() === 1;
     }
@@ -92,5 +105,51 @@ class Payment
         );
 
         return $result->getModifiedCount() === 1;
+    }
+
+    public function getPaymentsByParentId(string $parentId): array
+    {
+        if (!$this->isValidObjectId($parentId)) {
+            return [];
+        }
+
+        $cursor = $this->collection->aggregate([
+            ['$match' => ['parent_id' => new ObjectId($parentId)]],
+            [
+                '$lookup' => [
+                    'from' => 'jobs',
+                    'localField' => 'job_id',
+                    'foreignField' => '_id',
+                    'as' => 'job'
+                ]
+            ],
+            ['$unwind' => '$job'],
+            ['$sort' => ['created_at' => -1]]
+        ]);
+
+        return iterator_to_array($cursor, false);
+    }
+
+    public function getPaymentsByProviderId(string $providerId): array
+    {
+        if (!$this->isValidObjectId($providerId)) {
+            return [];
+        }
+
+        $cursor = $this->collection->aggregate([
+            ['$match' => ['provider_id' => new ObjectId($providerId)]],
+            [
+                '$lookup' => [
+                    'from' => 'jobs',
+                    'localField' => 'job_id',
+                    'foreignField' => '_id',
+                    'as' => 'job'
+                ]
+            ],
+            ['$unwind' => '$job'],
+            ['$sort' => ['created_at' => -1]]
+        ]);
+
+        return iterator_to_array($cursor, false);
     }
 }

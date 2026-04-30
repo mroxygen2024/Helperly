@@ -339,4 +339,78 @@ class JobController
 
         redirect('/dashboard');
     }
+
+    public function showDetail(): void
+    {
+        $jobId = sanitizeInput($_GET['id'] ?? '');
+        if ($jobId === '') {
+            setFlash('error', 'Job ID is required.');
+            redirect('/dashboard');
+        }
+
+        $job = $this->jobs->getJobById($jobId);
+        if (!$job) {
+            setFlash('error', 'Job not found.');
+            redirect('/dashboard');
+        }
+
+        $userModel = new User();
+        $jobArray = (array)$job;
+        
+        $jobArray['parent'] = $userModel->findUserById((string)$job['parent_id']);
+        if (isset($job['selected_provider_id'])) {
+            $jobArray['provider'] = $userModel->findUserById((string)$job['selected_provider_id']);
+        }
+        
+        $paymentModel = new Payment();
+        $jobArray['payment'] = $paymentModel->getPaymentByJobId($jobId);
+        
+        $reviewModel = new Review();
+        $jobArray['review'] = $reviewModel->getReviewByJobId($jobId);
+
+        renderView('jobs/detail', [
+            'title' => 'Job Details: ' . escape($job['service_type']),
+            'job' => $jobArray,
+            'user' => authUser(),
+        ]);
+    }
+
+    public function showParentJobs(): void
+    {
+        requireRole('parent');
+        $parentId = (string)($_SESSION['user_id'] ?? '');
+        $jobs = $this->jobs->getJobsByParentId($parentId);
+        
+        renderView('servants/requests', [ // Reusing existing view for simplicity or creating new
+            'title' => 'My Posted Jobs',
+            'jobs' => $jobs,
+            'user' => authUser(),
+        ]);
+    }
+
+    public function showProviderJobs(): void
+    {
+        requireRole('provider');
+        $providerId = (string)($_SESSION['user_id'] ?? '');
+        $jobs = $this->jobs->getActiveJobsByProvider($providerId);
+        
+        renderView('servants/requests', [
+            'title' => 'My Active Jobs',
+            'jobs' => $jobs,
+            'user' => authUser(),
+        ]);
+    }
+
+    public function showProviderApplications(): void
+    {
+        requireRole('provider');
+        $providerId = (string)($_SESSION['user_id'] ?? '');
+        $applications = $this->applications->getApplicationsByProvider($providerId);
+        
+        renderView('servants/requests', [
+            'title' => 'My Applications',
+            'applications' => $applications,
+            'user' => authUser(),
+        ]);
+    }
 }

@@ -743,4 +743,79 @@ class ProfileController
             'filters' => $filters,
         ]);
     }
+
+    public function showServantPublic(): void
+    {
+        $userId = sanitizeInput($_GET['id'] ?? '');
+        if ($userId === '') {
+            setFlash('error', 'Provider ID is required.');
+            redirect('/servants');
+        }
+
+        $profile = $this->servantProfiles->getProfileByUserId($userId);
+        $user = $this->users->findUserById($userId);
+
+        if (!$profile || !$user) {
+            setFlash('error', 'Provider profile not found.');
+            redirect('/servants');
+        }
+
+        $reviewModel = new Review();
+        $reviews = $reviewModel->getReviewsForProvider($userId);
+        
+        // Fetch parent data for reviews
+        $enrichedReviews = [];
+        foreach ($reviews as $review) {
+            $reviewArray = (array)$review;
+            $reviewArray['parent'] = $this->users->findUserById((string)$review['parent_id']);
+            $enrichedReviews[] = $reviewArray;
+        }
+
+        $avgRating = $reviewModel->calculateAverageRating($userId);
+
+        renderView('profile/servant_view', [
+            'title' => escape($profile['full_name'] ?? $user['name'] ?? 'Provider Profile'),
+            'profile' => $profile,
+            'user' => $user,
+            'reviews' => $enrichedReviews,
+            'rating' => $avgRating,
+            'currentUser' => authUser(),
+        ]);
+    }
+
+    public function showEmployerPublic(): void
+    {
+        $userId = sanitizeInput($_GET['id'] ?? '');
+        if ($userId === '') {
+            setFlash('error', 'Employer ID is required.');
+            redirect('/');
+        }
+
+        $profile = $this->employerProfiles->getProfileByUserId($userId);
+        $user = $this->users->findUserById($userId);
+
+        if (!$profile || !$user) {
+            setFlash('error', 'Employer profile not found.');
+            redirect('/');
+        }
+
+        $jobModel = new Job();
+        $jobs = $jobModel->getJobsByParentId($userId);
+        
+        $totalPosted = count($jobs);
+        $completedJobs = array_filter($jobs, fn($j) => $j['status'] === 'completed');
+        $totalCompleted = count($completedJobs);
+
+        renderView('profile/employer_view', [
+            'title' => escape($user['name'] ?? 'Employer Profile'),
+            'profile' => $profile,
+            'user' => $user,
+            'stats' => [
+                'total_posted' => $totalPosted,
+                'total_completed' => $totalCompleted,
+            ],
+            'recent_jobs' => array_slice($jobs, 0, 5),
+            'currentUser' => authUser(),
+        ]);
+    }
 }

@@ -11,6 +11,30 @@ class PaymentController
         $this->payments = new Payment();
     }
 
+    public function index(): void
+    {
+        $user = authUser();
+        if (!$user) {
+            redirect('/login');
+        }
+
+        $userId = (string) ($_SESSION['user_id'] ?? '');
+        $role = normalizeRole((string) ($user['role'] ?? ''));
+        
+        $payments = [];
+        if ($role === 'parent') {
+            $payments = $this->payments->getPaymentsByParentId($userId);
+        } else if ($role === 'provider') {
+            $payments = $this->payments->getPaymentsByProviderId($userId);
+        }
+
+        renderView('payments/index', [
+            'title' => 'My Payments',
+            'payments' => $payments,
+            'user' => $user,
+        ]);
+    }
+
     public function processPayment(array $payload): void
     {
         requireRole('parent');
