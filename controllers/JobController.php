@@ -332,4 +332,48 @@ class JobController
 
         redirect('/dashboard');
     }
+
+    public function stop(array $payload): void
+    {
+        requireRole('parent');
+
+        if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
+            setFlash('error', 'Invalid request token.');
+            redirect('/dashboard');
+        }
+
+        $jobId = sanitizeInput($payload['job_id'] ?? null);
+        $parentId = (string) ($_SESSION['user_id'] ?? '');
+
+        if (!$jobId) {
+            setFlash('error', 'Missing job ID.');
+            redirect('/dashboard');
+        }
+
+        $job = $this->jobs->getJobById($jobId);
+        if (!$job || (string) $job['parent_id'] !== $parentId) {
+            setFlash('error', 'You are not authorized to stop this job.');
+            redirect('/dashboard');
+        }
+
+        if (!in_array((string) ($job['status'] ?? ''), ['open', 'active'], true)) {
+            // Early check for user-friendly error messaging; the model also enforces this atomically.
+            setFlash('error', 'This job cannot be stopped in its current state.');
+            redirect('/dashboard');
+        }
+
+        try {
+            $stopped = $this->jobs->stopJob($jobId, $parentId);
+            if ($stopped) {
+                setFlash('success', 'Job has been cancelled successfully.');
+            } else {
+                setFlash('error', 'Could not cancel the job. Please try again.');
+            }
+        } catch (Throwable $exception) {
+            error_log('Job stop failed: ' . $exception->getMessage());
+            setFlash('error', 'An error occurred while cancelling the job.');
+        }
+
+        redirect('/dashboard');
+    }
 }

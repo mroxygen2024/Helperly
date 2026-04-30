@@ -53,6 +53,14 @@
                                         </button>
                                     </form>
                                     <a href="/messages?job_id=<?= escape((string)$job['_id']); ?>" class="btn btn-outline btn-sm">Chat</a>
+                                    <form action="/jobs/stop" method="POST" onsubmit="return confirm('Are you sure you want to cancel this job?');">
+                                        <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">
+                                        <input type="hidden" name="job_id" value="<?= escape((string)$job['_id']); ?>">
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <span class="material-symbols-outlined" style="font-size: 16px;">stop_circle</span>
+                                            Stop
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         <?php endforeach; ?>
@@ -161,7 +169,7 @@
                                     <span><?= escape($job['service_type']); ?></span>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <span class="badge badge-<?= $job['status'] === 'completed' ? 'success' : ($job['status'] === 'active' ? 'warning' : 'info'); ?>">
+                                    <span class="badge badge-<?= $job['status'] === 'completed' ? 'success' : ($job['status'] === 'active' ? 'warning' : ($job['status'] === 'cancelled' ? 'danger' : 'info')); ?>">
                                         <?= escape($job['status']); ?>
                                     </span>
                                     <button type="button" class="btn btn-ghost btn-sm" data-open-modal="job_modal_<?= escape((string)$job['_id']); ?>" title="View Details">
@@ -282,7 +290,7 @@
                     </div>
                     <div>
                         <h2 class="card-title" style="margin: 0;"><?= escape($job['service_type']); ?> Details</h2>
-                        <span class="badge badge-<?= $job['status'] === 'completed' ? 'success' : ($job['status'] === 'active' ? 'warning' : 'info'); ?>"><?= escape(ucfirst($job['status'])); ?></span>
+                        <span class="badge badge-<?= $job['status'] === 'completed' ? 'success' : ($job['status'] === 'active' ? 'warning' : ($job['status'] === 'cancelled' ? 'danger' : 'info')); ?>"><?= escape(ucfirst($job['status'])); ?></span>
                     </div>
                 </div>
                 <button type="button" class="btn btn-outline btn-sm" data-close-modal="job_modal_<?= escape((string)$job['_id']); ?>" style="border:none; padding: 0.5rem; border-radius: 50%;">
