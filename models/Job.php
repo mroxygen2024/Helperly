@@ -250,4 +250,14 @@ class Job
     {
         return $this->collection->countDocuments();
     }
+
+    public function countActiveJobs(): int
+    {
+        return $this->collection->countDocuments(['status' => 'active']);
+    }
+
+    public function countJobsByStatus(string $status): int
+    {
+        return $this->collection->countDocuments(['status' => $status]);
+    }
 }

@@ -124,104 +124,108 @@ try {
 
     if ($method === 'GET') {
         $requestedPage = sanitizeInput($_GET['page'] ?? '');
+        $hasMappedPage = isset($pathToPage[$path]);
 
-        if ($requestedPage === '' && isset($pathToPage[$path])) {
+        if ($requestedPage === '' && $hasMappedPage) {
             $requestedPage = $pathToPage[$path];
         }
 
-        if ($requestedPage === '') {
-            $requestedPage = authUser() ? 'dashboard' : 'login';
-        }
+        // For routes not mapped to a legacy page, defer to explicit path handlers below.
+        if ($requestedPage !== '' || $hasMappedPage) {
+            if ($requestedPage === '') {
+                $requestedPage = authUser() ? 'dashboard' : 'login';
+            }
 
-        switch ($requestedPage) {
-            case 'login':
-                $authController->showLogin();
-                return;
-
-            case 'register':
-                $authController->showRegister();
-                return;
-
-            case 'dashboard':
-                $user = authUser();
-
-                if (!$user) {
-                    redirect('/login');
-                }
-
-                $role = normalizeRole((string) ($user['role'] ?? ''));
-
-                if ($role === 'parent') {
-                    $marketplaceController->employerDashboard();
+            switch ($requestedPage) {
+                case 'login':
+                    $authController->showLogin();
                     return;
-                }
 
-                if ($role === 'provider') {
-                    $marketplaceController->servantDashboard();
+                case 'register':
+                    $authController->showRegister();
                     return;
-                }
 
-                if ($role === 'administrator') {
-                    $marketplaceController->adminDashboard();
+                case 'dashboard':
+                    $user = authUser();
+
+                    if (!$user) {
+                        redirect('/login');
+                    }
+
+                    $role = normalizeRole((string) ($user['role'] ?? ''));
+
+                    if ($role === 'parent') {
+                        $marketplaceController->employerDashboard();
+                        return;
+                    }
+
+                    if ($role === 'provider') {
+                        $marketplaceController->servantDashboard();
+                        return;
+                    }
+
+                    if ($role === 'administrator') {
+                        $marketplaceController->adminDashboard();
+                        return;
+                    }
+
+                    $marketplaceController->index();
                     return;
-                }
 
-                $marketplaceController->index();
-                return;
+                case 'profiles':
+                    $user = authUser();
 
-            case 'profiles':
-                $user = authUser();
+                    if (!$user) {
+                        redirect('/login');
+                    }
 
-                if (!$user) {
-                    redirect('/login');
-                }
+                    $role = normalizeRole((string) ($user['role'] ?? ''));
 
-                $role = normalizeRole((string) ($user['role'] ?? ''));
+                    if ($role === 'parent') {
+                        $profileController->showEmployerForm();
+                        return;
+                    }
 
-                if ($role === 'parent') {
-                    $profileController->showEmployerForm();
+                    if ($role === 'provider') {
+                        $profileController->showServantForm();
+                        return;
+                    }
+
+                    http_response_code(403);
+                    renderView('errors/404', [
+                        'title' => 'Forbidden',
+                        'message' => 'You do not have permission to access profiles.',
+                    ]);
                     return;
-                }
 
-                if ($role === 'provider') {
-                    $profileController->showServantForm();
+                case 'profile-account':
+                    $profileController->showAccountForm();
                     return;
-                }
 
-                http_response_code(403);
-                renderView('errors/404', [
-                    'title' => 'Forbidden',
-                    'message' => 'You do not have permission to access profiles.',
-                ]);
-                return;
+                case 'listings':
+                    $user = authUser();
+                    $role = $user ? normalizeRole((string) ($user['role'] ?? '')) : null;
 
-            case 'profile-account':
-                $profileController->showAccountForm();
-                return;
+                    if ($role === 'parent' || $role === 'administrator') {
+                        $profileController->listServants($_GET);
+                        return;
+                    }
 
-            case 'listings':
-                $user = authUser();
-                $role = $user ? normalizeRole((string) ($user['role'] ?? '')) : null;
-
-                if ($role === 'parent' || $role === 'administrator') {
-                    $profileController->listServants($_GET);
+                    $marketplaceController->index();
                     return;
-                }
 
-                $marketplaceController->index();
-                return;
+                case 'messages':
+                    $messageController->index($_GET);
+                    return;
 
-            case 'messages':
-                $messageController->index($_GET);
-                return;
-
-            default:
-                http_response_code(404);
-                renderView('errors/404', [
-                    'title' => 'Not Found',
-                    'message' => 'The page you requested does not exist.',
-                ]);
-                return;
+                default:
+                    http_response_code(404);
+                    renderView('errors/404', [
+                        'title' => 'Not Found',
+                        'message' => 'The page you requested does not exist.',
+                    ]);
+                    return;
+            }
         }
     }
 
