@@ -83,7 +83,7 @@
                                 <div class="flex justify-between items-start mb-4">
                                     <div>
                                         <h3 class="font-600 text-lg"><?= escape($job['service_type']); ?></h3>
-                                        <p class="text-sm text-muted">Cost: <?= escape($job['total_cost'] ?? 0); ?> • Rate: $<?= escape($job['hourly_rate'] ?? 0); ?>/hr</p>
+                                        <p class="text-sm text-muted">Cost: <?= escape($job['total_cost'] ?? 0); ?> • Rate: $<?= escape($job['rate'] ?? 0); ?>/hr</p>
                                     </div>
                                     <span class="badge badge-info">Open</span>
                                 </div>
@@ -196,8 +196,8 @@
                 
                 <div class="grid grid-cols-2 gap-4">
                     <div class="form-group mb-0">
-                        <input name="hourly_rate" type="number" step="0.01" class="input-field" placeholder="Rate/Hr" required 
-                               value="<?= escape(old('hourly_rate')); ?>"
+                        <input name="rate" type="number" step="0.01" class="input-field" placeholder="Rate/Hr" required 
+                               value="<?= escape(old('rate')); ?>"
                                style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; height: 48px;">
                     </div>
                     <div class="form-group mb-0">
@@ -421,7 +421,7 @@
                         <div class="grid grid-cols-3 gap-4 text-xs bg-white p-4 rounded-xl border border-slate-200">
                              <div class="flex flex-col">
                                  <span class="text-muted font-600 mb-1">Hourly Rate</span>
-                                 <span class="font-700"><?= escape($applicant['profile_data']['hourly_rate'] ?? 'N/A'); ?> BDT</span>
+                                 <span class="font-700"><?= escape($applicant['profile_data']['rate'] ?? 'N/A'); ?> BDT</span>
                              </div>
                              <div class="flex flex-col">
                                  <span class="text-muted font-600 mb-1">Location</span>
@@ -477,7 +477,7 @@
     };
 
     // Cost Calculation Logic
-    const rateInput = document.querySelector('input[name="hourly_rate"]');
+    const rateInput = document.querySelector('input[name="rate"]');
     const durationInput = document.getElementById('post_duration');
     const estimateDiv = document.getElementById('cost_estimate');
     const estimateVal = document.getElementById('estimate_val');

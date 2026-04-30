@@ -18,7 +18,7 @@
                         <span class="material-symbols-outlined" style="font-size: 1rem;">verified</span> Verified
                     </span>
                     <span class="text-muted font-600 text-sm">
-                         Hourly Rate: <span style="color: var(--primary); font-weight: 800; font-size: 1.1rem;"><?= escape((string) ($provider['hourly_rate'] ?? 'N/A')); ?></span>
+                         Hourly Rate: <span style="color: var(--primary); font-weight: 800; font-size: 1.1rem;"><?= escape((string) ($provider['rate'] ?? 'N/A')); ?></span>
                     </span>
                 </div>
             </div>
@@ -127,7 +127,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const durationInput = document.getElementById('job_duration');
     const totalDisplay = document.getElementById('total_cost_display');
-    const hourlyRate = parseFloat("<?= (float)($provider['hourly_rate'] ?? 0); ?>");
+    const hourlyRate = parseFloat("<?= (float)($provider['rate'] ?? 0); ?>");
 
     durationInput.addEventListener('input', () => {
         const duration = parseFloat(durationInput.value) || 0;

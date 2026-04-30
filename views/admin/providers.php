@@ -71,7 +71,7 @@
                             <span class="text-sm font-500"><?= escape($p['profile']['experience'] ?? 'N/A'); ?></span>
                         </td>
                         <td class="p-4">
-                            <span class="text-sm font-700 text-slate-800"><?= escape($p['profile']['hourly_rate'] ?? '0'); ?> BDT/hr</span>
+                            <span class="text-sm font-700 text-slate-800"><?= escape($p['profile']['rate'] ?? '0'); ?> BDT/hr</span>
                         </td>
                         <td class="p-4">
                             <?php $vStatus = (string)($p['profile']['verification_status'] ?? 'pending'); ?>

@@ -71,7 +71,7 @@
                     </div>
 
                     <div class="mt-4 pt-4 border-t flex justify-between items-center">
-                        <span class="text-primary font-700"><?= escape($profile['hourly_rate'] ?? '0'); ?> <span class="text-xs font-400 text-muted">/hr</span></span>
+                        <span class="text-primary font-700"><?= escape($profile['rate'] ?? '0'); ?> <span class="text-xs font-400 text-muted">/hr</span></span>
                         <a href="/job/book?provider_id=<?= escape((string)$profile['user_id']); ?>" class="text-xs font-600 uppercase letter-spacing-lg text-primary hover-underline">Book Now</a>
                     </div>
                 </div>
