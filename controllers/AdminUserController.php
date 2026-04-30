@@ -132,7 +132,7 @@ class AdminUserController
         $userArray = (array)$user;
         $role = normalizeRole((string)($user['role'] ?? ''));
 
-        if ($role === 'service_provider') {
+        if ($role === 'provider') {
             $servantProfile = new ServantProfile();
             $userArray['profile'] = $servantProfile->getProfileByUserId($userId);
         } elseif ($role === 'parent') {

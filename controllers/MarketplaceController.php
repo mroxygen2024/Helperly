@@ -104,6 +104,7 @@ class MarketplaceController
         $stats = [
             'total_users' => $userModel->countUsers(),
             'total_jobs' => $this->jobs->countJobs(),
+            'active_jobs' => $this->jobs->countActiveJobs(),
             'verified_providers' => $servantProfileModel->countVerifiedProviders(),
             'total_providers' => $servantProfileModel->countTotalProviders(),
         ];
