@@ -50,6 +50,7 @@ class ProfileController
         return match ($fieldName) {
             'fayda_id_front' => 'Fayda ID front image',
             'fayda_id_back' => 'Fayda ID back image',
+            'profile_photo_upload' => 'Profile photo',
             'selfie' => 'Selfie image',
             default => ucfirst(str_replace('_', ' ', $fieldName)),
         };
@@ -177,6 +178,32 @@ class ProfileController
                 @unlink($tmpName);
             }
         }
+    }
+
+    private function resolveOptionalImagePath(
+        array $files,
+        string $fieldName,
+        string $existingPath,
+        string $userId,
+        array &$errors,
+        bool $removeExisting = false
+    ): string {
+        $file = $files[$fieldName] ?? null;
+
+        if (is_array($file) && (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
+            try {
+                return $this->uploadVerificationImage($file, $fieldName, $userId);
+            } catch (Throwable $exception) {
+                $errors[] = $exception->getMessage();
+                return $existingPath;
+            }
+        }
+
+        if ($removeExisting) {
+            return '';
+        }
+
+        return $existingPath;
     }
 
     private function resolveVerificationImagePath(
@@ -347,6 +374,9 @@ class ProfileController
         $existingSelfie = is_array($existingProfile)
             ? sanitizeInput((string) (($existingProfile['selfie_url'] ?? $existingProfile['selfie'] ?? '')))
             : '';
+        $existingProfilePhoto = is_array($existingProfile)
+            ? sanitizeInput((string) (($existingProfile['profile_photo'] ?? '')))
+            : '';
 
         $faydaIdFrontUrl = '';
         $faydaIdBackUrl = '';
@@ -361,7 +391,10 @@ class ProfileController
         $location = sanitizeInput($payload['location'] ?? null);
         $availability = sanitizeInput($payload['availability'] ?? null);
         $rate = sanitizeInput($payload['hourly_rate'] ?? $payload['rate'] ?? null);
-        $profilePhoto = sanitizeInput($payload['profile_photo'] ?? null);
+        $currency = strtoupper(sanitizeInput($payload['currency'] ?? 'BDT'));
+        $profilePhotoRemove = !empty($payload['profile_photo_remove']);
+        $faydaIdFrontRemove = !empty($payload['fayda_id_front_remove']);
+        $faydaIdBackRemove = !empty($payload['fayda_id_back_remove']);
 
         $errors = [];
         if (!validateRequired($fullName)) {
@@ -391,8 +424,8 @@ class ProfileController
         if (!validateRequired($rate)) {
             $errors[] = 'Hourly rate is required.';
         }
-        if (!validateRequired($profilePhoto)) {
-            $errors[] = 'Profile photo URL is required.';
+        if (!in_array($currency, ['BDT', 'USD', 'EUR', 'INR'], true)) {
+            $currency = 'BDT';
         }
 
         $faydaIdFrontUrl = $this->resolveVerificationImagePath(
@@ -400,14 +433,16 @@ class ProfileController
             'fayda_id_front',
             $existingIdFront,
             $userId,
-            $errors
+            $errors,
+            $faydaIdFrontRemove
         );
         $faydaIdBackUrl = $this->resolveVerificationImagePath(
             $uploadedFiles,
             'fayda_id_back',
             $existingIdBack,
             $userId,
-            $errors
+            $errors,
+            $faydaIdBackRemove
         );
         $selfieUrl = $this->resolveSelfieImagePath(
             $payload,
@@ -415,6 +450,14 @@ class ProfileController
             $existingSelfie,
             $userId,
             $errors
+        );
+        $profilePhoto = $this->resolveOptionalImagePath(
+            $uploadedFiles,
+            'profile_photo_upload',
+            $existingProfilePhoto,
+            $userId,
+            $errors,
+            $profilePhotoRemove
         );
 
         $verificationUploadsChanged = $faydaIdFrontUrl !== $existingIdFront
@@ -433,7 +476,9 @@ class ProfileController
                 'availability' => $availability,
                 'rate' => $rate,
                 'hourly_rate' => $rate,
+                'currency' => $currency,
                 'profile_photo' => $profilePhoto,
+                'profile_photo_remove' => $profilePhotoRemove ? '1' : '',
             ]);
             setFlash('error', implode(' ', $errors));
             redirect('/profile/servant');
@@ -451,6 +496,7 @@ class ProfileController
                 $location,
                 $availability,
                 $rate,
+                $currency,
                 $profilePhoto,
                 $faydaIdFrontUrl,
                 $faydaIdBackUrl,

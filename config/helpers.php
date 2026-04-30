@@ -382,13 +382,15 @@ function uploadImageToImageKit(string $tmpFilePath, string $fileName, array $opt
     }
 
     $response = imageKitClient()->uploadFile($payload);
-    $result = is_array($response['result'] ?? null) ? $response['result'] : null;
+    $responseData = is_array($response) ? $response : (is_object($response) ? get_object_vars($response) : []);
+    $result = $responseData['result'] ?? $responseData;
+    $resultData = is_array($result) ? $result : (is_object($result) ? get_object_vars($result) : []);
 
-    if ($result === null || !is_string($result['url'] ?? null) || trim($result['url']) === '') {
+    if (!is_string($resultData['url'] ?? null) || trim($resultData['url']) === '') {
         throw new RuntimeException('ImageKit upload succeeded but no URL was returned.');
     }
 
-    return $result;
+    return $resultData;
 }
 
 function renderView(string $view, array $data = []): void
