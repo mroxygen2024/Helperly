@@ -113,6 +113,7 @@ class ServantProfile
                     'location' => trim($location),
                     'availability' => trim($availability),
                     'rate' => trim($rate),
+                    'hourly_rate' => trim($rate),
                     'profile_photo' => trim($profilePhoto),
                     'fayda_id_front_url' => trim($faydaIdFrontUrl),
                     'fayda_id_back_url' => trim($faydaIdBackUrl),
@@ -273,7 +274,7 @@ class ServantProfile
                 ],
                 'numeric_rate' => [
                     '$convert' => [
-                        'input' => '$rate',
+                        'input' => ['$ifNull' => ['$rate', '$hourly_rate']],
                         'to' => 'double',
                         'onError' => 0.0,
                         'onNull' => 0.0
@@ -428,11 +429,34 @@ class ServantProfile
             return false;
         }
 
-        $required = ['experience', 'skills', 'rate', 'availability'];
-        foreach ($required as $field) {
-            if (!isset($profile[$field]) || $profile[$field] === '' || (is_array($profile[$field]) && empty($profile[$field]))) {
+        $hasValue = static function (mixed $value): bool {
+            if (is_array($value)) {
+                foreach ($value as $item) {
+                    if (trim((string) $item) !== '') {
+                        return true;
+                    }
+                }
+
                 return false;
             }
+
+            return trim((string) $value) !== '';
+        };
+
+        if (!$hasValue($profile['experience'] ?? null)) {
+            return false;
+        }
+
+        if (!$hasValue($profile['skills'] ?? null)) {
+            return false;
+        }
+
+        if (!$hasValue($profile['hourly_rate'] ?? $profile['rate'] ?? null)) {
+            return false;
+        }
+
+        if (!$hasValue($profile['availability'] ?? null)) {
+            return false;
         }
 
         return true;

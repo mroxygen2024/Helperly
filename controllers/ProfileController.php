@@ -26,8 +26,12 @@ class ProfileController
 
     private function iterableToCsv(mixed $values): string
     {
+        if (is_string($values)) {
+            $values = explode(',', $values);
+        }
+
         if (!is_iterable($values)) {
-            return '';
+            return trim((string) $values);
         }
 
         $items = [];
@@ -356,7 +360,7 @@ class ProfileController
         $experience = sanitizeInput($payload['experience'] ?? null);
         $location = sanitizeInput($payload['location'] ?? null);
         $availability = sanitizeInput($payload['availability'] ?? null);
-        $rate = sanitizeInput($payload['rate'] ?? null);
+        $rate = sanitizeInput($payload['hourly_rate'] ?? $payload['rate'] ?? null);
         $profilePhoto = sanitizeInput($payload['profile_photo'] ?? null);
 
         $errors = [];
@@ -428,6 +432,7 @@ class ProfileController
                 'location' => $location,
                 'availability' => $availability,
                 'rate' => $rate,
+                'hourly_rate' => $rate,
                 'profile_photo' => $profilePhoto,
             ]);
             setFlash('error', implode(' ', $errors));

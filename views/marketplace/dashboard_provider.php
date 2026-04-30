@@ -11,7 +11,7 @@
                 <p class="text-xs opacity-75">Please fill in your experience, skills, rate, and availability to attract more clients.</p>
             </div>
         </div>
-        <a href="/profile/servant" class="btn btn-danger btn-sm">Complete Now</a>
+        <a href="<?= escape(appUrl('/profile/servant')); ?>" class="btn btn-danger btn-sm">Complete Now</a>
     </div>
 </div>
 <?php endif; ?>
@@ -28,7 +28,7 @@
                 <p class="text-xs opacity-75"><?= (string)($profile['verification_status'] ?? '') === 'approved' ? 'You are a verified provider. Enjoy full access!' : 'Complete your profile to start taking high-value jobs.'; ?></p>
             </div>
         </div>
-        <a href="/profile/servant" class="btn btn-outline btn-sm" style="background: white;">Update Profile</a>
+        <a href="<?= escape(appUrl('/profile/servant')); ?>" class="btn btn-outline btn-sm" style="background: white;">Update Profile</a>
     </div>
 </div>
 

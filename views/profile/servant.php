@@ -24,7 +24,7 @@
             </div>
         <?php endif; ?>
 
-        <form action="/profile/servant" method="POST" enctype="multipart/form-data" class="flex flex-col gap-8" novalidate>
+        <form action="<?= escape(appUrl('/profile/servant')); ?>" method="POST" enctype="multipart/form-data" class="flex flex-col gap-8" novalidate>
             <input type="hidden" name="csrf_token" value="<?= escape($csrfToken ?? csrfToken()); ?>">
 
             <!-- Section: Basic Information -->
@@ -80,7 +80,7 @@
                         <label for="rate" class="label">Expected Hourly Rate</label>
                         <div class="input-wrapper" style="position: relative;">
                             <input id="rate" name="rate" type="text" class="input-field" 
-                                   value="<?= escape(old('rate', (string) ($profile['rate'] ?? ''))); ?>" 
+                                value="<?= escape(old('rate', (string) ($profile['hourly_rate'] ?? $profile['rate'] ?? ''))); ?>" 
                                    placeholder="500" required style="padding-right: 4rem;">
                             <span style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); font-weight: 700; color: var(--text-muted);">BDT</span>
                         </div>

@@ -80,6 +80,18 @@ function validateRole(string $role): bool
     return in_array(normalizeRole($role), canonicalRoles(), true);
 }
 
+function appUrl(string $path = ''): string
+{
+    $baseUrl = rtrim(appConfig()['base_url'], '/');
+    $normalizedPath = '/' . ltrim($path, '/');
+
+    if ($normalizedPath === '/') {
+        return $baseUrl;
+    }
+
+    return $baseUrl . $normalizedPath;
+}
+
 function userHasRole(array $user, string|array $requiredRoles): bool
 {
     $currentRole = normalizeRole((string) ($user['role'] ?? ''));
@@ -106,7 +118,7 @@ function hashVerificationToken(string $token): string
 
 function redirect(string $path): never
 {
-    header('Location: ' . $path);
+    header('Location: ' . appUrl($path));
     exit;
 }
 

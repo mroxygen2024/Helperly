@@ -31,6 +31,7 @@ foreach ($collections as $colName) {
     $db->selectCollection($colName)->deleteMany([]);
 }
 
+
 $userModel = new User();
 $servantProfileModel = new ServantProfile();
 $employerProfileModel = new EmployerProfile();
@@ -184,12 +185,12 @@ foreach ($providers as $p) {
         'https://placehold.co/600x400?text=Back',
         'https://placehold.co/600x400?text=Selfie'
     );
-    
+
     if ($p['status'] === 'approved') {
         $servantProfileModel->updateVerificationStatus($id, 'approved', '');
         $approvedProviderIds[] = $id;
     }
-    
+
     $providerIds[] = $id;
 }
 
@@ -206,7 +207,7 @@ $jobModel->createJob(
     'Deep cleaning of 3 bedrooms and 2 bathrooms.'
 );
 $openJob = $db->jobs->findOne(['instructions' => 'Deep cleaning of 3 bedrooms and 2 bathrooms.']);
-$jobId1 = (string)$openJob['_id'];
+$jobId1 = (string) $openJob['_id'];
 $applicationModel->createApplication($jobId1, $approvedProviderIds[0]);
 $applicationModel->createApplication($jobId1, $providerIds[3]); // pending provider also applying
 
@@ -246,7 +247,7 @@ $jobModel->createJob(
     2500
 );
 $completedJob = $db->jobs->findOne(['instructions' => 'Temporary care while I was at a meeting.']);
-$jobId3 = (string)$completedJob['_id'];
+$jobId3 = (string) $completedJob['_id'];
 $db->jobs->updateOne(['_id' => new ObjectId($jobId3)], ['$set' => ['status' => 'completed', 'parent_confirmed' => true, 'provider_confirmed' => true]]);
 
 // Create Payment for Completed Job
@@ -264,7 +265,7 @@ echo "Creating Messages...\n";
 $messageModel = new Message();
 $activeJob = $db->jobs->findOne(['instructions' => 'Ironing and kitchen organization.']);
 if ($activeJob) {
-    $activeJobId = (string)$activeJob['_id'];
+    $activeJobId = (string) $activeJob['_id'];
     $messageModel->sendMessage($parentIds[0], $approvedProviderIds[0], $activeJobId, 'Hello Rahima, are you available tomorrow?');
     $messageModel->sendMessage($approvedProviderIds[0], $parentIds[0], $activeJobId, 'Yes, I can come at 10 AM.');
     $messageModel->sendMessage($parentIds[0], $approvedProviderIds[0], $activeJobId, 'Great, see you then.');
@@ -283,7 +284,7 @@ $jobModel->createJob(
     800
 );
 $completedJob2 = $db->jobs->findOne(['instructions' => 'Trimming the hedges.']);
-$jobId4 = (string)$completedJob2['_id'];
+$jobId4 = (string) $completedJob2['_id'];
 $db->jobs->updateOne(['_id' => new ObjectId($jobId4)], ['$set' => ['status' => 'completed', 'parent_confirmed' => true, 'provider_confirmed' => true]]);
 $paymentModel->createPayment($jobId4, 800);
 $paymentModel->updateStatus($jobId4, 'paid');
