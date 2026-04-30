@@ -176,6 +176,11 @@ class JobController
             redirect('/dashboard');
         }
 
+        if ($this->applications->hasApplication($jobId, $providerId)) {
+            setFlash('error', 'You already applied for this job.');
+            redirect('/dashboard');
+        }
+
         try {
             $created = $this->applications->createApplication($jobId, $providerId);
             if ($created) {
@@ -183,6 +188,8 @@ class JobController
             } else {
                 setFlash('error', 'Application could not be saved. Please try again.');
             }
+        } catch (InvalidArgumentException $exception) {
+            setFlash('error', $exception->getMessage());
         } catch (RuntimeException $exception) {
             setFlash('error', $exception->getMessage());
         } catch (Throwable $exception) {

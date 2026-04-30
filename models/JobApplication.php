@@ -49,6 +49,10 @@ class JobApplication
             throw new InvalidArgumentException('Invalid job id or provider id provided.');
         }
 
+        if ($this->hasApplication($jobId, $providerId)) {
+            throw new RuntimeException('You already applied for this job.');
+        }
+
         try {
             $result = $this->collection->insertOne([
                 'job_id' => new ObjectId($jobId),
@@ -66,6 +70,18 @@ class JobApplication
         }
 
         return $result->getInsertedCount() === 1;
+    }
+
+    public function hasApplication(string $jobId, string $providerId): bool
+    {
+        if (!$this->isValidObjectId($jobId) || !$this->isValidObjectId($providerId)) {
+            return false;
+        }
+
+        return $this->collection->findOne([
+            'job_id' => new ObjectId($jobId),
+            'provider_id' => new ObjectId($providerId),
+        ]) !== null;
     }
 
     /**
@@ -90,7 +106,7 @@ class JobApplication
             }
         }
 
-        return $jobIds;
+        return array_values(array_unique($jobIds));
     }
 
     public function getApplicationsForJob(string $jobId): array
