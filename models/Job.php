@@ -236,6 +236,43 @@ class Job
         return iterator_to_array($cursor, false);
     }
 
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function getCompletedJobsByProvider(string $providerId): array
+    {
+        if (!$this->isValidObjectId($providerId)) {
+            return [];
+        }
+
+        $cursor = $this->collection->find(
+            [
+                'selected_provider_id' => new ObjectId($providerId),
+                'status' => 'completed'
+            ],
+            ['sort' => ['created_at' => -1]]
+        );
+
+        return iterator_to_array($cursor, false);
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function getJobsByProviderId(string $providerId): array
+    {
+        if (!$this->isValidObjectId($providerId)) {
+            return [];
+        }
+
+        $cursor = $this->collection->find(
+            ['selected_provider_id' => new ObjectId($providerId)],
+            ['sort' => ['created_at' => -1]]
+        );
+
+        return iterator_to_array($cursor, false);
+    }
+
     public function getAllJobs(int $limit = 50): array
     {
         $cursor = $this->collection->find(
