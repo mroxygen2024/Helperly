@@ -211,7 +211,8 @@ class ProfileController
         string $fieldName,
         string $existingPath,
         string $userId,
-        array &$errors
+        array &$errors,
+        bool $removeExisting = false
     ): string {
         $file = $files[$fieldName] ?? null;
 
@@ -222,6 +223,10 @@ class ProfileController
                 $errors[] = $exception->getMessage();
                 return $existingPath;
             }
+        }
+
+        if ($removeExisting) {
+            return '';
         }
 
         if ($existingPath !== '') {

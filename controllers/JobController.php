@@ -162,6 +162,29 @@ class JobController
         redirect('/dashboard');
     }
 
+    public function reject(array $payload): void
+    {
+        requireRole('parent');
+        if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
+            setFlash('error', 'Invalid request token.');
+            redirect('/dashboard');
+        }
+
+        $jobId = sanitizeInput($payload['job_id'] ?? null);
+        $providerId = sanitizeInput($payload['provider_id'] ?? null);
+
+        try {
+            if ($this->applications->updateApplicationStatus($jobId, $providerId, 'rejected')) {
+                setFlash('success', 'Applicant rejected.');
+            } else {
+                setFlash('error', 'Could not reject applicant.');
+            }
+        } catch (Throwable $exception) {
+            setFlash('error', $exception->getMessage());
+        }
+        redirect('/dashboard');
+    }
+
     public function confirm(array $payload): void
     {
         $user = authUser();

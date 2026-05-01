@@ -340,7 +340,6 @@ class ServantProfile
                 'availability' => 1,
                 'rate' => 1,
                 'currency' => 1,
-                'currency' => 1,
                 'profile_photo' => 1,
                 'fayda_id_front_url' => 1,
                 'fayda_id_back_url' => 1,

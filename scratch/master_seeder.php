@@ -182,6 +182,7 @@ foreach ($providers as $p) {
         $p['loc'],
         'Full-time, Weekend',
         $p['rate'],
+        'BDT',
         $p['photo'],
         'https://placehold.co/600x400?text=Front',
         'https://placehold.co/600x400?text=Back',
