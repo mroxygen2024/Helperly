@@ -402,29 +402,39 @@ try {
         return;
     }
 
+    if ($method === 'GET' && $path === '/jobs/available') {
+        $jobController->showAvailableJobs();
+        return;
+    }
+
     // Back-compat parent/provider dashboard targets
-    if ($method === 'GET' && $path === '/parent/jobs.php') {
+    if ($method === 'GET' && ($path === '/parent/jobs' || $path === '/parent/jobs.php')) {
         $jobController->showParentJobs();
         return;
     }
 
-    if ($method === 'GET' && $path === '/parent/payments.php') {
+    if ($method === 'GET' && ($path === '/parent/payments' || $path === '/parent/payments.php')) {
         $paymentController->index();
         return;
     }
 
-    if ($method === 'GET' && $path === '/parent/providers.php') {
+    if ($method === 'GET' && ($path === '/parent/providers' || $path === '/parent/providers.php')) {
         $profileController->listServants($_GET);
         return;
     }
 
-    if ($method === 'GET' && $path === '/provider/jobs.php') {
+    if ($method === 'GET' && ($path === '/provider/jobs' || $path === '/provider/jobs.php')) {
         $jobController->showProviderJobs();
         return;
     }
 
-    if ($method === 'GET' && $path === '/provider/applications.php') {
+    if ($method === 'GET' && ($path === '/provider/applications' || $path === '/provider/applications.php')) {
         $jobController->showProviderApplications();
+        return;
+    }
+
+    if ($method === 'GET' && ($path === '/provider/payments' || $path === '/provider/payments.php')) {
+        $paymentController->index();
         return;
     }
 

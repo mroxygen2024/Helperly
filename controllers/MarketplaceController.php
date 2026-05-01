@@ -78,19 +78,48 @@ class MarketplaceController
         $providerId = (string) ($_SESSION['user_id'] ?? '');
 
         $servantProfileModel = new ServantProfile();
-        $profile = $servantProfileModel->getProfileByUserId($providerId);
+        $servantProfile = $servantProfileModel->getProfileByUserId($providerId);
+        $isComplete = $servantProfileModel->isProfileComplete($servantProfile);
+        $isVerified = ($servantProfile['verification_status'] ?? '') === 'approved';
 
-        $isComplete = $servantProfileModel->isProfileComplete($profile);
+        $availableJobs = $this->jobs->getOpenJobs();
+        $activeWorkRaw = $this->jobs->getActiveJobsByProvider($providerId);
+        $applications = $this->applications->getApplicationsByProvider($providerId);
+
+        $userModel = new User();
+        $activeWork = [];
+        $earnings = 0;
+
+        foreach ($activeWorkRaw as $job) {
+            $jobArray = (array)$job;
+            $jobArray['parent'] = $userModel->findUserById((string)$job['parent_id']);
+            $activeWork[] = $jobArray;
+        }
+
+        // Calculate earnings from completed jobs
+        $completedJobs = $this->jobs->getCompletedJobsByProvider($providerId);
+        foreach ($completedJobs as $job) {
+            $earnings += (float)($job['total_cost'] ?? 0);
+        }
+
+        $stats = [
+            'available_jobs' => count($availableJobs),
+            'active_assignments' => count($activeWork),
+            'applications' => count($applications),
+            'rating' => $servantProfile['rating'] ?? 0,
+            'earnings' => $earnings,
+        ];
 
         renderView('marketplace/dashboard_provider', [
             'title' => 'Provider Dashboard',
-            'jobs' => $this->jobs->getOpenJobs(),
-            'activeJobs' => $this->jobs->getActiveJobsByProvider($providerId),
-            'appliedJobIds' => $this->applications->getAppliedJobIdsByProvider($providerId),
-            'applicationsList' => $this->applications->getApplicationsByProvider($providerId),
+            'availableJobs' => $availableJobs,
+            'activeWork' => $activeWork,
+            'applications' => $applications,
+            'stats' => $stats,
             'user' => authUser(),
-            'profile' => $profile,
+            'profile' => $servantProfile,
             'isProfileComplete' => $isComplete,
+            'isVerified' => $isVerified,
         ]);
     }
 

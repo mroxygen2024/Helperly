@@ -64,7 +64,6 @@ class JobController
         $rate = (float) ($payload['rate'] ?? 0);
         $paymentMethod = sanitizeInput($payload['payment_method'] ?? 'cash');
 
-        // If direct booking, we pull the rate from the provider profile to be safe
         if ($selectedProviderId) {
             if (!$this->servantProfiles->isApprovedByUserId($selectedProviderId)) {
                 setFlash('error', 'The selected provider is no longer available or not verified.');
@@ -80,130 +79,63 @@ class JobController
         $totalCost = $rate * $numericDuration;
 
         $errors = [];
-
-        if (!validateRequired($time)) {
-            $errors[] = 'Time is required.';
-        }
-        if (!validateRequired($duration)) {
-            $errors[] = 'Duration is required.';
-        }
-        if (!validateRequired($serviceType)) {
-            $errors[] = 'Type of service is required.';
-        }
-        if (!validateRequired($location)) {
-            $errors[] = 'Location is required.';
-        }
-        if (!validateRequired($instructions)) {
-            $errors[] = 'Special instructions are required.';
-        }
+        if (!validateRequired($time)) $errors[] = 'Time is required.';
+        if (!validateRequired($duration)) $errors[] = 'Duration is required.';
+        if (!validateRequired($serviceType)) $errors[] = 'Type of service is required.';
+        if (!validateRequired($location)) $errors[] = 'Location is required.';
+        if (!validateRequired($instructions)) $errors[] = 'Special instructions are required.';
 
         if (!empty($errors)) {
-            rememberOldInput([
-                'time' => $time,
-                'duration' => $duration,
-                'service_type' => $serviceType,
-                'location' => $location,
-                'instructions' => $instructions,
-                'rate' => $rate,
-                'payment_method' => $paymentMethod
-            ]);
+            rememberOldInput($payload);
             setFlash('error', implode(' ', $errors));
             redirect('/dashboard');
         }
 
         try {
-            $created = $this->jobs->createJob(
-                $parentId,
-                $time,
-                $duration,
-                $serviceType,
-                $location,
-                $instructions,
-                $selectedProviderId ?: null,
-                $rate,
-                $totalCost,
-                $paymentMethod
-            );
-
+            $created = $this->jobs->createJob($parentId, $time, $duration, $serviceType, $location, $instructions, $selectedProviderId ?: null, $rate, $totalCost, $paymentMethod);
             if ($created) {
                 clearOldInput();
                 setFlash('success', 'Job ' . ($selectedProviderId ? 'booked and assigned directly.' : 'posted successfully with status open.'));
             } else {
-                setFlash('error', 'Job could not be created. Please try again.');
+                setFlash('error', 'Job could not be created.');
             }
-        } catch (InvalidArgumentException $exception) {
-            rememberOldInput([
-                'time' => $time,
-                'duration' => $duration,
-                'service_type' => $serviceType,
-                'location' => $location,
-                'instructions' => $instructions,
-            ]);
-            setFlash('error', $exception->getMessage());
         } catch (Throwable $exception) {
-            error_log('Job creation failed: ' . $exception->getMessage());
-            setFlash('error', 'Could not create job right now. Please try again.');
+            setFlash('error', $exception->getMessage());
         }
-
         redirect('/dashboard');
     }
 
     public function apply(array $payload): void
     {
         requireRole('provider');
-
         if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
-            setFlash('error', 'Invalid request token. Please try again.');
+            setFlash('error', 'Invalid request token.');
             redirect('/dashboard');
         }
 
         $providerId = (string) ($_SESSION['user_id'] ?? '');
         $jobId = sanitizeInput($payload['job_id'] ?? null);
 
-        if ($providerId === '' || $jobId === '') {
-            setFlash('error', 'Missing job application data.');
-            redirect('/dashboard');
-        }
-
         if (!$this->servantProfiles->isApprovedByUserId($providerId)) {
             setFlash('error', 'Only verified service providers can apply to jobs.');
             redirect('/dashboard');
         }
 
-        $job = $this->jobs->getJobById($jobId);
-        if (!$job || (string) ($job['status'] ?? '') !== 'open') {
-            setFlash('error', 'Selected job is not available.');
-            redirect('/dashboard');
-        }
-
-        if ($this->applications->hasApplication($jobId, $providerId)) {
-            setFlash('error', 'You already applied for this job.');
-            redirect('/dashboard');
-        }
-
         try {
-            $created = $this->applications->createApplication($jobId, $providerId);
-            if ($created) {
+            if ($this->applications->createApplication($jobId, $providerId)) {
                 setFlash('success', 'Application submitted successfully.');
             } else {
-                setFlash('error', 'Application could not be saved. Please try again.');
+                setFlash('error', 'Could not submit application.');
             }
-        } catch (InvalidArgumentException $exception) {
-            setFlash('error', $exception->getMessage());
-        } catch (RuntimeException $exception) {
-            setFlash('error', $exception->getMessage());
         } catch (Throwable $exception) {
-            error_log('Job application failed: ' . $exception->getMessage());
-            setFlash('error', 'Could not submit application right now. Please try again.');
+            setFlash('error', $exception->getMessage());
         }
-
         redirect('/dashboard');
     }
 
     public function accept(array $payload): void
     {
         requireRole('parent');
-
         if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
             setFlash('error', 'Invalid request token.');
             redirect('/dashboard');
@@ -211,143 +143,49 @@ class JobController
 
         $jobId = sanitizeInput($payload['job_id'] ?? null);
         $providerId = sanitizeInput($payload['provider_id'] ?? null);
-        $parentId = (string) ($_SESSION['user_id'] ?? '');
-
-        if (!$jobId || !$providerId) {
-            setFlash('error', 'Missing required data.');
-            redirect('/dashboard');
-        }
-
-        $job = $this->jobs->getJobById($jobId);
-        if (!$job || (string) $job['parent_id'] !== $parentId) {
-            setFlash('error', 'You are not authorized to accept applicants for this job.');
-            redirect('/dashboard');
-        }
-
-        if ((string) $job['status'] !== 'open') {
-            setFlash('error', 'This job is no longer open.');
-            redirect('/dashboard');
-        }
 
         try {
-            $updated = $this->applications->updateApplicationStatus($jobId, $providerId, 'accepted');
+            $job = $this->jobs->getJobById($jobId);
+            $profile = $this->servantProfiles->getProfileByUserId($providerId);
+            $rate = (float)($profile['rate'] ?? 0);
+            $totalCost = $rate * (float)$job['duration'];
+            $paymentMethod = $job['payment_method'] ?? 'cash';
 
-            if ($updated) {
-               // Fetch provider details to get their hourly rate
-                $profile = $this->servantProfiles->getProfileByUserId($providerId);
-                $rate = (float) ($profile['rate'] ?? 0);
-                $numericDuration = (float) filter_var($job['duration'] ?? '', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
-                $totalCost = $rate * $numericDuration;
-                
-                $paymentMethod = sanitizeInput($payload['payment_method'] ?? (string)($job['payment_method'] ?? 'cash'));
-                
-                // Mark job as active and record the provider with the calculated cost
+            if ($this->applications->updateApplicationStatus($jobId, $providerId, 'accepted')) {
                 $this->jobs->acceptProvider($jobId, $providerId, $rate, $totalCost, $paymentMethod);
-
-                // Reject other applicants
                 $this->applications->rejectOtherApplicants($jobId, $providerId);
-
-                setFlash('success', 'Applicant accepted. The job is now active at a total cost of ' . $totalCost);
-            } else {
-                setFlash('error', 'Could not accept applicant. Please try again.');
+                setFlash('success', 'Applicant accepted.');
             }
         } catch (Throwable $exception) {
-            error_log('Accept job application failed: ' . $exception->getMessage());
-            setFlash('error', 'An error occurred while accepting the applicant.');
+            setFlash('error', $exception->getMessage());
         }
-
-        redirect('/dashboard');
-    }
-
-    public function reject(array $payload): void
-    {
-        requireRole('parent');
-
-        if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
-            setFlash('error', 'Invalid request token.');
-            redirect('/dashboard');
-        }
-
-        $jobId = sanitizeInput($payload['job_id'] ?? null);
-        $providerId = sanitizeInput($payload['provider_id'] ?? null);
-        $parentId = (string) ($_SESSION['user_id'] ?? '');
-
-        if (!$jobId || !$providerId) {
-            setFlash('error', 'Missing required data.');
-            redirect('/dashboard');
-        }
-
-        $job = $this->jobs->getJobById($jobId);
-        if (!$job || (string) $job['parent_id'] !== $parentId) {
-            setFlash('error', 'You are not authorized to reject applicants for this job.');
-            redirect('/dashboard');
-        }
-
-        try {
-            $updated = $this->applications->updateApplicationStatus($jobId, $providerId, 'rejected');
-            if ($updated) {
-                setFlash('success', 'Applicant has been rejected.');
-            } else {
-                setFlash('error', 'Could not reject applicant. Please try again.');
-            }
-        } catch (Throwable $exception) {
-            error_log('Reject job application failed: ' . $exception->getMessage());
-            setFlash('error', 'An error occurred while rejecting the applicant.');
-        }
-
         redirect('/dashboard');
     }
 
     public function confirm(array $payload): void
     {
         $user = authUser();
-        if (!$user) {
+        if (!$user || !verifyCsrfToken($payload['csrf_token'] ?? null)) {
             redirect('/login');
-        }
-
-        if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
-            setFlash('error', 'Invalid request token.');
-            redirect('/dashboard');
         }
 
         $jobId = sanitizeInput($payload['job_id'] ?? null);
         $userId = (string) ($_SESSION['user_id'] ?? '');
         $role = normalizeRole((string) ($user['role'] ?? ''));
 
-        if (!$jobId) {
-            setFlash('error', 'Missing job ID.');
-            redirect('/dashboard');
-        }
-
-        $job = $this->jobs->getJobById($jobId);
-        if (!$job || (string) ($job['status'] ?? '') !== 'active') {
-            setFlash('error', 'This job is not in a state that can be confirmed.');
-            redirect('/dashboard');
-        }
-
         try {
-            $success = $this->jobs->confirmJob($jobId, $userId, $role);
-            if ($success) {
-                setFlash('success', 'Your confirmation has been recorded.');
-            } else {
-                setFlash('error', 'Could not record confirmation. You might not be authorized for this job.');
+            if ($this->jobs->confirmJob($jobId, $userId, $role)) {
+                setFlash('success', 'Confirmation recorded.');
             }
         } catch (Throwable $exception) {
-            error_log('Job confirmation failed: ' . $exception->getMessage());
-            setFlash('error', 'An error occurred during confirmation.');
+            setFlash('error', $exception->getMessage());
         }
-
         redirect('/dashboard');
     }
 
     public function showDetail(): void
     {
         $jobId = sanitizeInput($_GET['id'] ?? '');
-        if ($jobId === '') {
-            setFlash('error', 'Job ID is required.');
-            redirect('/dashboard');
-        }
-
         $job = $this->jobs->getJobById($jobId);
         if (!$job) {
             setFlash('error', 'Job not found.');
@@ -356,7 +194,6 @@ class JobController
 
         $userModel = new User();
         $jobArray = (array)$job;
-        
         $jobArray['parent'] = $userModel->findUserById((string)$job['parent_id']);
         if (isset($job['selected_provider_id'])) {
             $jobArray['provider'] = $userModel->findUserById((string)$job['selected_provider_id']);
@@ -364,14 +201,26 @@ class JobController
         
         $paymentModel = new Payment();
         $jobArray['payment'] = $paymentModel->getPaymentByJobId($jobId);
-        
         $reviewModel = new Review();
         $jobArray['review'] = $reviewModel->getReviewByJobId($jobId);
 
         renderView('jobs/detail', [
-            'title' => 'Job Details: ' . escape($job['service_type']),
+            'title' => 'Job Details',
             'job' => $jobArray,
             'user' => authUser(),
+        ]);
+    }
+
+    public function showAvailableJobs(): void
+    {
+        requireRole('provider');
+        $jobs = $this->jobs->getOpenJobs();
+        
+        renderView('servants/requests', [
+            'title' => 'Available Jobs',
+            'jobs' => $jobs,
+            'user' => authUser(),
+            'role' => 'provider'
         ]);
     }
 
@@ -381,10 +230,11 @@ class JobController
         $parentId = (string)($_SESSION['user_id'] ?? '');
         $jobs = $this->jobs->getJobsByParentId($parentId);
         
-        renderView('servants/requests', [ // Reusing existing view for simplicity or creating new
+        renderView('servants/requests', [
             'title' => 'My Posted Jobs',
             'jobs' => $jobs,
             'user' => authUser(),
+            'role' => 'parent'
         ]);
     }
 
@@ -392,12 +242,13 @@ class JobController
     {
         requireRole('provider');
         $providerId = (string)($_SESSION['user_id'] ?? '');
-        $jobs = $this->jobs->getActiveJobsByProvider($providerId);
+        $jobs = $this->jobs->getJobsByProviderId($providerId);
         
         renderView('servants/requests', [
-            'title' => 'My Active Jobs',
+            'title' => 'My Work History',
             'jobs' => $jobs,
             'user' => authUser(),
+            'role' => 'provider'
         ]);
     }
 
@@ -411,6 +262,7 @@ class JobController
             'title' => 'My Applications',
             'applications' => $applications,
             'user' => authUser(),
+            'role' => 'provider'
         ]);
     }
 }

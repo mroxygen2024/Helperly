@@ -773,12 +773,24 @@ class ProfileController
 
         $avgRating = $reviewModel->calculateAverageRating($userId);
 
+        $jobModel = new Job();
+        $allJobs = $jobModel->getJobsByProviderId($userId);
+        $totalJobs = count($allJobs);
+        $completedJobs = array_filter($allJobs, fn($j) => $j['status'] === 'completed');
+        $totalCompleted = count($completedJobs);
+        $completionRate = $totalJobs > 0 ? ($totalCompleted / $totalJobs) * 100 : 100; // Default to 100 if no jobs
+
         renderView('profile/servant_view', [
             'title' => escape($profile['full_name'] ?? $user['name'] ?? 'Provider Profile'),
             'profile' => $profile,
             'user' => $user,
             'reviews' => $enrichedReviews,
             'rating' => $avgRating,
+            'stats' => [
+                'total_jobs' => $totalJobs,
+                'total_completed' => $totalCompleted,
+                'completion_rate' => $completionRate,
+            ],
             'currentUser' => authUser(),
         ]);
     }
@@ -805,6 +817,7 @@ class ProfileController
         $totalPosted = count($jobs);
         $completedJobs = array_filter($jobs, fn($j) => $j['status'] === 'completed');
         $totalCompleted = count($completedJobs);
+        $completionRate = $totalPosted > 0 ? ($totalCompleted / $totalPosted) * 100 : 100;
 
         renderView('profile/employer_view', [
             'title' => escape($user['name'] ?? 'Employer Profile'),
@@ -813,6 +826,7 @@ class ProfileController
             'stats' => [
                 'total_posted' => $totalPosted,
                 'total_completed' => $totalCompleted,
+                'completion_rate' => $completionRate,
             ],
             'recent_jobs' => array_slice($jobs, 0, 5),
             'currentUser' => authUser(),

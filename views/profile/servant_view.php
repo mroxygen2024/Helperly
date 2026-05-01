@@ -34,9 +34,13 @@
                         <span class="text-muted text-sm">Availability</span>
                         <span class="font-600 text-sm"><?= escape($profile['availability'] ?? 'N/A'); ?></span>
                     </div>
+                    <div class="flex justify-between items-center border-t pt-4 mt-2">
+                        <span class="text-muted text-sm">Jobs Completed</span>
+                        <span class="font-700"><?= (int)$stats['total_completed']; ?></span>
+                    </div>
                     <div class="flex justify-between items-center">
-                        <span class="text-muted text-sm">Experience</span>
-                        <span class="font-600 text-sm"><?= escape($profile['experience'] ?? 'N/A'); ?></span>
+                        <span class="text-muted text-sm">Completion Rate</span>
+                        <span class="font-700 text-success"><?= number_format((float)$stats['completion_rate'], 0); ?>%</span>
                     </div>
                 </div>
 

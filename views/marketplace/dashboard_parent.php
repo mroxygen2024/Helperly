@@ -2,17 +2,17 @@
     <!-- Main Content: Active and Recent Jobs -->
     <div class="md:col-span-2 flex flex-col gap-6">
         <div class="grid grid-cols-3 gap-6">
-            <div class="card stat-card">
+            <div class="card stat-card cursor-pointer hover-scale" onclick="location.href='/parent/jobs.php?status=active'">
                 <span class="material-symbols-outlined stat-icon" style="color: var(--warning);">pending_actions</span>
                 <p class="stat-label">Active Jobs</p>
                 <p class="stat-value"><?= count(array_filter($jobs ?? [], fn($j) => $j['status'] === 'active')); ?></p>
             </div>
-            <div class="card stat-card">
+            <div class="card stat-card cursor-pointer hover-scale" onclick="location.href='/parent/jobs.php'">
                 <span class="material-symbols-outlined stat-icon" style="color: var(--info);">assignment</span>
                 <p class="stat-label">Total Posted</p>
                 <p class="stat-value"><?= count($jobs ?? []); ?></p>
             </div>
-            <div class="card stat-card">
+            <div class="card stat-card cursor-pointer hover-scale" onclick="location.href='/parent/payments.php'">
                 <span class="material-symbols-outlined stat-icon" style="color: var(--success);">payments</span>
                 <p class="stat-label">Total Spend</p>
                 <p class="stat-value"><?= number_format(array_sum(array_column($jobs ?? [], 'total_cost'))); ?></p>
@@ -21,8 +21,9 @@
 
         <!-- Active Jobs Section -->
         <div class="card p-0 overflow-hidden">
-            <div class="card-header p-6 border-b">
+            <div class="card-header p-6 border-b flex justify-between items-center">
                 <h2 class="card-title">Current Active Work</h2>
+                <a href="/parent/jobs.php?status=active" class="text-xs text-primary font-600 hover:underline">View All</a>
             </div>
             <div class="p-6">
                 <?php $activeJobs = array_filter($jobs ?? [], fn($j) => $j['status'] === 'active'); ?>
@@ -34,7 +35,7 @@
                 <?php else: ?>
                     <div class="flex flex-col gap-4">
                         <?php foreach ($activeJobs as $job): ?>
-                            <div class="flex justify-between items-center p-4 border rounded-xl hover:shadow-sm transition-all">
+                            <div class="flex justify-between items-center p-4 border rounded-xl hover:shadow-md transition-all cursor-pointer" onclick="if(event.target.tagName !== 'BUTTON' && event.target.tagName !== 'A' && !event.target.closest('form')) location.href='/jobs/detail?id=<?= escape((string)$job['_id']); ?>'">
                                 <div class="flex items-center gap-4">
                                     <div class="bg-warning-soft p-3 rounded-lg">
                                         <span class="material-symbols-outlined text-warning">sync</span>
@@ -45,14 +46,14 @@
                                     </div>
                                 </div>
                                 <div class="flex gap-2">
-                                    <form action="/jobs/confirm" method="POST">
+                                    <form action="/jobs/confirm" method="POST" onclick="event.stopPropagation()">
                                         <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">
                                         <input type="hidden" name="job_id" value="<?= escape((string)$job['_id']); ?>">
                                         <button type="submit" class="btn btn-primary btn-sm" <?= ($job['parent_confirmed'] ?? false) ? 'disabled' : ''; ?>>
                                             <?= ($job['parent_confirmed'] ?? false) ? 'Finalizing...' : 'Confirm Completion'; ?>
                                         </button>
                                     </form>
-                                    <a href="/messages?job_id=<?= escape((string)$job['_id']); ?>" class="btn btn-outline btn-sm">Chat</a>
+                                    <a href="/messages?job_id=<?= escape((string)$job['_id']); ?>" class="btn btn-outline btn-sm" onclick="event.stopPropagation()">Chat</a>
                                 </div>
                             </div>
                         <?php endforeach; ?>
@@ -79,7 +80,7 @@
                 <?php else: ?>
                     <div class="flex flex-col gap-4">
                         <?php foreach ($openJobs as $job): ?>
-                            <div class="border rounded-xl p-4">
+                            <div class="border rounded-xl p-4 hover:border-primary transition-all cursor-pointer" onclick="if(event.target.tagName !== 'BUTTON' && event.target.tagName !== 'A' && !event.target.closest('form')) location.href='/jobs/detail?id=<?= escape((string)$job['_id']); ?>'">
                                 <div class="flex justify-between items-start mb-4">
                                     <div>
                                         <h3 class="font-600 text-lg"><?= escape($job['service_type']); ?></h3>
@@ -87,7 +88,7 @@
                                     </div>
                                     <span class="badge badge-info">Open</span>
                                 </div>
-                                <div class="border-t pt-4">
+                                <div class="border-t pt-4" onclick="event.stopPropagation()">
                                     <h4 class="font-600 text-sm mb-3">Applicants:</h4>
                                     <?php if (empty($job['applicants'])): ?>
                                         <p class="text-sm text-muted italic">No applicants yet.</p>
@@ -95,13 +96,13 @@
                                         <div class="flex flex-col gap-3">
                                             <?php foreach ($job['applicants'] as $applicant): ?>
                                                 <?php if ($applicant['status'] === 'pending'): ?>
-                                                    <div class="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
+                                                    <div class="flex justify-between items-center bg-gray-50 p-3 rounded-lg hover:bg-white border border-transparent hover:border-slate-200 transition-all">
                                                         <div class="flex items-center gap-3">
-                                                            <div class="bg-white p-2 rounded-full border shadow-sm flex items-center justify-center">
+                                                            <a href="/provider/view.php?id=<?= escape((string)$applicant['provider_id']); ?>" class="bg-white p-2 rounded-full border shadow-sm flex items-center justify-center hover:scale-110 transition-transform">
                                                                 <span class="material-symbols-outlined text-primary" style="font-size: 20px;">person</span>
-                                                            </div>
+                                                            </a>
                                                             <div>
-                                                                <p class="font-600 text-sm m-0"><?= escape($applicant['user_data']['name'] ?? 'Provider'); ?></p>
+                                                                <a href="/provider/view.php?id=<?= escape((string)$applicant['provider_id']); ?>" class="font-600 text-sm m-0 hover:text-primary"><?= escape($applicant['user_data']['name'] ?? 'Provider'); ?></a>
                                                                 <div class="flex items-center gap-1 mt-0.5">
                                                                     <span class="material-symbols-outlined text-warning" style="font-size: 14px;">star</span>
                                                                     <span class="text-xs text-muted"><?= number_format((float)($applicant['profile_data']['rating'] ?? 0), 1); ?> (<?= (int)($applicant['profile_data']['rating_count'] ?? 0); ?> reviews)</span>
@@ -109,9 +110,9 @@
                                                             </div>
                                                         </div>
                                                         <div class="flex gap-2">
-                                                            <button type="button" class="btn btn-outline btn-sm" data-open-modal="applicant_modal_<?= escape((string)$applicant['_id']); ?>" title="View Profile">
+                                                            <a href="/provider/view.php?id=<?= escape((string)$applicant['provider_id']); ?>" class="btn btn-outline btn-sm" title="View Profile">
                                                                 <span class="material-symbols-outlined" style="font-size: 16px;">visibility</span>
-                                                            </button>
+                                                            </a>
                                                             <!-- Accept Form -->
                                                             <form action="/jobs/accept" method="POST" class="inline">
                                                                 <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">
@@ -119,15 +120,6 @@
                                                                 <input type="hidden" name="provider_id" value="<?= escape($applicant['provider_id']); ?>">
                                                                 <button type="submit" class="btn btn-success btn-sm flex items-center gap-1" title="Accept">
                                                                     <span class="material-symbols-outlined" style="font-size: 16px;">check</span> Accept
-                                                                </button>
-                                                            </form>
-                                                            <!-- Reject Form -->
-                                                            <form action="/jobs/reject" method="POST" class="inline">
-                                                                <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">
-                                                                <input type="hidden" name="job_id" value="<?= escape((string)$job['_id']); ?>">
-                                                                <input type="hidden" name="provider_id" value="<?= escape($applicant['provider_id']); ?>">
-                                                                <button type="submit" class="btn btn-outline btn-sm hover-error flex items-center gap-1" title="Reject">
-                                                                    <span class="material-symbols-outlined" style="font-size: 16px;">close</span> Reject
                                                                 </button>
                                                             </form>
                                                         </div>
@@ -146,8 +138,9 @@
 
         <!-- Recent Activity / History -->
         <div class="card p-0 overflow-hidden">
-            <div class="card-header p-6 border-b">
+            <div class="card-header p-6 border-b flex justify-between items-center">
                 <h2 class="card-title">Job History</h2>
+                <a href="/parent/jobs.php" class="text-xs text-primary font-600 hover:underline">View All</a>
             </div>
             <div class="p-6">
                 <?php if (empty($jobs)): ?>
@@ -155,18 +148,16 @@
                 <?php else: ?>
                     <div class="flex flex-col gap-3">
                         <?php foreach (array_slice(array_reverse($jobs), 0, 5) as $job): ?>
-                            <div class="flex justify-between items-center text-sm">
+                            <div class="flex justify-between items-center p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors" onclick="location.href='/jobs/detail?id=<?= escape((string)$job['_id']); ?>'">
                                 <div class="flex items-center gap-3">
                                     <span class="material-symbols-outlined text-muted" style="font-size: 18px;">history</span>
-                                    <span><?= escape($job['service_type']); ?></span>
+                                    <span class="font-500"><?= escape($job['service_type']); ?></span>
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <span class="badge badge-<?= $job['status'] === 'completed' ? 'success' : ($job['status'] === 'active' ? 'warning' : 'info'); ?>">
                                         <?= escape($job['status']); ?>
                                     </span>
-                                    <button type="button" class="btn btn-ghost btn-sm" data-open-modal="job_modal_<?= escape((string)$job['_id']); ?>" title="View Details">
-                                        <span class="material-symbols-outlined" style="font-size: 18px;">info</span>
-                                    </button>
+                                    <span class="material-symbols-outlined text-muted" style="font-size: 18px;">chevron_right</span>
                                 </div>
                             </div>
                         <?php endforeach; ?>
@@ -271,211 +262,8 @@
     </div>
 </div>
 
-<!-- Job Details Modals -->
-<?php foreach ($jobs as $job): ?>
-    <div id="job_modal_<?= escape((string)$job['_id']); ?>" class="modal-overlay" data-modal>
-        <div class="modal-content" style="max-width: 600px;">
-            <div class="modal-header">
-                <div class="flex items-center gap-4">
-                    <div class="user-avatar-rect" style="background: var(--grad-primary);">
-                        <span class="material-symbols-outlined" style="color: white;">work</span>
-                    </div>
-                    <div>
-                        <h2 class="card-title" style="margin: 0;"><?= escape($job['service_type']); ?> Details</h2>
-                        <span class="badge badge-<?= $job['status'] === 'completed' ? 'success' : ($job['status'] === 'active' ? 'warning' : 'info'); ?>"><?= escape(ucfirst($job['status'])); ?></span>
-                    </div>
-                </div>
-                <button type="button" class="btn btn-outline btn-sm" data-close-modal="job_modal_<?= escape((string)$job['_id']); ?>" style="border:none; padding: 0.5rem; border-radius: 50%;">
-                    <span class="material-symbols-outlined">close</span>
-                </button>
-            </div>
-            <div class="modal-body" style="background: #F8FAFC; padding: 2rem;">
-                <div class="grid grid-cols-2 gap-4 text-sm mb-6">
-                    <div class="flex flex-col">
-                        <span class="text-xs text-muted font-600">Location</span>
-                        <span class="font-700"><?= escape($job['location'] ?? 'N/A'); ?></span>
-                    </div>
-                    <div class="flex flex-col">
-                        <span class="text-xs text-muted font-600">Start Time</span>
-                        <span class="font-700"><?= isset($job['time']) ? (is_string($job['time']) ? date('M d, Y h:i A', strtotime($job['time'])) : ($job['time'] instanceof \MongoDB\BSON\UTCDateTime ? $job['time']->toDateTime()->format('M d, Y h:i A') : 'N/A')) : 'N/A'; ?></span>
-                    </div>
-                    <div class="flex flex-col">
-                        <span class="text-xs text-muted font-600">Duration</span>
-                        <span class="font-700"><?= escape($job['duration'] ?? 'N/A'); ?> Hours</span>
-                    </div>
-                    <div class="flex flex-col">
-                        <span class="text-xs text-muted font-600">Total Cost</span>
-                        <span class="font-700 text-primary"><?= number_format((float)($job['total_cost'] ?? 0), 2); ?> BDT (<?= escape($job['payment_method'] ?? 'cash'); ?>)</span>
-                    </div>
-                </div>
-                <div class="flex flex-col mb-4">
-                    <span class="text-xs text-muted font-600 mb-1">Instructions</span>
-                    <div class="p-3 bg-white border border-slate-200 rounded-lg text-sm text-slate-700" style="white-space: pre-wrap;"><?= escape($job['instructions'] ?? 'No special instructions.'); ?></div>
-                </div>
-                <?php if (isset($job['selected_provider'])): ?>
-                <div class="p-4 bg-white rounded-xl border border-slate-200 flex items-center justify-between mb-4">
-                    <div class="flex items-center gap-3">
-                         <div class="user-avatar" style="width: 32px; height: 32px;"><?= mb_substr(escape($job['selected_provider']['name'] ?? 'P'), 0, 1); ?></div>
-                         <div>
-                             <p class="text-xs text-muted font-600">Assigned Provider</p>
-                             <p class="text-sm font-700"><?= escape($job['selected_provider']['name'] ?? 'N/A'); ?></p>
-                         </div>
-                    </div>
-                    <a href="/messages?job_id=<?= escape((string)$job['_id']); ?>" class="btn btn-outline btn-sm">Chat</a>
-                </div>
-                <?php endif; ?>
-
-                <?php if ($job['status'] === 'completed'): ?>
-                    <?php if (empty($job['review'])): ?>
-                        <div class="p-4 bg-primary-soft rounded-xl border border-primary-soft">
-                            <h4 class="font-600 text-sm mb-3">Leave a Review</h4>
-                            <form action="/reviews" method="POST" class="flex flex-col gap-3">
-                                <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">
-                                <input type="hidden" name="job_id" value="<?= escape((string)$job['_id']); ?>">
-                                
-                                <div class="form-group mb-0">
-                                    <select name="rating" class="input-field" required style="background: white;">
-                                        <option value="" disabled selected>Rate out of 5 stars</option>
-                                        <option value="5">5 - Excellent</option>
-                                        <option value="4">4 - Good</option>
-                                        <option value="3">3 - Average</option>
-                                        <option value="2">2 - Poor</option>
-                                        <option value="1">1 - Terrible</option>
-                                    </select>
-                                </div>
-                                <div class="form-group mb-0">
-                                    <textarea name="review_text" class="input-field" placeholder="Share your experience..." required style="background: white; height: 80px;"></textarea>
-                                </div>
-                                <button type="submit" class="btn btn-primary w-full">Submit Review</button>
-                            </form>
-                        </div>
-                    <?php else: ?>
-                        <div class="p-4 bg-green-50 rounded-xl border border-green-200 text-sm">
-                            <div class="flex justify-between items-center mb-2">
-                                <h4 class="font-600 text-success">Your Review</h4>
-                                <div class="flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-warning" style="font-size: 16px;">star</span>
-                                    <span class="font-700"><?= (int)$job['review']['rating']; ?> / 5</span>
-                                </div>
-                            </div>
-                            <p class="text-slate-700 italic">"<?= escape($job['review']['review_text']); ?>"</p>
-                        </div>
-                    <?php endif; ?>
-                <?php endif; ?>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline w-full" data-close-modal="job_modal_<?= escape((string)$job['_id']); ?>">Close</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Applicant Profile Modals -->
-    <?php if (!empty($job['applicants'])): ?>
-        <?php foreach ($job['applicants'] as $applicant): ?>
-            <div id="applicant_modal_<?= escape((string)$applicant['_id']); ?>" class="modal-overlay" data-modal>
-                <div class="modal-content" style="max-width: 600px;">
-                    <div class="modal-header">
-                        <div class="flex items-center gap-4">
-                            <div class="user-avatar-rect" style="width: 64px; height: 64px; background: var(--grad-primary);">
-                                <?php if (!empty($applicant['profile_data']['profile_photo'])): ?>
-                                    <img src="<?= escape($applicant['profile_data']['profile_photo']); ?>" style="width: 100%; height: 100%; object-fit: cover;">
-                                <?php else: ?>
-                                    <?= mb_substr(escape($applicant['user_data']['name'] ?? 'P'), 0, 1); ?>
-                                <?php endif; ?>
-                            </div>
-                            <div>
-                                <h2 class="card-title" style="margin: 0;"><?= escape($applicant['user_data']['name'] ?? 'Provider'); ?></h2>
-                                <div class="flex items-center gap-2 mt-1">
-                                    <span class="badge badge-success">Verified</span>
-                                    <div class="flex items-center gap-1 text-sm">
-                                        <span class="material-symbols-outlined text-warning" style="font-size: 16px;">star</span>
-                                        <span class="font-600"><?= number_format((float)($applicant['profile_data']['rating'] ?? 0), 1); ?></span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <button type="button" class="btn btn-outline btn-sm" data-close-modal="applicant_modal_<?= escape((string)$applicant['_id']); ?>" style="border:none; padding: 0.5rem; border-radius: 50%;">
-                            <span class="material-symbols-outlined">close</span>
-                        </button>
-                    </div>
-                    <div class="modal-body" style="background: #F8FAFC; padding: 2rem;">
-                        <div class="grid grid-cols-2 gap-6 mb-6">
-                            <div>
-                                <span class="text-xs text-muted font-800 uppercase letter-spacing-lg mb-2 block">Skills</span>
-                                <div class="flex flex-wrap gap-2">
-                                    <?php if (!empty($applicant['profile_data']['skills'])): ?>
-                                        <?php foreach ($applicant['profile_data']['skills'] as $skill): ?>
-                                            <span class="badge badge-secondary"><?= escape($skill); ?></span>
-                                        <?php endforeach; ?>
-                                    <?php else: ?>
-                                        <span class="text-sm text-muted italic">No skills listed</span>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-                            <div>
-                                <span class="text-xs text-muted font-800 uppercase letter-spacing-lg mb-2 block">Experience</span>
-                                <p class="text-sm font-600"><?= escape($applicant['profile_data']['experience'] ?? 'N/A'); ?></p>
-                            </div>
-                        </div>
-                        
-                        <div class="grid grid-cols-3 gap-4 text-xs bg-white p-4 rounded-xl border border-slate-200">
-                             <div class="flex flex-col">
-                                 <span class="text-muted font-600 mb-1">Hourly Rate</span>
-                                 <span class="font-700"><?= escape($applicant['profile_data']['rate'] ?? 'N/A'); ?> BDT</span>
-                             </div>
-                             <div class="flex flex-col">
-                                 <span class="text-muted font-600 mb-1">Location</span>
-                                 <span class="font-700"><?= escape($applicant['profile_data']['location'] ?? 'N/A'); ?></span>
-                             </div>
-                             <div class="flex flex-col">
-                                 <span class="text-muted font-600 mb-1">Availability</span>
-                                 <span class="font-700"><?= escape($applicant['profile_data']['availability'] ?? 'N/A'); ?></span>
-                             </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer" style="padding: 1.5rem 2.5rem; background: white; border-top: 1px solid var(--border-base);">
-                        <button type="button" class="btn btn-outline" data-close-modal="applicant_modal_<?= escape((string)$applicant['_id']); ?>">Close</button>
-                        <form action="/jobs/accept" method="POST" class="inline">
-                            <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">
-                            <input type="hidden" name="job_id" value="<?= escape((string)$job['_id']); ?>">
-                            <input type="hidden" name="provider_id" value="<?= escape((string)$applicant['provider_id']); ?>">
-                            <button type="submit" class="btn btn-success" style="padding-inline: 2rem;">
-                                <span class="material-symbols-outlined">check</span> Accept Applicant
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        <?php endforeach; ?>
-    <?php endif; ?>
-<?php endforeach; ?>
-
 <script>
 (() => {
-    const openButtons = document.querySelectorAll('[data-open-modal]');
-    const closeButtons = document.querySelectorAll('[data-close-modal]');
-
-    openButtons.forEach(btn => {
-        btn.onclick = (e) => {
-            e.preventDefault();
-            const modal = document.getElementById(btn.dataset.openModal);
-            if (modal) modal.classList.add('open');
-        }
-    });
-
-    closeButtons.forEach(btn => {
-        btn.onclick = () => {
-            const modal = document.getElementById(btn.dataset.closeModal);
-            if (modal) modal.classList.remove('open');
-        }
-    });
-
-    window.onclick = (event) => {
-        if (event.target.classList.contains('modal-overlay')) {
-            event.target.classList.remove('open');
-        }
-    };
-
     // Cost Calculation Logic
     const rateInput = document.querySelector('input[name="rate"]');
     const durationInput = document.getElementById('post_duration');

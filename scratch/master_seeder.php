@@ -22,6 +22,7 @@ use MongoDB\BSON\UTCDateTime;
 
 echo "--- Helperly Master Seeder ---\n";
 
+
 $db = getMongoDatabase();
 
 // 1. Clear existing data
@@ -279,6 +280,7 @@ $jobModel->createJob(
     '2 hours',
     'Gardening',
     'Chittagong',
+
     'Trimming the hedges.',
     $approvedProviderIds[2],
     400,
