@@ -13,11 +13,20 @@
         </header>
 
         <?php if (empty($jobs) && empty($applications)): ?>
-            <div class="card p-12 text-center">
-                <span class="material-symbols-outlined text-muted" style="font-size: 4rem; opacity: 0.3;">work_off</span>
-                <h2 class="text-xl font-700 mt-4">Nothing to show yet</h2>
-                <p class="text-muted mt-2">When you have active work or applications, they will appear here.</p>
-                <a href="/dashboard" class="btn btn-outline mt-6">Go to Dashboard</a>
+            <div class="card p-16 text-center border-dashed border-2 bg-slate-50/50">
+                <div class="inline-flex items-center justify-center w-24 h-24 bg-white rounded-full shadow-sm mb-6 text-slate-300">
+                    <span class="material-symbols-outlined" style="font-size: 3rem;">work_history</span>
+                </div>
+                <h2 class="text-2xl font-800 text-slate-900 mb-2">No active work found</h2>
+                <p class="text-slate-500 max-w-sm mx-auto mb-8">When you have active jobs or pending applications, they will be tracked here in detail.</p>
+                <div class="flex justify-center gap-4">
+                    <a href="/dashboard" class="btn btn-primary px-8 font-700">Go to Dashboard</a>
+                    <?php if (($user['role'] ?? '') === 'parent'): ?>
+                        <a href="/servants" class="btn btn-outline px-8 font-700">Find Providers</a>
+                    <?php else: ?>
+                        <a href="/jobs/available" class="btn btn-outline px-8 font-700">Browse Jobs</a>
+                    <?php endif; ?>
+                </div>
             </div>
         <?php else: ?>
             <div class="flex flex-col gap-4">

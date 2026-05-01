@@ -13,11 +13,13 @@ class ReviewController
 {
     private Review $reviews;
     private Job $jobs;
+    private Notification $notifications;
 
     public function __construct()
     {
         $this->reviews = new Review();
         $this->jobs = new Job();
+        $this->notifications = new Notification();
     }
 
     public function store(array $payload): void
@@ -33,6 +35,7 @@ class ReviewController
         $rating = (int) ($payload['rating'] ?? 0);
         $reviewText = sanitizeInput($payload['review_text'] ?? '');
         $parentId = (string) ($_SESSION['user_id'] ?? '');
+        $parentName = (string) ($_SESSION['auth_user']['name'] ?? 'A parent');
 
         if (!$jobId || $rating < 1 || $rating > 5) {
             setFlash('error', 'Please provide a valid rating between 1 and 5.');
@@ -63,7 +66,16 @@ class ReviewController
                 // Recalculate and update cached rating in profile
                 $agg = $this->reviews->calculateAverageRating($providerId);
                 $servantProfile = new ServantProfile();
-                $servantProfile->updateCachedRating($providerId, $agg['average'], $agg['count']);
+                $servantProfile->updateCachedRating($providerId, (float)$agg['average'], (int)$agg['count']);
+
+                // Notify provider
+                $this->notifications->create(
+                    $providerId,
+                    'review',
+                    'New Review Received!',
+                    $parentName . ' gave you ' . $rating . ' stars for ' . ($job['service_type'] ?? 'the job') . '.',
+                    '/profile/servant'
+                );
 
                 setFlash('success', 'Thank you for your feedback!');
             } else {
@@ -74,6 +86,6 @@ class ReviewController
             setFlash('error', 'Could not save review. Please try again.');
         }
 
-        redirect('/?page=dashboard');
+        redirect('/dashboard');
     }
 }

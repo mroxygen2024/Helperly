@@ -37,7 +37,8 @@ class Message
 
         $this->collection->createIndex(['job_id' => 1, 'created_at' => 1]);
         $this->collection->createIndex(['sender_id' => 1]);
-        $this->collection->createIndex(['receiver_id' => 1]);
+        $this->collection->createIndex(['receiver_id' => 1, 'is_read' => 1]);
+        $this->collection->createIndex(['job_id' => 1, 'receiver_id' => 1, 'is_read' => 1]);
 
         self::$indexesEnsured = true;
     }
@@ -61,6 +62,7 @@ class Message
             'receiver_id' => new ObjectId($receiverId),
             'job_id' => new ObjectId($jobId),
             'message' => trim($messageText),
+            'is_read' => false,
             'created_at' => new UTCDateTime(),
         ];
 
@@ -86,5 +88,35 @@ class Message
         }
 
         return $messages;
+    }
+
+    public function markAsRead(string $jobId, string $receiverId): bool
+    {
+        if (!$this->isValidObjectId($jobId) || !$this->isValidObjectId($receiverId)) {
+            return false;
+        }
+
+        $result = $this->collection->updateMany(
+            [
+                'job_id' => new ObjectId($jobId),
+                'receiver_id' => new ObjectId($receiverId),
+                'is_read' => false
+            ],
+            ['$set' => ['is_read' => true]]
+        );
+
+        return $result->getMatchedCount() > 0;
+    }
+
+    public function getUnreadCount(string $userId): int
+    {
+        if (!$this->isValidObjectId($userId)) {
+            return 0;
+        }
+
+        return (int) $this->collection->countDocuments([
+            'receiver_id' => new ObjectId($userId),
+            'is_read' => false
+        ]);
     }
 }

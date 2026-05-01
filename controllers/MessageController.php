@@ -14,12 +14,14 @@ class MessageController
     private Message $messages;
     private Job $jobs;
     private User $users;
+    private Notification $notifications;
 
     public function __construct()
     {
         $this->messages = new Message();
         $this->jobs = new Job();
         $this->users = new User();
+        $this->notifications = new Notification();
     }
 
     public function index(array $query): void
@@ -67,11 +69,20 @@ class MessageController
                         ['sort' => ['created_at' => -1]]
                     );
                     $lastMsgDoc = $lastMsgDocRaw ? (array)$lastMsgDocRaw : null;
+
+                    // Get unread count for this conversation
+                    $unreadCount = (int) $db->selectCollection('messages')->countDocuments([
+                        'job_id' => $job['_id'],
+                        'receiver_id' => new \MongoDB\BSON\ObjectId($userId),
+                        'is_read' => false
+                    ]);
                     
                     $conversations[] = [
                         'job' => $job,
                         'other_party' => $otherParty,
-                        'last_message' => $lastMsgDoc['message'] ?? null
+                        'last_message' => $lastMsgDoc['message'] ?? null,
+                        'unread_count' => $unreadCount,
+                        'last_message_time' => $lastMsgDoc['created_at'] ?? null
                     ];
                 }
             }
@@ -104,6 +115,9 @@ class MessageController
             redirect('/dashboard');
         }
 
+        // Mark as read
+        $this->messages->markAsRead($jobId, $userId);
+
         $otherParty = $this->users->findUserById($otherPartyId);
         $messages = $this->messages->getMessagesByJobId($jobId);
 
@@ -132,6 +146,9 @@ class MessageController
             jsonResponse(['error' => 'Unauthorized'], 403);
         }
 
+        // Mark as read
+        $this->messages->markAsRead($jobId, $userId);
+
         $messages = $this->messages->getMessagesByJobId($jobId);
         $formattedMessages = [];
         foreach ($messages as $msg) {
@@ -159,6 +176,7 @@ class MessageController
         }
 
         $userId = (string) ($_SESSION['user_id'] ?? '');
+        $userName = (string) ($_SESSION['auth_user']['name'] ?? 'Someone');
         $jobId = sanitizeInput($payload['job_id'] ?? '');
         $messageText = sanitizeInput($payload['message'] ?? '');
 
@@ -192,9 +210,19 @@ class MessageController
         }
         
         try {
-            $this->messages->sendMessage($userId, $receiverId, $jobId, $messageText);
-            if ($isAjax) {
-                jsonResponse(['success' => true]);
+            if ($this->messages->sendMessage($userId, $receiverId, $jobId, $messageText)) {
+                // Send Notification
+                $this->notifications->create(
+                    $receiverId,
+                    'message',
+                    'New message from ' . $userName,
+                    mb_strimwidth($messageText, 0, 50, '...'),
+                    '/messages?job_id=' . $jobId
+                );
+
+                if ($isAjax) {
+                    jsonResponse(['success' => true]);
+                }
             }
         } catch (Throwable $exception) {
             error_log('Message send failed: ' . $exception->getMessage());

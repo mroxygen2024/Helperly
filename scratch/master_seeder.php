@@ -192,6 +192,16 @@ foreach ($providers as $p) {
     if ($p['status'] === 'approved') {
         $servantProfileModel->updateVerificationStatus($id, 'approved', '');
         $approvedProviderIds[] = $id;
+
+        // Add some realistic trust signals
+        $db->servant_profiles->updateOne(
+            ['user_id' => new ObjectId($id)],
+            ['$set' => [
+                'response_time' => ['Under 30 mins', 'Under 2 hours', 'Under 1 hour'][rand(0, 2)],
+                'completion_rate' => rand(95, 100),
+                'repeat_clients' => rand(1, 8)
+            ]]
+        );
     }
 
     $providerIds[] = $id;

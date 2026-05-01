@@ -43,8 +43,13 @@ class JobApplication
         self::$indexesEnsured = true;
     }
 
-    public function createApplication(string $jobId, string $providerId): bool
-    {
+    public function createApplication(
+        string $jobId,
+        string $providerId,
+        string $coverLetter = '',
+        string $availability = '',
+        string $timeline = ''
+    ): bool {
         if (!$this->isValidObjectId($jobId) || !$this->isValidObjectId($providerId)) {
             throw new InvalidArgumentException('Invalid job id or provider id provided.');
         }
@@ -57,6 +62,9 @@ class JobApplication
             $result = $this->collection->insertOne([
                 'job_id' => new ObjectId($jobId),
                 'provider_id' => new ObjectId($providerId),
+                'cover_letter' => trim($coverLetter),
+                'availability' => trim($availability),
+                'timeline' => trim($timeline),
                 'status' => 'pending',
                 'created_at' => new UTCDateTime(),
                 'updated_at' => new UTCDateTime(),

@@ -28,9 +28,12 @@
             <div class="p-6">
                 <?php $activeJobs = array_filter($jobs ?? [], fn($j) => $j['status'] === 'active'); ?>
                 <?php if (empty($activeJobs)): ?>
-                    <div class="text-center py-8">
-                        <span class="material-symbols-outlined text-muted" style="font-size: 3rem;">work_off</span>
-                        <p class="text-muted mt-2">No jobs currently in progress.</p>
+                    <div class="text-center py-10 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                        <div class="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full shadow-sm mb-4 text-slate-300">
+                            <span class="material-symbols-outlined" style="font-size: 2rem;">rocket</span>
+                        </div>
+                        <p class="text-slate-500 font-600">No jobs currently in progress.</p>
+                        <p class="text-[11px] text-muted mt-1">Hire a provider to see them here.</p>
                     </div>
                 <?php else: ?>
                     <div class="flex flex-col gap-4">
@@ -73,9 +76,12 @@
             <div class="p-6">
                 <?php $openJobs = array_filter($jobs ?? [], fn($j) => $j['status'] === 'open'); ?>
                 <?php if (empty($openJobs)): ?>
-                    <div class="text-center py-6">
-                        <span class="material-symbols-outlined text-muted" style="font-size: 2.5rem;">assignment_add</span>
-                        <p class="text-muted mt-2">No open jobs pending applicants.</p>
+                    <div class="text-center py-10 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                        <div class="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full shadow-sm mb-4 text-slate-300">
+                            <span class="material-symbols-outlined" style="font-size: 2rem;">assignment_add</span>
+                        </div>
+                        <p class="text-slate-500 font-600">No open jobs pending applicants.</p>
+                        <p class="text-[11px] text-muted mt-1">Post a requirement to get started.</p>
                     </div>
                 <?php else: ?>
                     <div class="flex flex-col gap-4">
@@ -89,37 +95,78 @@
                                     <span class="badge badge-info">Open</span>
                                 </div>
                                 <div class="border-t pt-4" onclick="event.stopPropagation()">
-                                    <h4 class="font-600 text-sm mb-3">Applicants:</h4>
+                                    <h4 class="font-700 text-sm mb-4 text-slate-800">Applicants:</h4>
                                     <?php if (empty($job['applicants'])): ?>
                                         <p class="text-sm text-muted italic">No applicants yet.</p>
                                     <?php else: ?>
-                                        <div class="flex flex-col gap-3">
+                                        <div class="flex flex-col gap-4">
                                             <?php foreach ($job['applicants'] as $applicant): ?>
                                                 <?php if ($applicant['status'] === 'pending'): ?>
-                                                    <div class="flex justify-between items-center bg-gray-50 p-3 rounded-lg hover:bg-white border border-transparent hover:border-slate-200 transition-all">
-                                                        <div class="flex items-center gap-3">
-                                                            <a href="/provider/view.php?id=<?= escape((string)$applicant['provider_id']); ?>" class="bg-white p-2 rounded-full border shadow-sm flex items-center justify-center hover:scale-110 transition-transform">
-                                                                <span class="material-symbols-outlined text-primary" style="font-size: 20px;">person</span>
-                                                            </a>
-                                                            <div>
-                                                                <a href="/provider/view.php?id=<?= escape((string)$applicant['provider_id']); ?>" class="font-600 text-sm m-0 hover:text-primary"><?= escape($applicant['user_data']['name'] ?? 'Provider'); ?></a>
-                                                                <div class="flex items-center gap-1 mt-0.5">
-                                                                    <span class="material-symbols-outlined text-warning" style="font-size: 14px;">star</span>
-                                                                    <span class="text-xs text-muted"><?= number_format((float)($applicant['profile_data']['rating'] ?? 0), 1); ?> (<?= (int)($applicant['profile_data']['rating_count'] ?? 0); ?> reviews)</span>
+                                                    <div class="bg-gray-50 border rounded-2xl p-5 hover:bg-white hover:shadow-lg transition-all border-slate-100 group">
+                                                        <div class="flex justify-between items-start mb-4">
+                                                            <div class="flex items-center gap-4">
+                                                                <div class="user-avatar-rect" style="width: 56px; height: 56px; border-radius: 14px;">
+                                                                    <?php if (!empty($applicant['profile_data']['profile_photo'])): ?>
+                                                                        <img src="<?= escape($applicant['profile_data']['profile_photo']); ?>" style="width:100%; height:100%; object-fit: cover;">
+                                                                    <?php else: ?>
+                                                                        <?= mb_substr(escape($applicant['user_data']['name'] ?? 'P'), 0, 1); ?>
+                                                                    <?php endif; ?>
+                                                                </div>
+                                                                <div>
+                                                                    <a href="/provider/view.php?id=<?= escape((string)$applicant['provider_id']); ?>" class="font-800 text-lg hover:text-primary transition-colors block leading-tight"><?= escape($applicant['user_data']['name'] ?? 'Provider'); ?></a>
+                                                                    <div class="flex items-center gap-3 mt-1.5">
+                                                                        <div class="flex items-center gap-1 bg-warning-soft px-2 py-0.5 rounded text-warning font-700 text-xs">
+                                                                            <span class="material-symbols-outlined" style="font-size: 14px;">star</span>
+                                                                            <?= number_format((float)($applicant['profile_data']['rating'] ?? 0), 1); ?>
+                                                                        </div>
+                                                                        <span class="text-xs text-muted font-600 flex items-center gap-1">
+                                                                            <span class="material-symbols-outlined" style="font-size: 14px;">history</span>
+                                                                            <?= escape($applicant['profile_data']['experience'] ?? 'N/A'); ?>
+                                                                        </span>
+                                                                    </div>
                                                                 </div>
                                                             </div>
+                                                            <div class="text-right">
+                                                                <p class="text-lg font-800 text-primary mb-0"><?= escape($applicant['profile_data']['rate'] ?? '0'); ?> <span class="text-[10px] font-600 uppercase">BDT/hr</span></p>
+                                                                <p class="text-[10px] text-muted font-700 uppercase tracking-wider"><?= escape($applicant['profile_data']['location'] ?? 'Unknown'); ?></p>
+                                                            </div>
                                                         </div>
-                                                        <div class="flex gap-2">
-                                                            <a href="/provider/view.php?id=<?= escape((string)$applicant['provider_id']); ?>" class="btn btn-outline btn-sm" title="View Profile">
-                                                                <span class="material-symbols-outlined" style="font-size: 16px;">visibility</span>
+
+                                                        <?php if (!empty($applicant['cover_letter'])): ?>
+                                                            <div class="bg-white border rounded-xl p-4 mb-4 text-sm text-slate-600 italic leading-relaxed relative">
+                                                                <span class="material-symbols-outlined absolute -top-2 -left-2 bg-white text-primary rounded-full shadow-sm" style="font-size: 20px;">format_quote</span>
+                                                                <?= nl2br(escape($applicant['cover_letter'])); ?>
+                                                            </div>
+                                                        <?php endif; ?>
+
+                                                        <?php if (!empty($applicant['availability']) || !empty($applicant['timeline'])): ?>
+                                                            <div class="flex gap-4 mb-5 text-xs">
+                                                                <?php if (!empty($applicant['availability'])): ?>
+                                                                    <div class="flex items-center gap-1.5 text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full">
+                                                                        <span class="material-symbols-outlined" style="font-size: 14px;">schedule</span>
+                                                                        <span class="font-600"><?= escape($applicant['availability']); ?></span>
+                                                                    </div>
+                                                                <?php endif; ?>
+                                                                <?php if (!empty($applicant['timeline'])): ?>
+                                                                    <div class="flex items-center gap-1.5 text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full">
+                                                                        <span class="material-symbols-outlined" style="font-size: 14px;">timer</span>
+                                                                        <span class="font-600"><?= escape($applicant['timeline']); ?></span>
+                                                                    </div>
+                                                                <?php endif; ?>
+                                                            </div>
+                                                        <?php endif; ?>
+
+                                                        <div class="flex gap-3 mt-4">
+                                                            <a href="/provider/view.php?id=<?= escape((string)$applicant['provider_id']); ?>" class="btn btn-outline btn-sm flex-1 font-700">View Profile</a>
+                                                            <a href="/messages?job_id=<?= escape((string)$job['_id']); ?>" class="btn btn-ghost btn-sm flex-1 font-700 gap-2">
+                                                                <span class="material-symbols-outlined" style="font-size: 16px;">chat</span> Message
                                                             </a>
-                                                            <!-- Accept Form -->
-                                                            <form action="/jobs/accept" method="POST" class="inline">
+                                                            <form action="/jobs/accept" method="POST" class="flex-[1.5]">
                                                                 <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">
                                                                 <input type="hidden" name="job_id" value="<?= escape((string)$job['_id']); ?>">
                                                                 <input type="hidden" name="provider_id" value="<?= escape($applicant['provider_id']); ?>">
-                                                                <button type="submit" class="btn btn-success btn-sm flex items-center gap-1" title="Accept">
-                                                                    <span class="material-symbols-outlined" style="font-size: 16px;">check</span> Accept
+                                                                <button type="submit" class="btn btn-success btn-sm w-full font-800 gap-2">
+                                                                    <span class="material-symbols-outlined" style="font-size: 18px;">check_circle</span> Hire Now
                                                                 </button>
                                                             </form>
                                                         </div>
@@ -169,68 +216,74 @@
 
     <!-- Sidebar: Quick Post & Actions -->
     <div class="flex flex-col gap-6">
-        <div class="card" style="background: var(--grad-primary); border: none; padding: 2rem; position: relative; overflow: hidden;">
-            <!-- Background Decorative Element -->
-            <span class="material-symbols-outlined" style="position: absolute; right: -20px; top: -10px; font-size: 8rem; opacity: 0.1; color: white; transform: rotate(-15deg);">rocket_launch</span>
+        <div class="card p-0 overflow-hidden border-none shadow-xl">
+            <div style="background: var(--grad-primary); padding: 2rem; position: relative; overflow: hidden;">
+                <span class="material-symbols-outlined" style="position: absolute; right: -20px; top: -10px; font-size: 8rem; opacity: 0.1; color: white; transform: rotate(-15deg);">rocket_launch</span>
+                <h2 class="text-2xl font-900 text-white mb-1 relative">Post a Job</h2>
+                <p class="text-sm text-white/80 font-500 relative">Get help in minutes</p>
+            </div>
             
-            <h2 class="card-title" style="color: white; margin-bottom: 0.5rem; font-size: 1.5rem; position: relative;">Post a Requirement</h2>
-            <p class="text-sm opacity-90 mb-6" style="color: rgba(255,255,255,0.8); position: relative;">Find the perfect helper for your needs in minutes.</p>
-            
-            <form action="/jobs" method="POST" class="flex flex-col gap-4" style="position: relative;">
+            <form action="/jobs" method="POST" class="p-8 flex flex-col gap-6 bg-white">
                 <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">
                 
-                <div class="form-group mb-0">
-                    <input name="service_type" type="text" class="input-field" placeholder="What do you need? (e.g. Cooking)" required 
-                           value="<?= escape(old('service_type')); ?>"
-                           style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; height: 48px;">
+                <!-- Section 1: Basics -->
+                <div>
+                    <h3 class="text-[10px] font-800 uppercase tracking-widest text-slate-400 mb-3">Service Details</h3>
+                    <div class="form-group mb-4">
+                        <label class="text-xs font-700 text-slate-700 mb-1.5 block">Service Type</label>
+                        <input name="service_type" type="text" class="input-field h-11 text-sm" placeholder="e.g. Baby Sitting, Cooking" required value="<?= escape(old('service_type')); ?>">
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="form-group mb-0">
+                            <label class="text-xs font-700 text-slate-700 mb-1.5 block">Hourly Rate (BDT)</label>
+                            <input name="rate" type="number" step="0.01" class="input-field h-11 text-sm" placeholder="0.00" required value="<?= escape(old('rate')); ?>">
+                        </div>
+                        <div class="form-group mb-0">
+                            <label class="text-xs font-700 text-slate-700 mb-1.5 block">Hours Needed</label>
+                            <input name="duration" type="number" step="0.5" id="post_duration" class="input-field h-11 text-sm" placeholder="1.0" required value="<?= escape(old('duration')); ?>">
+                        </div>
+                    </div>
                 </div>
-                
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="form-group mb-0">
-                        <input name="rate" type="number" step="0.01" class="input-field" placeholder="Rate/Hr" required 
-                               value="<?= escape(old('rate')); ?>"
-                               style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; height: 48px;">
+
+                <!-- Live Estimate -->
+                <div id="cost_estimate" class="bg-slate-50 border border-dashed border-slate-200 rounded-xl p-4 text-center" style="display: none;">
+                    <p class="text-[10px] font-800 uppercase tracking-widest text-slate-400 mb-1">Estimated Total Cost</p>
+                    <p class="text-2xl font-900 text-primary"><span id="estimate_val">0</span> <span class="text-xs font-700 text-slate-400">BDT</span></p>
+                </div>
+
+                <!-- Section 2: Logistics -->
+                <div>
+                    <h3 class="text-[10px] font-800 uppercase tracking-widest text-slate-400 mb-3">Logistics & Timing</h3>
+                    <div class="form-group mb-4">
+                        <label class="text-xs font-700 text-slate-700 mb-1.5 block">Location</label>
+                        <input name="location" type="text" class="input-field h-11 text-sm" placeholder="Where is the work?" required value="<?= escape(old('location')); ?>">
+                    </div>
+                    <div class="form-group mb-4">
+                        <label class="text-xs font-700 text-slate-700 mb-1.5 block">Scheduled Time</label>
+                        <input name="time" type="datetime-local" class="input-field h-11 text-sm" required value="<?= escape(old('time')); ?>">
                     </div>
                     <div class="form-group mb-0">
-                        <input name="duration" type="number" step="0.5" id="post_duration" class="input-field" placeholder="Hrs" required 
-                               value="<?= escape(old('duration')); ?>"
-                               style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; height: 48px;">
+                        <label class="text-xs font-700 text-slate-700 mb-1.5 block">Payment Method</label>
+                        <select name="payment_method" class="input-field h-11 text-sm" required>
+                            <option value="" disabled selected>Choose payment...</option>
+                            <option value="cash">Cash</option>
+                            <option value="bkash">bKash</option>
+                            <option value="nagad">Nagad</option>
+                        </select>
                     </div>
                 </div>
 
-                <div class="form-group mb-0">
-                    <select name="payment_method" class="input-field" required 
-                            style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; height: 48px;">
-                        <option value="" disabled selected style="color: black;">Payment Method</option>
-                        <option value="cash" style="color: black;">Cash</option>
-                        <option value="bkash" style="color: black;">bKash</option>
-                        <option value="nagad" style="color: black;">Nagad</option>
-                        <option value="card" style="color: black;">Card</option>
-                    </select>
+                <!-- Section 3: Instructions -->
+                <div>
+                    <h3 class="text-[10px] font-800 uppercase tracking-widest text-slate-400 mb-3">Requirements</h3>
+                    <div class="form-group mb-0">
+                        <label class="text-xs font-700 text-slate-700 mb-1.5 block">Special Instructions</label>
+                        <textarea name="instructions" class="input-field text-sm p-4" placeholder="Any special needs or details?" required style="height: 100px; resize: none;"><?= escape(old('instructions')); ?></textarea>
+                    </div>
                 </div>
 
-                <div id="cost_estimate" class="text-xs font-600 text-center py-2 rounded" style="background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.8); border: 1px dashed rgba(255,255,255,0.2); display: none;">
-                    Estimated Total: <span id="estimate_val">0</span> BDT
-                </div>
-
-                <div class="form-group mb-0">
-                    <input name="location" type="text" class="input-field" placeholder="Work Location" required 
-                           value="<?= escape(old('location')); ?>"
-                           style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; height: 48px;">
-                </div>
-
-                <div class="form-group mb-0">
-                    <input name="time" type="datetime-local" class="input-field" required 
-                           value="<?= escape(old('time')); ?>"
-                           style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; height: 48px;">
-                </div>
-
-                <div class="form-group mb-0">
-                    <textarea name="instructions" class="input-field" placeholder="Special Instructions" required 
-                           style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; height: 80px; padding-top: 12px;"><?= escape(old('instructions')); ?></textarea>
-                </div>
-
-                <button type="submit" class="btn" style="background: white; color: var(--primary); font-weight: 800; border: none; padding: 1rem; margin-top: 0.5rem; transition: transform 0.2s;">
+                <button type="submit" class="btn btn-primary w-full py-4 font-900 text-lg shadow-lg hover:shadow-primary/20 transition-all gap-2 mt-2">
                     <span class="material-symbols-outlined">bolt</span>
                     Post Job Now
                 </button>
@@ -259,6 +312,41 @@
                 </a>
             </div>
         </div>
+
+        <?php if (!empty($recommended)): ?>
+        <div class="card p-0 overflow-hidden">
+            <div class="card-header p-5 border-b bg-gray-50/50">
+                <h3 class="font-800 text-xs uppercase tracking-widest text-slate-500">Recommended for You</h3>
+            </div>
+            <div class="p-5">
+                <div class="flex flex-col gap-4">
+                    <?php foreach ($recommended as $rec): ?>
+                        <div class="flex items-center gap-4 group cursor-pointer" onclick="location.href='/provider/view.php?id=<?= escape((string)$rec['user_id']); ?>'">
+                            <div class="user-avatar-rect" style="width: 50px; height: 50px; border-radius: 12px; flex-shrink: 0;">
+                                <?php if (!empty($rec['profile_photo'])): ?>
+                                    <img src="<?= escape($rec['profile_photo']); ?>" style="width:100%; height:100%; object-fit: cover;">
+                                <?php else: ?>
+                                    <?= mb_substr(escape($rec['full_name'] ?? 'P'), 0, 1); ?>
+                                <?php endif; ?>
+                            </div>
+                            <div class="flex-1 min-width-0">
+                                <p class="text-sm font-700 m-0 group-hover:text-primary transition-colors truncate"><?= escape($rec['full_name'] ?? 'Provider'); ?></p>
+                                <div class="flex items-center gap-2 mt-0.5">
+                                    <div class="flex items-center gap-0.5 text-warning">
+                                        <span class="material-symbols-outlined" style="font-size: 14px;">star</span>
+                                        <span class="text-[11px] font-800"><?= number_format((float)($rec['rating'] ?? 0), 1); ?></span>
+                                    </div>
+                                    <span class="text-[10px] text-muted font-600"><?= escape($rec['location'] ?? 'Unknown'); ?></span>
+                                </div>
+                            </div>
+                            <span class="material-symbols-outlined text-slate-300 group-hover:translate-x-1 transition-transform" style="font-size: 20px;">chevron_right</span>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+                <a href="/servants" class="btn btn-outline btn-sm w-full mt-6 font-700">Explore More</a>
+            </div>
+        </div>
+        <?php endif; ?>
     </div>
 </div>
 

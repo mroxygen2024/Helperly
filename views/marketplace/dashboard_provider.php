@@ -84,13 +84,68 @@
                                 </div>
                                 <div class="text-right flex flex-col gap-2">
                                     <p class="font-800 text-lg text-primary"><?= number_format((float)($job['total_cost'] ?? 0), 2); ?> BDT</p>
-                                    <form action="/jobs/apply" method="POST" onclick="event.stopPropagation()">
+                                    <?php 
+                                        $appliedJobIds = array_map(fn($app) => (string)($app['job_id'] ?? ''), $applications ?? []);
+                                        $hasApplied = in_array((string)$job['_id'], $appliedJobIds, true);
+                                    ?>
+                                    <?php if ($hasApplied): ?>
+                                        <button class="btn btn-outline btn-sm px-6" disabled>Applied</button>
+                                    <?php else: ?>
+                                        <button type="button" class="btn btn-primary btn-sm px-6" 
+                                                <?= !($isProfileComplete ?? true) ? 'disabled' : ''; ?>
+                                                data-open-modal="apply_modal_<?= escape((string)$job['_id']); ?>">
+                                            Apply Now
+                                        </button>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+
+                            <!-- Application Modal -->
+                            <?php if (!$hasApplied): ?>
+                            <div id="apply_modal_<?= escape((string)$job['_id']); ?>" class="modal-overlay" data-modal>
+                                <div class="modal-content" style="max-width: 600px;">
+                                    <div class="modal-header">
+                                        <h2 class="card-title">Apply for <?= escape($job['service_type']); ?></h2>
+                                        <button type="button" class="btn btn-ghost" data-close-modal="apply_modal_<?= escape((string)$job['_id']); ?>">
+                                            <span class="material-symbols-outlined">close</span>
+                                        </button>
+                                    </div>
+                                    <form action="/jobs/apply" method="POST" class="p-6">
                                         <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">
                                         <input type="hidden" name="job_id" value="<?= escape((string)$job['_id']); ?>">
-                                        <button type="submit" class="btn btn-primary btn-sm px-6" <?= !($isProfileComplete ?? true) ? 'disabled' : ''; ?>>Apply Now</button>
+                                        
+                                        <div class="bg-primary-soft p-4 rounded-xl mb-6">
+                                            <div class="flex justify-between items-center text-sm">
+                                                <span class="font-600 text-primary">Job Budget: <?= number_format((float)($job['total_cost'] ?? 0), 2); ?> BDT</span>
+                                                <span class="text-muted"><?= (float)($job['duration'] ?? 0); ?> hours estimated</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="block text-sm font-700 mb-2">Cover Message (Optional)</label>
+                                            <textarea name="cover_letter" class="input-field" placeholder="Tell the client why you're a great fit..." style="height: 120px;"></textarea>
+                                            <p class="text-[11px] text-muted mt-1">Briefly explain your experience with this type of work.</p>
+                                        </div>
+
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <div class="form-group">
+                                                <label class="block text-sm font-700 mb-2">Your Availability</label>
+                                                <input type="text" name="availability" class="input-field" placeholder="e.g. Can start at 10 AM" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="block text-sm font-700 mb-2">Estimated Timeline</label>
+                                                <input type="text" name="timeline" class="input-field" placeholder="e.g. 3-4 hours" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-8 flex gap-3">
+                                            <button type="button" class="btn btn-outline flex-1" data-close-modal="apply_modal_<?= escape((string)$job['_id']); ?>">Cancel</button>
+                                            <button type="submit" class="btn btn-primary flex-[2]">Submit Application</button>
+                                        </div>
                                     </form>
                                 </div>
                             </div>
+                            <?php endif; ?>
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>

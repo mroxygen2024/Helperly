@@ -2,6 +2,56 @@
 console.info('Servant Marketplace UI loaded.');
 
 (() => {
+	// --- Generic Modal Controller ---
+	const setupModals = () => {
+		const openButtons = document.querySelectorAll('[data-open-modal]');
+		const closeButtons = document.querySelectorAll('[data-close-modal]');
+
+		openButtons.forEach(btn => {
+			btn.onclick = (e) => {
+				e.preventDefault();
+				const modalId = btn.dataset.openModal;
+				const modal = document.getElementById(modalId);
+				if (modal) {
+					modal.classList.add('open');
+					document.body.style.overflow = 'hidden'; // Prevent scroll
+				}
+			}
+		});
+
+		closeButtons.forEach(btn => {
+			btn.onclick = (e) => {
+				e.preventDefault();
+				const modalId = btn.dataset.closeModal;
+				const modal = document.getElementById(modalId);
+				if (modal) {
+					modal.classList.remove('open');
+					document.body.style.overflow = '';
+				}
+			}
+		});
+
+		window.addEventListener('click', (event) => {
+			if (event.target.classList.contains('modal-overlay')) {
+				event.target.classList.remove('open');
+				document.body.style.overflow = '';
+			}
+		});
+
+		// Escape key to close
+		window.addEventListener('keydown', (e) => {
+			if (e.key === 'Escape') {
+				document.querySelectorAll('.modal-overlay.open').forEach(modal => {
+					modal.classList.remove('open');
+					document.body.style.overflow = '';
+				});
+			}
+		});
+	};
+
+	setupModals();
+
+	// --- Provider Verification Form Logic ---
 	const form = document.querySelector('[data-provider-verification-form]');
 	if (!form) {
 		return;

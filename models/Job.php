@@ -53,7 +53,7 @@ class Job
         float $rate = 0.0,
         float $totalCost = 0.0,
         string $paymentMethod = 'cash'
-    ): bool {
+    ): string|bool {
         if (!$this->isValidObjectId($parentId)) {
             throw new InvalidArgumentException('Invalid parent id provided.');
         }
@@ -86,7 +86,7 @@ class Job
 
         $result = $this->collection->insertOne($document);
 
-        return $result->getInsertedCount() === 1;
+        return $result->getInsertedCount() === 1 ? (string) $result->getInsertedId() : false;
     }
 
     /**

@@ -32,24 +32,30 @@
         </header>
 
         <!-- 2. Messages Area (Inner Scroll) -->
-        <div id="chat-box" class="chat-messages">
+        <div id="chat-box" class="chat-messages" style="background: #F1F5F9; padding: 1.5rem;">
             <?php if (empty($messages)): ?>
-                <div id="empty-state" style="flex: 1; display: flex; flex-direction: column; justify-content: center; items-center; opacity: 0.5; color: var(--text-muted); align-items: center;">
-                    <span class="material-symbols-outlined" style="font-size: 4rem; margin-bottom: 1rem;">chat_bubble_outline</span>
-                    <p style="font-weight: 600; margin: 0;">No messages yet</p>
-                    <p style="font-size: 0.85rem; margin-top: 0.25rem;">Start the conversation by sending a message.</p>
+                <div id="empty-state" style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 4rem 2rem;">
+                    <div style="background: white; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm); margin-bottom: 1.5rem; color: var(--primary);">
+                        <span class="material-symbols-outlined" style="font-size: 2.5rem;">chat_bubble</span>
+                    </div>
+                    <h3 style="font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">Start the conversation</h3>
+                    <p style="font-size: 0.9rem; color: var(--text-muted); max-width: 250px;">Discuss job details, requirements, or any questions here.</p>
                 </div>
             <?php else: ?>
                 <?php foreach ($messages as $msg): 
                     $isSender = (string)$msg['sender_id'] === $userId;
                 ?>
-                    <div class="msg-bubble-wrapper <?= $isSender ? 'sent' : 'received' ?>">
-                        <div class="msg-bubble">
+                    <div class="msg-bubble-wrapper <?= $isSender ? 'sent' : 'received' ?>" style="margin-bottom: 1.25rem;">
+                        <div class="msg-bubble" style="box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-radius: <?= $isSender ? '18px 18px 2px 18px' : '18px 18px 18px 2px' ?>;">
                             <?= str_replace("\n", "<br>", escape($msg['message'])); ?>
                         </div>
-                        <div class="msg-meta">
+                        <div class="msg-meta" style="font-size: 0.7rem; font-weight: 700; opacity: 0.6; margin-top: 4px; display: flex; align-items: center; gap: 4px; justify-content: <?= $isSender ? 'flex-end' : 'flex-start' ?>;">
                             <?= $msg['created_at'] instanceof \MongoDB\BSON\UTCDateTime ? $msg['created_at']->toDateTime()->format('g:i A') : ''; ?>
-                            <?= $isSender ? '<span class="material-symbols-outlined" style="font-size: 14px; vertical-align: middle; margin-left: 2px;">done_all</span>' : '' ?>
+                            <?php if ($isSender): ?>
+                                <span class="material-symbols-outlined" style="font-size: 14px; color: <?= ($msg['is_read'] ?? false) ? 'var(--primary)' : 'inherit' ?>;">
+                                    <?= ($msg['is_read'] ?? false) ? 'done_all' : 'done' ?>
+                                </span>
+                            <?php endif; ?>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -57,16 +63,20 @@
         </div>
 
         <!-- 3. Input Area -->
-        <div class="chat-input-area">
-            <form id="chat-form" action="/messages" method="POST" class="chat-input-form">
+        <div class="chat-input-area" style="background: white; border-top: 1px solid var(--border-base); padding: 1.25rem 2rem;">
+            <form id="chat-form" action="/messages" method="POST" class="chat-input-form" style="background: #F8FAFC; border: 1px solid var(--border-base); border-radius: 99px; padding: 0.4rem 0.4rem 0.4rem 1.5rem; display: flex; align-items: center; gap: 1rem;">
                 <input type="hidden" name="csrf_token" value="<?= escape($csrfToken ?? ''); ?>">
                 <input type="hidden" name="job_id" id="current-job-id" value="<?= escape((string)$job['_id']); ?>">
                 <input type="hidden" name="ajax" value="1">
                 
-                <input type="text" name="message" id="message-input" placeholder="Type your message..." required autocomplete="off" class="chat-input-field">
+                <button type="button" class="btn btn-ghost btn-sm" style="padding: 0; min-width: 32px; height: 32px; border-radius: 50%; color: var(--text-muted);">
+                    <span class="material-symbols-outlined" style="font-size: 20px;">add_circle</span>
+                </button>
+
+                <input type="text" name="message" id="message-input" placeholder="Type your message..." required autocomplete="off" class="chat-input-field" style="background: transparent; border: none; flex: 1; outline: none; font-size: 0.95rem; font-weight: 500; height: 40px; color: var(--text-main);">
                 
-                <button type="submit" id="send-btn" class="chat-send-btn">
-                    <span class="material-symbols-outlined" style="font-size: 1.5rem;">send</span>
+                <button type="submit" id="send-btn" class="chat-send-btn" style="background: var(--primary); color: white; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; border: none; box-shadow: var(--shadow-md);">
+                    <span class="material-symbols-outlined" style="font-size: 1.25rem;">send</span>
                 </button>
             </form>
         </div>

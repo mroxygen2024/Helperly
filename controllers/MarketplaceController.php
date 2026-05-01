@@ -65,9 +65,13 @@ class MarketplaceController
             $jobsWithApplicants[] = $jobArray;
         }
 
+        // Fetch recommendations (e.g., top rated verified providers)
+        $recommended = $this->servantProfiles->findProfilesByFilters(['rating' => 4.5], 3);
+
         renderView('marketplace/dashboard_parent', [
             'title' => 'Parent Dashboard',
             'jobs' => $jobsWithApplicants,
+            'recommended' => $recommended,
             'user' => authUser(),
         ]);
     }
@@ -91,15 +95,15 @@ class MarketplaceController
         $earnings = 0;
 
         foreach ($activeWorkRaw as $job) {
-            $jobArray = (array)$job;
-            $jobArray['parent'] = $userModel->findUserById((string)$job['parent_id']);
+            $jobArray = (array) $job;
+            $jobArray['parent'] = $userModel->findUserById((string) $job['parent_id']);
             $activeWork[] = $jobArray;
         }
 
         // Calculate earnings from completed jobs
         $completedJobs = $this->jobs->getCompletedJobsByProvider($providerId);
         foreach ($completedJobs as $job) {
-            $earnings += (float)($job['total_cost'] ?? 0);
+            $earnings += (float) ($job['total_cost'] ?? 0);
         }
 
         $stats = [
@@ -141,12 +145,12 @@ class MarketplaceController
         $recentJobs = $this->jobs->getAllJobs(20);
         $enrichedJobs = [];
         foreach ($recentJobs as $job) {
-            $jobArray = (array)$job;
+            $jobArray = (array) $job;
             if (isset($job['parent_id'])) {
-                $jobArray['parent'] = $userModel->findUserById((string)$job['parent_id']);
+                $jobArray['parent'] = $userModel->findUserById((string) $job['parent_id']);
             }
             if (isset($job['selected_provider_id'])) {
-                $jobArray['provider'] = $userModel->findUserById((string)$job['selected_provider_id']);
+                $jobArray['provider'] = $userModel->findUserById((string) $job['selected_provider_id']);
             }
             $enrichedJobs[] = $jobArray;
         }
@@ -164,3 +168,4 @@ class MarketplaceController
         ]);
     }
 }
+

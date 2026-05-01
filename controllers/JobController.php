@@ -14,12 +14,14 @@ class JobController
     private Job $jobs;
     private JobApplication $applications;
     private ServantProfile $servantProfiles;
+    private Notification $notifications;
 
     public function __construct()
     {
         $this->jobs = new Job();
         $this->applications = new JobApplication();
         $this->servantProfiles = new ServantProfile();
+        $this->notifications = new Notification();
     }
 
     public function showBookForm(array $query): void
@@ -92,8 +94,17 @@ class JobController
         }
 
         try {
-            $created = $this->jobs->createJob($parentId, $time, $duration, $serviceType, $location, $instructions, $selectedProviderId ?: null, $rate, $totalCost, $paymentMethod);
-            if ($created) {
+            $createdId = $this->jobs->createJob($parentId, $time, $duration, $serviceType, $location, $instructions, $selectedProviderId ?: null, $rate, $totalCost, $paymentMethod);
+            if ($createdId) {
+                if ($selectedProviderId) {
+                    $this->notifications->create(
+                        $selectedProviderId,
+                        'job_assigned',
+                        'New Job Assigned',
+                        'You have been directly assigned to a ' . $serviceType . ' job.',
+                        '/jobs/detail?id=' . $createdId
+                    );
+                }
                 clearOldInput();
                 setFlash('success', 'Job ' . ($selectedProviderId ? 'booked and assigned directly.' : 'posted successfully with status open.'));
             } else {
@@ -114,7 +125,11 @@ class JobController
         }
 
         $providerId = (string) ($_SESSION['user_id'] ?? '');
+        $providerName = (string) ($_SESSION['auth_user']['name'] ?? 'A provider');
         $jobId = sanitizeInput($payload['job_id'] ?? null);
+        $coverLetter = sanitizeInput($payload['cover_letter'] ?? '');
+        $availability = sanitizeInput($payload['availability'] ?? '');
+        $timeline = sanitizeInput($payload['timeline'] ?? '');
 
         if (!$this->servantProfiles->isApprovedByUserId($providerId)) {
             setFlash('error', 'Only verified service providers can apply to jobs.');
@@ -122,7 +137,17 @@ class JobController
         }
 
         try {
-            if ($this->applications->createApplication($jobId, $providerId)) {
+            if ($this->applications->createApplication($jobId, $providerId, $coverLetter, $availability, $timeline)) {
+                $job = $this->jobs->getJobById($jobId);
+                if ($job) {
+                    $this->notifications->create(
+                        (string)$job['parent_id'],
+                        'application',
+                        'New Application',
+                        $providerName . ' has applied for your ' . ($job['service_type'] ?? 'job') . ' post.',
+                        '/dashboard'
+                    );
+                }
                 setFlash('success', 'Application submitted successfully.');
             } else {
                 setFlash('error', 'Could not submit application.');
@@ -154,6 +179,15 @@ class JobController
             if ($this->applications->updateApplicationStatus($jobId, $providerId, 'accepted')) {
                 $this->jobs->acceptProvider($jobId, $providerId, $rate, $totalCost, $paymentMethod);
                 $this->applications->rejectOtherApplicants($jobId, $providerId);
+                
+                $this->notifications->create(
+                    $providerId,
+                    'job_accepted',
+                    'Application Accepted',
+                    'Your application for ' . ($job['service_type'] ?? 'a job') . ' has been accepted!',
+                    '/jobs/detail?id=' . $jobId
+                );
+
                 setFlash('success', 'Applicant accepted.');
             }
         } catch (Throwable $exception) {
@@ -175,6 +209,14 @@ class JobController
 
         try {
             if ($this->applications->updateApplicationStatus($jobId, $providerId, 'rejected')) {
+                $job = $this->jobs->getJobById($jobId);
+                $this->notifications->create(
+                    $providerId,
+                    'application_rejected',
+                    'Application Rejected',
+                    'Your application for ' . ($job['service_type'] ?? 'a job') . ' was not selected.',
+                    '/jobs/detail?id=' . $jobId
+                );
                 setFlash('success', 'Applicant rejected.');
             } else {
                 setFlash('error', 'Could not reject applicant.');
@@ -194,10 +236,39 @@ class JobController
 
         $jobId = sanitizeInput($payload['job_id'] ?? null);
         $userId = (string) ($_SESSION['user_id'] ?? '');
+        $userName = (string) ($_SESSION['auth_user']['name'] ?? 'Someone');
         $role = normalizeRole((string) ($user['role'] ?? ''));
 
         try {
             if ($this->jobs->confirmJob($jobId, $userId, $role)) {
+                $job = $this->jobs->getJobById($jobId);
+                $receiverId = ($role === 'parent') ? (string)$job['selected_provider_id'] : (string)$job['parent_id'];
+                
+                $this->notifications->create(
+                    $receiverId,
+                    'job_confirmed',
+                    'Job Completion Confirmed',
+                    $userName . ' has confirmed the completion of ' . ($job['service_type'] ?? 'the job') . '.',
+                    '/jobs/detail?id=' . $jobId
+                );
+
+                if ($job['status'] === 'completed') {
+                    $this->notifications->create(
+                        (string)$job['parent_id'],
+                        'job_completed',
+                        'Job Completed!',
+                        'All parties confirmed completion of ' . ($job['service_type'] ?? 'the job') . '. You can now leave a review.',
+                        '/jobs/detail?id=' . $jobId
+                    );
+                    $this->notifications->create(
+                        (string)$job['selected_provider_id'],
+                        'job_completed',
+                        'Job Completed!',
+                        'Job ' . ($job['service_type'] ?? '') . ' is now marked as completed. Payment is being processed.',
+                        '/jobs/detail?id=' . $jobId
+                    );
+                }
+
                 setFlash('success', 'Confirmation recorded.');
             }
         } catch (Throwable $exception) {

@@ -126,6 +126,9 @@ class ServantProfile
                     'user_id' => new ObjectId($user_id),
                     'verification_status' => 'pending',
                     'verification_notes' => '',
+                    'response_time' => 'Under 1 hour',
+                    'completion_rate' => 100,
+                    'repeat_clients' => 0,
                     'created_at' => $now,
                 ],
             ],
@@ -346,6 +349,9 @@ class ServantProfile
                 'selfie_url' => 1,
                 'verification_status' => 1,
                 'verification_notes' => 1,
+                'response_time' => 1,
+                'completion_rate' => 1,
+                'repeat_clients' => 1,
                 'created_at' => 1,
             ]
         ];
