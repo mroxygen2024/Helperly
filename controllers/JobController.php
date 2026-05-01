@@ -216,11 +216,11 @@ class JobController
         requireRole('provider');
         $jobs = $this->jobs->getOpenJobs();
         
-        renderView('servants/requests', [
+        renderView('jobs/index', [
             'title' => 'Available Jobs',
+            'subtitle' => 'Browse and apply for opportunities near you.',
             'jobs' => $jobs,
-            'user' => authUser(),
-            'role' => 'provider'
+            'user' => authUser()
         ]);
     }
 
@@ -230,11 +230,11 @@ class JobController
         $parentId = (string)($_SESSION['user_id'] ?? '');
         $jobs = $this->jobs->getJobsByParentId($parentId);
         
-        renderView('servants/requests', [
+        renderView('jobs/index', [
             'title' => 'My Posted Jobs',
+            'subtitle' => 'Track and manage the requirements you have posted.',
             'jobs' => $jobs,
-            'user' => authUser(),
-            'role' => 'parent'
+            'user' => authUser()
         ]);
     }
 
@@ -244,11 +244,11 @@ class JobController
         $providerId = (string)($_SESSION['user_id'] ?? '');
         $jobs = $this->jobs->getJobsByProviderId($providerId);
         
-        renderView('servants/requests', [
+        renderView('jobs/index', [
             'title' => 'My Work History',
+            'subtitle' => 'Track your active assignments and completed work.',
             'jobs' => $jobs,
-            'user' => authUser(),
-            'role' => 'provider'
+            'user' => authUser()
         ]);
     }
 
@@ -256,13 +256,21 @@ class JobController
     {
         requireRole('provider');
         $providerId = (string)($_SESSION['user_id'] ?? '');
-        $applications = $this->applications->getApplicationsByProvider($providerId);
+        $applicationsRaw = $this->applications->getApplicationsByProvider($providerId);
         
-        renderView('servants/requests', [
+        // Enrich applications with job data
+        $enrichedApplications = [];
+        foreach ($applicationsRaw as $app) {
+            $appArray = (array)$app;
+            $appArray['job_data'] = (array)$this->jobs->getJobById((string)$app['job_id']);
+            $enrichedApplications[] = $appArray;
+        }
+
+        renderView('jobs/index', [
             'title' => 'My Applications',
-            'applications' => $applications,
-            'user' => authUser(),
-            'role' => 'provider'
+            'subtitle' => 'Track the status of your job applications.',
+            'applications' => $enrichedApplications,
+            'user' => authUser()
         ]);
     }
 }
