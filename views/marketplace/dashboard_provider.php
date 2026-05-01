@@ -44,7 +44,7 @@
                 <p class="text-xs text-muted font-600 uppercase mb-1">Applications</p>
                 <p class="text-2xl font-800 text-info"><?= (int)$stats['applications']; ?></p>
             </div>
-            <div class="card p-4 flex flex-col items-center justify-center text-center hover-scale cursor-pointer" onclick="location.href='/provider/view.php?id=<?= escape((string)$user['_id']); ?>#reviews'">
+            <div class="card p-4 flex flex-col items-center justify-center text-center hover-scale cursor-pointer" onclick="location.href='/provider/view.php?id=<?= escape((string)$user['id']); ?>#reviews'">
                 <p class="text-xs text-muted font-600 uppercase mb-1">Rating</p>
                 <div class="flex items-center gap-1">
                     <span class="text-2xl font-800 text-success"><?= number_format((float)$stats['rating'], 1); ?></span>
@@ -179,7 +179,7 @@
                     <span>Manage Profile</span>
                     <span class="material-symbols-outlined" style="font-size: 18px;">chevron_right</span>
                 </a>
-                <a href="/provider/view.php?id=<?= escape((string)$user['_id']); ?>" class="flex items-center justify-between text-sm font-600 hover:text-primary transition-colors">
+                <a href="/provider/view.php?id=<?= escape((string)$user['id']); ?>" class="flex items-center justify-between text-sm font-600 hover:text-primary transition-colors">
                     <span>View Public Profile</span>
                     <span class="material-symbols-outlined" style="font-size: 18px;">chevron_right</span>
                 </a>
