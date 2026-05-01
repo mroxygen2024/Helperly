@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 /*
  |--------------------------------------------------------------------------
- | controllers/AdminJobController.php
+ | controllers/AdminJobController.php 
  |--------------------------------------------------------------------------
  | Handles administrative job management tasks.
  */
@@ -85,3 +85,6 @@ class AdminJobController
         ]);
     }
 }
+
+// NOTE: We convert job objects to arrays and enrich them with related user data (parent & provider)
+// so the view can directly access all required information without additional queries.
