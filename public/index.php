@@ -29,6 +29,7 @@ require_once dirname(__DIR__) . '/models/Service.php';
 require_once dirname(__DIR__) . '/models/Message.php';
 require_once dirname(__DIR__) . '/models/Payment.php';
 require_once dirname(__DIR__) . '/models/Review.php';
+require_once dirname(__DIR__) . '/models/Notification.php';
 
 require_once dirname(__DIR__) . '/controllers/AuthController.php';
 require_once dirname(__DIR__) . '/controllers/MarketplaceController.php';
