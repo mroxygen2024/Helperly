@@ -396,7 +396,7 @@ class ProfileController
         $location = sanitizeInput($payload['location'] ?? null);
         $availability = sanitizeInput($payload['availability'] ?? null);
         $rate = sanitizeInput($payload['hourly_rate'] ?? $payload['rate'] ?? null);
-        $currency = strtoupper(sanitizeInput($payload['currency'] ?? 'BDT'));
+        $currency = strtoupper(sanitizeInput($payload['currency'] ?? 'ETB'));
         $profilePhotoRemove = !empty($payload['profile_photo_remove']);
         $faydaIdFrontRemove = !empty($payload['fayda_id_front_remove']);
         $faydaIdBackRemove = !empty($payload['fayda_id_back_remove']);
@@ -429,8 +429,8 @@ class ProfileController
         if (!validateRequired($rate)) {
             $errors[] = 'Hourly rate is required.';
         }
-        if (!in_array($currency, ['BDT', 'USD', 'EUR', 'INR'], true)) {
-            $currency = 'BDT';
+        if (!in_array($currency, ['ETB'], true)) {
+            $currency = 'ETB';
         }
 
         $faydaIdFrontUrl = $this->resolveVerificationImagePath(

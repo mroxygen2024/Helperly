@@ -36,7 +36,7 @@
                                         <div class="text-xs text-muted font-mono"><?= escape((string)$payment['job_id']); ?></div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap font-800 text-primary">
-                                        <?= number_format((float)($payment['amount'] ?? 0), 2); ?> BDT
+                                        <?= number_format((float)($payment['amount'] ?? 0), 2); ?> ETB
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm uppercase">
                                         <?= escape($payment['method'] ?? 'cash'); ?>

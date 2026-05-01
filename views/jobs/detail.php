@@ -22,8 +22,8 @@
                         </div>
                         <div class="text-right">
                             <p class="text-sm text-muted font-600">Total Budget</p>
-                            <p class="text-2xl font-800 text-primary"><?= number_format((float)($job['total_cost'] ?? 0), 2); ?> BDT</p>
-                            <p class="text-xs text-muted mt-1"><?= escape($job['rate'] ?? 0); ?> BDT / hr • <?= (float)($job['duration'] ?? 0); ?> hrs</p>
+                            <p class="text-2xl font-800 text-primary"><?= number_format((float)($job['total_cost'] ?? 0), 2); ?> ETB</p>
+                            <p class="text-xs text-muted mt-1"><?= escape($job['rate'] ?? 0); ?> ETB / hr • <?= (float)($job['duration'] ?? 0); ?> hrs</p>
                         </div>
                     </div>
 

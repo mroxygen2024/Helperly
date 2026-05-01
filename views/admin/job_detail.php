@@ -40,11 +40,11 @@ $badgeClass = match ($status) {
             </div>
             <div class="flex justify-between py-3 border-t">
                 <span class="text-sm text-muted">Hourly Rate</span>
-                <span class="text-sm font-600"><?= number_format((float)($job['rate'] ?? 0), 2); ?> BDT</span>
+                <span class="text-sm font-600"><?= number_format((float)($job['rate'] ?? 0), 2); ?> ETB</span>
             </div>
             <div class="flex justify-between py-3 border-t">
                 <span class="text-sm text-muted">Total Cost</span>
-                <span class="text-sm font-700 text-primary"><?= number_format((float)($job['total_cost'] ?? 0), 2); ?> BDT</span>
+                <span class="text-sm font-700 text-primary"><?= number_format((float)($job['total_cost'] ?? 0), 2); ?> ETB</span>
             </div>
             <div class="flex justify-between py-3 border-t">
                 <span class="text-sm text-muted">Payment Method</span>

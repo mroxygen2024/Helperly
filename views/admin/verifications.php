@@ -136,7 +136,7 @@
                         </div>
                         <div class="flex flex-col">
                             <span class="text-xs text-muted font-600">Rate</span>
-                            <span class="font-700"><?= escape($profile['rate'] ?? 'N/A'); ?> BDT</span>
+                            <span class="font-700"><?= escape($profile['rate'] ?? 'N/A'); ?> ETB</span>
                         </div>
                     </div>
                 </div>

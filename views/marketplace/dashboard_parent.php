@@ -127,7 +127,7 @@
                                                                 </div>
                                                             </div>
                                                             <div class="text-right">
-                                                                <p class="text-lg font-800 text-primary mb-0"><?= escape($applicant['profile_data']['rate'] ?? '0'); ?> <span class="text-[10px] font-600 uppercase">BDT/hr</span></p>
+                                                                <p class="text-lg font-800 text-primary mb-0"><?= escape($applicant['profile_data']['rate'] ?? '0'); ?> <span class="text-[10px] font-600 uppercase">ETB/hr</span></p>
                                                                 <p class="text-[10px] text-muted font-700 uppercase tracking-wider"><?= escape($applicant['profile_data']['location'] ?? 'Unknown'); ?></p>
                                                             </div>
                                                         </div>
@@ -236,7 +236,7 @@
                     
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group mb-0">
-                            <label class="text-xs font-700 text-slate-700 mb-1.5 block">Hourly Rate (BDT)</label>
+                            <label class="text-xs font-700 text-slate-700 mb-1.5 block">Hourly Rate (ETB)</label>
                             <input name="rate" type="number" step="0.01" class="input-field h-11 text-sm" placeholder="0.00" required value="<?= escape(old('rate')); ?>">
                         </div>
                         <div class="form-group mb-0">
@@ -249,7 +249,7 @@
                 <!-- Live Estimate -->
                 <div id="cost_estimate" class="bg-slate-50 border border-dashed border-slate-200 rounded-xl p-4 text-center" style="display: none;">
                     <p class="text-[10px] font-800 uppercase tracking-widest text-slate-400 mb-1">Estimated Total Cost</p>
-                    <p class="text-2xl font-900 text-primary"><span id="estimate_val">0</span> <span class="text-xs font-700 text-slate-400">BDT</span></p>
+                    <p class="text-2xl font-900 text-primary"><span id="estimate_val">0</span> <span class="text-xs font-700 text-slate-400">ETB</span></p>
                 </div>
 
                 <!-- Section 2: Logistics -->

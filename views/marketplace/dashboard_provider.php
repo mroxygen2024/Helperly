@@ -83,7 +83,7 @@
                                     </div>
                                 </div>
                                 <div class="text-right flex flex-col gap-2">
-                                    <p class="font-800 text-lg text-primary"><?= number_format((float)($job['total_cost'] ?? 0), 2); ?> BDT</p>
+                                    <p class="font-800 text-lg text-primary"><?= number_format((float)($job['total_cost'] ?? 0), 2); ?> ETB</p>
                                     <?php 
                                         $appliedJobIds = array_map(fn($app) => (string)($app['job_id'] ?? ''), $applications ?? []);
                                         $hasApplied = in_array((string)$job['_id'], $appliedJobIds, true);
@@ -116,7 +116,7 @@
                                         
                                         <div class="bg-primary-soft p-4 rounded-xl mb-6">
                                             <div class="flex justify-between items-center text-sm">
-                                                <span class="font-600 text-primary">Job Budget: <?= number_format((float)($job['total_cost'] ?? 0), 2); ?> BDT</span>
+                                                <span class="font-600 text-primary">Job Budget: <?= number_format((float)($job['total_cost'] ?? 0), 2); ?> ETB</span>
                                                 <span class="text-muted"><?= (float)($job['duration'] ?? 0); ?> hours estimated</span>
                                             </div>
                                         </div>
@@ -201,7 +201,7 @@
             <div class="p-8 text-white relative">
                 <span class="material-symbols-outlined" style="position: absolute; right: -10px; bottom: -10px; font-size: 6rem; opacity: 0.15; transform: rotate(15deg);">account_balance_wallet</span>
                 <p class="text-sm opacity-80 font-600 uppercase tracking-widest mb-1">Total Earnings</p>
-                <p class="text-4xl font-900 mb-6"><?= number_format((float)$stats['earnings'], 2); ?> <span class="text-lg font-600">BDT</span></p>
+                <p class="text-4xl font-900 mb-6"><?= number_format((float)$stats['earnings'], 2); ?> <span class="text-lg font-600">ETB</span></p>
                 <a href="/provider/payments" class="btn bg-white text-secondary w-full font-800 border-none hover:bg-opacity-90">Withdraw Funds</a>
             </div>
         </div>

@@ -103,7 +103,7 @@
                         </td>
                         <td class="p-4">
                             <div class="flex flex-col">
-                                <span class="font-700 text-slate-800"><?= number_format((float)($job['total_cost'] ?? 0), 2); ?> BDT</span>
+                                <span class="font-700 text-slate-800"><?= number_format((float)($job['total_cost'] ?? 0), 2); ?> ETB</span>
                                 <span class="text-xs text-muted"><?= escape(ucfirst($job['payment_method'] ?? 'cash')); ?></span>
                             </div>
                         </td>

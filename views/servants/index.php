@@ -131,7 +131,7 @@
                             </p>
                         </div>
                         <div class="text-right">
-                            <p class="text-lg font-900 text-primary mb-0"><?= escape((string) ($profile['rate'] ?? '0')); ?> <span class="text-[10px] font-600 uppercase">BDT/hr</span></p>
+                            <p class="text-lg font-900 text-primary mb-0"><?= escape((string) ($profile['rate'] ?? '0')); ?> <span class="text-[10px] font-600 uppercase">ETB/hr</span></p>
                             <p class="text-[10px] text-muted font-700 uppercase tracking-widest"><?= escape((string) ($profile['experience'] ?? 'N/A')); ?></p>
                         </div>
                     </div>
@@ -230,7 +230,7 @@
                 <div class="grid grid-cols-3 gap-4 text-xs bg-white p-4 rounded-xl border border-slate-200 mb-6">
                      <div class="flex flex-col">
                          <span class="text-muted font-600 mb-1">Rate</span>
-                         <span class="font-700 text-sm"><?= escape($profile['rate'] ?? 'N/A'); ?> BDT</span>
+                         <span class="font-700 text-sm"><?= escape($profile['rate'] ?? 'N/A'); ?> ETB</span>
                      </div>
                      <div class="flex flex-col">
                          <span class="text-muted font-600 mb-1">Location</span>

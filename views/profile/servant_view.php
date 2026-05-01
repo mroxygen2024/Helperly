@@ -28,7 +28,7 @@
                 <div class="flex flex-col gap-4 border-t pt-6">
                     <div class="flex justify-between items-center">
                         <span class="text-muted text-sm">Hourly Rate</span>
-                        <span class="font-700 text-primary"><?= escape($profile['rate'] ?? $profile['hourly_rate'] ?? 'N/A'); ?> <?= escape($profile['currency'] ?? 'BDT'); ?></span>
+                        <span class="font-700 text-primary"><?= escape($profile['rate'] ?? $profile['hourly_rate'] ?? 'N/A'); ?> <?= escape($profile['currency'] ?? 'ETB'); ?></span>
                     </div>
                     <div class="flex justify-between items-center">
                         <span class="text-muted text-sm">Availability</span>

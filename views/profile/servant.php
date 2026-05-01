@@ -1,6 +1,6 @@
 <?php
 $selectedGender = old('gender', (string) ($profile['gender'] ?? ''));
-$selectedCurrency = strtoupper(old('currency', (string) ($profile['currency'] ?? 'BDT')));
+$selectedCurrency = strtoupper(old('currency', (string) ($profile['currency'] ?? 'ETB')));
 $selectedAvailability = old('availability', (string) ($profile['availability'] ?? ''));
 $skillsValue = old('skills', (string) ($skillsText ?? ''));
 $profilePhotoUrl = (string) ($profile['profile_photo'] ?? '');
@@ -16,7 +16,7 @@ $availabilityOptions = [
     'Weekends',
     'Flexible',
 ];
-$currencyOptions = ['BDT', 'USD', 'EUR', 'INR'];
+$currencyOptions = ['ETB'];
 ?>
 
 <section class="profile-onboarding-shell">

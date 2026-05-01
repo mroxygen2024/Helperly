@@ -14,7 +14,7 @@
 
                 <div class="form-group">
                     <label class="label">Price / Rate</label>
-                    <input name="price" type="text" class="input" placeholder="e.g. 500 BDT/hour" required>
+                    <input name="price" type="text" class="input" placeholder="e.g. 500 ETB/hour" required>
                 </div>
 
                 <div class="form-group">

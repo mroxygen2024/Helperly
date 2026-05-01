@@ -49,7 +49,7 @@
                                     </p>
                                 </div>
                                 <div class="text-right">
-                                    <p class="text-lg font-800 text-primary"><?= number_format((float)($job['total_cost'] ?? 0), 2); ?> BDT</p>
+                                    <p class="text-lg font-800 text-primary"><?= number_format((float)($job['total_cost'] ?? 0), 2); ?> ETB</p>
                                     <p class="text-xs text-muted mt-1"><?= (float)($job['duration'] ?? 0); ?> hours</p>
                                 </div>
                             </div>
@@ -101,7 +101,7 @@
                             <div class="mt-6 flex justify-between items-center border-t pt-4">
                                 <div class="text-xs">
                                     <p class="text-muted font-600 mb-0.5">Budget</p>
-                                    <p class="font-700"><?= number_format((float)($app['job_data']['total_cost'] ?? 0), 2); ?> BDT</p>
+                                    <p class="font-700"><?= number_format((float)($app['job_data']['total_cost'] ?? 0), 2); ?> ETB</p>
                                 </div>
                                 <div class="flex gap-2">
                                     <a href="/jobs/detail?id=<?= escape((string)$app['job_id']); ?>" class="btn btn-outline btn-sm">View Job Posting</a>

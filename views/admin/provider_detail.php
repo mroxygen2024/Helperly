@@ -43,7 +43,7 @@
                 </div>
                 <div class="flex justify-between py-3 border-t">
                     <span class="text-sm text-muted">Hourly Rate</span>
-                    <span class="text-sm font-700 text-primary"><?= escape($provider['profile']['rate'] ?? '0'); ?> BDT</span>
+                    <span class="text-sm font-700 text-primary"><?= escape($provider['profile']['rate'] ?? '0'); ?> ETB</span>
                 </div>
                 <div class="flex justify-between py-3 border-t">
                     <span class="text-sm text-muted">Rating</span>

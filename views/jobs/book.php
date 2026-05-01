@@ -75,7 +75,7 @@
                      <label class="label">Estimated Total</label>
                      <div class="p-4 rounded-xl border-2 border-dashed border-primary-soft bg-primary-soft text-primary font-700 text-lg flex items-center justify-between">
                          <span>Total Amount:</span>
-                         <span><span id="total_cost_display">0.00</span> BDT</span>
+                         <span><span id="total_cost_display">0.00</span> ETB</span>
                      </div>
                 </div>
             </div>

@@ -74,7 +74,7 @@
                     </div>
                     <div>
                         <p class="text-xs text-muted font-800 uppercase letter-spacing-lg mb-1">Hourly Rate</p>
-                        <p class="font-600 text-primary"><?= number_format((float)($user['profile']['rate'] ?? 0), 2); ?> BDT</p>
+                        <p class="font-600 text-primary"><?= number_format((float)($user['profile']['rate'] ?? 0), 2); ?> ETB</p>
                     </div>
                     <div class="col-span-2">
                         <p class="text-xs text-muted font-800 uppercase letter-spacing-lg mb-2">Skills</p>

@@ -81,11 +81,16 @@ class JobController
         $totalCost = $rate * $numericDuration;
 
         $errors = [];
-        if (!validateRequired($time)) $errors[] = 'Time is required.';
-        if (!validateRequired($duration)) $errors[] = 'Duration is required.';
-        if (!validateRequired($serviceType)) $errors[] = 'Type of service is required.';
-        if (!validateRequired($location)) $errors[] = 'Location is required.';
-        if (!validateRequired($instructions)) $errors[] = 'Special instructions are required.';
+        if (!validateRequired($time))
+            $errors[] = 'Time is required.';
+        if (!validateRequired($duration))
+            $errors[] = 'Duration is required.';
+        if (!validateRequired($serviceType))
+            $errors[] = 'Type of service is required.';
+        if (!validateRequired($location))
+            $errors[] = 'Location is required.';
+        if (!validateRequired($instructions))
+            $errors[] = 'Special instructions are required.';
 
         if (!empty($errors)) {
             rememberOldInput($payload);
@@ -141,7 +146,7 @@ class JobController
                 $job = $this->jobs->getJobById($jobId);
                 if ($job) {
                     $this->notifications->create(
-                        (string)$job['parent_id'],
+                        (string) $job['parent_id'],
                         'application',
                         'New Application',
                         $providerName . ' has applied for your ' . ($job['service_type'] ?? 'job') . ' post.',
@@ -163,6 +168,8 @@ class JobController
         requireRole('parent');
         if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
             setFlash('error', 'Invalid request token.');
+
+
             redirect('/dashboard');
         }
 
@@ -172,14 +179,14 @@ class JobController
         try {
             $job = $this->jobs->getJobById($jobId);
             $profile = $this->servantProfiles->getProfileByUserId($providerId);
-            $rate = (float)($profile['rate'] ?? 0);
-            $totalCost = $rate * (float)$job['duration'];
+            $rate = (float) ($profile['rate'] ?? 0);
+            $totalCost = $rate * (float) $job['duration'];
             $paymentMethod = $job['payment_method'] ?? 'cash';
 
             if ($this->applications->updateApplicationStatus($jobId, $providerId, 'accepted')) {
                 $this->jobs->acceptProvider($jobId, $providerId, $rate, $totalCost, $paymentMethod);
                 $this->applications->rejectOtherApplicants($jobId, $providerId);
-                
+
                 $this->notifications->create(
                     $providerId,
                     'job_accepted',
@@ -242,8 +249,8 @@ class JobController
         try {
             if ($this->jobs->confirmJob($jobId, $userId, $role)) {
                 $job = $this->jobs->getJobById($jobId);
-                $receiverId = ($role === 'parent') ? (string)$job['selected_provider_id'] : (string)$job['parent_id'];
-                
+                $receiverId = ($role === 'parent') ? (string) $job['selected_provider_id'] : (string) $job['parent_id'];
+
                 $this->notifications->create(
                     $receiverId,
                     'job_confirmed',
@@ -254,14 +261,14 @@ class JobController
 
                 if ($job['status'] === 'completed') {
                     $this->notifications->create(
-                        (string)$job['parent_id'],
+                        (string) $job['parent_id'],
                         'job_completed',
                         'Job Completed!',
                         'All parties confirmed completion of ' . ($job['service_type'] ?? 'the job') . '. You can now leave a review.',
                         '/jobs/detail?id=' . $jobId
                     );
                     $this->notifications->create(
-                        (string)$job['selected_provider_id'],
+                        (string) $job['selected_provider_id'],
                         'job_completed',
                         'Job Completed!',
                         'Job ' . ($job['service_type'] ?? '') . ' is now marked as completed. Payment is being processed.',
@@ -287,12 +294,12 @@ class JobController
         }
 
         $userModel = new User();
-        $jobArray = (array)$job;
-        $jobArray['parent'] = $userModel->findUserById((string)$job['parent_id']);
+        $jobArray = (array) $job;
+        $jobArray['parent'] = $userModel->findUserById((string) $job['parent_id']);
         if (isset($job['selected_provider_id'])) {
-            $jobArray['provider'] = $userModel->findUserById((string)$job['selected_provider_id']);
+            $jobArray['provider'] = $userModel->findUserById((string) $job['selected_provider_id']);
         }
-        
+
         $paymentModel = new Payment();
         $jobArray['payment'] = $paymentModel->getPaymentByJobId($jobId);
         $reviewModel = new Review();
@@ -309,7 +316,7 @@ class JobController
     {
         requireRole('provider');
         $jobs = $this->jobs->getOpenJobs();
-        
+
         renderView('jobs/index', [
             'title' => 'Available Jobs',
             'subtitle' => 'Browse and apply for opportunities near you.',
@@ -321,9 +328,9 @@ class JobController
     public function showParentJobs(): void
     {
         requireRole('parent');
-        $parentId = (string)($_SESSION['user_id'] ?? '');
+        $parentId = (string) ($_SESSION['user_id'] ?? '');
         $jobs = $this->jobs->getJobsByParentId($parentId);
-        
+
         renderView('jobs/index', [
             'title' => 'My Posted Jobs',
             'subtitle' => 'Track and manage the requirements you have posted.',
@@ -335,9 +342,9 @@ class JobController
     public function showProviderJobs(): void
     {
         requireRole('provider');
-        $providerId = (string)($_SESSION['user_id'] ?? '');
+        $providerId = (string) ($_SESSION['user_id'] ?? '');
         $jobs = $this->jobs->getJobsByProviderId($providerId);
-        
+
         renderView('jobs/index', [
             'title' => 'My Work History',
             'subtitle' => 'Track your active assignments and completed work.',
@@ -349,14 +356,14 @@ class JobController
     public function showProviderApplications(): void
     {
         requireRole('provider');
-        $providerId = (string)($_SESSION['user_id'] ?? '');
+        $providerId = (string) ($_SESSION['user_id'] ?? '');
         $applicationsRaw = $this->applications->getApplicationsByProvider($providerId);
-        
+
         // Enrich applications with job data
         $enrichedApplications = [];
         foreach ($applicationsRaw as $app) {
-            $appArray = (array)$app;
-            $appArray['job_data'] = (array)$this->jobs->getJobById((string)$app['job_id']);
+            $appArray = (array) $app;
+            $appArray['job_data'] = (array) $this->jobs->getJobById((string) $app['job_id']);
             $enrichedApplications[] = $appArray;
         }
 
