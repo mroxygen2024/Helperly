@@ -1,0 +1,10 @@
+.git
+.env
+vendor
+node_modules
+*.log
+scratch/
+public/uploads/*
+!public/uploads/.htaccess
+.DS_Store
+Thumbs.db
