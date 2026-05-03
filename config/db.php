@@ -2,44 +2,20 @@
 
 declare(strict_types=1);
 
-use MongoDB\Client;
-use MongoDB\Database;
-
-/*
- |--------------------------------------------------------------------------
- | config/db.php
- |--------------------------------------------------------------------------
- | Reusable MongoDB Atlas connection file.
- | - Reads the connection string from MONGO_URI
- | - Connects to the home_services database
- | - Returns a MongoDB\Database instance
+/**
+ * config/db.php
+ *
+ * Standalone MongoDB connection file for CLI scripts and background workers.
+ * Loads the main app configuration to ensure environment consistency.
  */
 
-// Composer autoload is required for mongodb/mongodb classes.
-$autoloadPath = __DIR__ . '/../vendor/autoload.php';
-if (!file_exists($autoloadPath)) {
-    throw new RuntimeException('Composer autoload file not found. Run: composer install');
-}
-
-require_once $autoloadPath;
-
-$mongoUri = getenv('MONGO_URI');
-if ($mongoUri === false || trim($mongoUri) === '') {
-    throw new RuntimeException('Environment variable MONGO_URI is not set.');
-}
+require_once __DIR__ . '/app.php';
+require_once __DIR__ . '/database.php';
 
 try {
-    // Single client creation in this module keeps DB access centralized and reusable.
-    $client = new Client($mongoUri, [
-        'appname' => 'home_services_app',
-    ]);
-
-    /** @var Database $db */
-    $db = $client->selectDatabase('home_services');
-
-    return $db;
+    // getMongoDatabase() uses the centralized configuration in app.php
+    return getMongoDatabase();
 } catch (Throwable $exception) {
-    // Log detailed error server-side, expose generic message to callers.
-    error_log('MongoDB connection error: ' . $exception->getMessage());
-    throw new RuntimeException('Unable to connect to MongoDB at this time.');
+    error_log('MongoDB connection error in standalone loader: ' . $exception->getMessage());
+    throw new RuntimeException('Unable to connect to MongoDB. Check your .env file and network.');
 }

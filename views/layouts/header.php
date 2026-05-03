@@ -105,42 +105,48 @@ $currentPage = $_GET['page'] ?? 'dashboard';
     <div class="main-wrapper">
         <!-- Topbar -->
         <header class="topbar">
-            <div class="topbar-left">
-                <button id="sidebar-toggle" class="sidebar-toggle-btn">
+            <div class="flex items-center gap-4">
+                <button id="sidebar-toggle" class="sidebar-toggle-btn" aria-label="Toggle Navigation">
                     <span class="material-symbols-outlined">menu</span>
                 </button>
                 <h1 class="page-title"><?= escape($title ?? 'Dashboard'); ?></h1>
             </div>
             <div class="topbar-right">
-                <div class="user-profile-header">
-                    <div class="user-info">
-                        <span class="user-name"><?= escape($currentUser['name']); ?></span>
-                        <span class="user-role"><?= ucfirst(str_replace('_', ' ', $role)); ?></span>
+                <div class="flex items-center gap-4 bg-white p-2 pl-4 rounded-full border shadow-sm">
+                    <div class="text-right user-info">
+                        <p class="text-sm font-bold text-main m-0 leading-tight"><?= escape($currentUser['name']); ?></p>
+                        <p class="text-xs font-bold text-primary uppercase m-0 leading-tight"><?= ucfirst(str_replace('_', ' ', $role)); ?></p>
                     </div>
-                    <div class="user-avatar-rect"><?= mb_substr(escape($currentUser['name']), 0, 1); ?></div>
+                    <div class="avatar"><?= mb_substr(escape($currentUser['name']), 0, 1); ?></div>
                 </div>
             </div>
         </header>
 
         <main class="content-body">
             <?php if ($successFlash): ?>
-                <div class="alert alert-success"><?= escape($successFlash); ?></div>
+                <div class="alert alert-success">
+                    <span class="material-symbols-outlined">check_circle</span>
+                    <?= escape($successFlash); ?>
+                </div>
             <?php endif; ?>
             <?php if ($errorFlash): ?>
-                <div class="alert alert-error"><?= escape($errorFlash); ?></div>
+                <div class="alert alert-error">
+                    <span class="material-symbols-outlined">error</span>
+                    <?= escape($errorFlash); ?>
+                </div>
             <?php endif; ?>
 <?php else: ?>
     <!-- Public Header for Login/Register -->
-    <header class="topbar" style="position: static; border-bottom: none; background: transparent;">
-        <div class="flex justify-between items-center" style="max-width: 1200px; margin: 0 auto; width: 100%; height: 80px; padding: 0 2rem;">
-            <a href="/" class="sidebar-logo" style="color: var(--primary); font-size: 1.75rem;">Helperly</a>
+    <header class="topbar border-none bg-transparent">
+        <div class="flex justify-between items-center w-full max-w-7xl mx-auto px-6">
+            <a href="/" class="sidebar-logo text-primary text-2xl font-extrabold">Helperly</a>
             <div class="flex gap-4">
-                <a href="/login" class="btn btn-outline" style="border-radius: 99px;">Login</a>
-                <a href="/register" class="btn btn-primary" style="border-radius: 99px;">Join Now</a>
+                <a href="/login" class="btn btn-outline rounded-full px-6">Login</a>
+                <a href="/register" class="btn btn-primary rounded-full px-6">Join Now</a>
             </div>
         </div>
     </header>
-    <main class="content-body" style="max-width: 500px;">
+    <main class="content-body" style="max-width: 600px;">
         <?php if ($successFlash): ?>
             <div class="alert alert-success"><?= escape($successFlash); ?></div>
         <?php endif; ?>

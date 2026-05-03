@@ -30,7 +30,7 @@ function getMongoClient(): Client
     $config = appConfig();
 
     if (empty($config['mongodb_uri'])) {
-        throw new RuntimeException('MONGODB_URI is missing. Configure it before starting the app.');
+        throw new RuntimeException('MONGODB_URI is missing. Configure it in your .env file.');
     }
 
     try {
@@ -40,7 +40,7 @@ function getMongoClient(): Client
         ]);
     } catch (Throwable $exception) {
         error_log('MongoDB client initialization failed: ' . $exception->getMessage());
-        throw new RuntimeException('Cannot connect to database right now.');
+        throw new RuntimeException('Cannot connect to database right now. Please check your configuration.');
     }
 
     return $client;

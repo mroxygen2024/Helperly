@@ -1,57 +1,57 @@
-<div class="text-center py-12" style="max-width: 800px; margin: 4rem auto;">
-    <h1 style="font-size: 3.5rem; font-weight: 800; line-height: 1.1; margin-bottom: 1.5rem; letter-spacing: -0.02em; color: var(--bg-sidebar);">
-        The Trusted Way to <span style="color: var(--primary);">Find Reliable Help.</span>
+<div class="hero-section">
+    <h1 class="hero-title">
+        The Trusted Way to <span class="text-primary">Find Reliable Help.</span>
     </h1>
-    <p class="text-xl text-muted mb-8" style="font-size: 1.25rem;">
+    <p class="text-xl text-muted mb-8">
         Helperly connects families with verified service providers for household tasks, cleaning, child care, and more.
     </p>
 
-    <div class="mt-10" style="max-width: 600px; margin-inline: auto;">
-        <form action="/servants" method="GET" class="flex items-center bg-white p-2 rounded-2xl shadow-xl border border-slate-200">
-            <div class="flex-1 flex items-center px-4 border-r border-slate-100">
+    <div class="home-search-container">
+        <form action="/servants" method="GET" class="flex items-center w-full gap-2">
+            <div class="flex-1 flex items-center px-4 border-r border-neutral-100">
                 <span class="material-symbols-outlined text-muted mr-2">location_on</span>
-                <input type="text" name="location" placeholder="Which city?" class="w-full border-none focus:ring-0 text-sm py-3" style="outline: none;">
+                <input type="text" name="location" placeholder="Which city?" class="w-full border-none focus:ring-0 text-sm py-3" style="outline: none; background: transparent;">
             </div>
             <div class="flex-1 flex items-center px-4">
                 <span class="material-symbols-outlined text-muted mr-2">construction</span>
-                <input type="text" name="skill" placeholder="What skill?" class="w-full border-none focus:ring-0 text-sm py-3" style="outline: none;">
+                <input type="text" name="skill" placeholder="What skill?" class="w-full border-none focus:ring-0 text-sm py-3" style="outline: none; background: transparent;">
             </div>
-            <button type="submit" class="btn btn-primary" style="border-radius: 12px; padding: 0.75rem 1.5rem;">
+            <button type="submit" class="btn btn-primary rounded-lg">
                 <span class="material-symbols-outlined">search</span>
             </button>
         </form>
-        <p class="text-xs text-muted mt-4">Popular: Cleaning, Baby Sitting, Home Tutor, Gardening</p>
     </div>
+    <p class="text-xs text-muted mt-4">Popular: Cleaning, Baby Sitting, Home Tutor, Gardening</p>
 
-    <div class="flex justify-center gap-4 mt-8">
-        <a href="/register" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.125rem;">Join as Client</a>
-        <a href="/profile/servant" class="btn btn-outline" style="padding: 1rem 2rem; font-size: 1.125rem;">Apply as Provider</a>
+    <div class="flex flex-wrap justify-center gap-4 mt-8">
+        <a href="/register" class="btn btn-primary px-8 py-4 text-lg">Join as Client</a>
+        <a href="/profile/servant" class="btn btn-outline px-8 py-4 text-lg">Apply as Provider</a>
     </div>
 
     <!-- Featured Providers Section -->
     <?php if (!empty($featuredProviders)): ?>
-    <div class="mt-20">
-        <div class="flex justify-between items-end mb-8">
-            <div class="text-left">
-                <h2 style="font-size: 1.85rem; font-weight: 800; color: var(--bg-sidebar);">Featured Providers</h2>
+    <div class="mt-12 text-left">
+        <div class="flex flex-wrap justify-between items-end mb-8 gap-4">
+            <div>
+                <h2 class="text-3xl font-extrabold text-main">Featured Providers</h2>
                 <p class="text-muted">Top-rated and recently verified specialists in your area.</p>
             </div>
             <a href="/servants" class="btn btn-sm btn-outline">View Directory</a>
         </div>
 
-        <div class="grid grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <?php foreach ($featuredProviders as $profile): ?>
-                <div class="card p-5 text-left flex flex-col" style="border: 1px solid var(--border-light); transition: transform 0.2s; cursor: default;">
+                <div class="card p-6 flex flex-col h-full">
                     <div class="flex items-center gap-4 mb-4">
                         <?php if (!empty($profile['profile_photo'])): ?>
-                            <img src="<?= escape($profile['profile_photo']); ?>" style="width: 56px; height: 56px; border-radius: 12px; object-fit: cover;">
+                            <img src="<?= escape($profile['profile_photo']); ?>" class="avatar avatar-lg rounded-lg">
                         <?php else: ?>
-                            <div class="user-avatar-rect" style="width: 56px; height: 56px; border-radius: 12px; background: var(--grad-primary); font-size: 1.25rem;">
+                            <div class="avatar avatar-lg rounded-lg">
                                 <?= mb_substr(escape($profile['full_name'] ?? 'P'), 0, 1); ?>
                             </div>
                         <?php endif; ?>
                         <div>
-                            <h4 class="font-700" style="margin: 0;"><?= escape($profile['full_name'] ?? 'Provider'); ?></h4>
+                            <h4 class="font-bold text-lg m-0"><?= escape($profile['full_name'] ?? 'Provider'); ?></h4>
                             <div class="flex items-center gap-1 text-xs text-muted mt-1">
                                 <span class="material-symbols-outlined" style="font-size: 14px;">location_on</span>
                                 <?= escape($profile['location'] ?? 'Unknown'); ?>
@@ -60,19 +60,19 @@
                     </div>
                     
                     <div class="flex-1">
-                        <div class="flex flex-wrap gap-1 mb-4">
+                        <div class="flex flex-wrap gap-2 mb-4">
                             <?php foreach (array_slice((array)($profile['skills'] ?? []), 0, 2) as $skill): ?>
-                                <span class="badge badge-secondary" style="font-size: 0.7rem; padding: 0.15rem 0.5rem;"><?= escape($skill); ?></span>
+                                <span class="badge badge-primary"><?= escape($skill); ?></span>
                             <?php endforeach; ?>
                         </div>
-                        <p class="text-sm text-muted line-clamp-2" style="font-style: italic;">
+                        <p class="text-sm text-muted italic">
                              "<?= escape($profile['experience'] ?? 'Expert provider'); ?>"
                         </p>
                     </div>
 
-                    <div class="mt-4 pt-4 border-t flex justify-between items-center">
-                        <span class="text-primary font-700"><?= escape($profile['rate'] ?? '0'); ?> <span class="text-xs font-400 text-muted">/hr</span></span>
-                        <a href="/job/book?provider_id=<?= escape((string)$profile['user_id']); ?>" class="text-xs font-600 uppercase letter-spacing-lg text-primary hover-underline">Book Now</a>
+                    <div class="mt-6 pt-4 border-t flex justify-between items-center">
+                        <span class="text-primary font-bold"><?= escape($profile['rate'] ?? '0'); ?> <span class="text-xs font-normal text-muted">/hr</span></span>
+                        <a href="/job/book?provider_id=<?= escape((string)$profile['user_id']); ?>" class="text-xs font-bold uppercase text-primary hover:underline">Book Now</a>
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -80,20 +80,20 @@
     </div>
     <?php endif; ?>
 
-    <div class="grid grid-cols-3 gap-8 mt-16 pt-12 border-t">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 pt-12 border-t">
         <div class="flex flex-col items-center">
-            <span class="material-symbols-outlined text-primary" style="font-size: 2.5rem;">verified</span>
-            <h3 class="font-600 mt-2">Verified Providers</h3>
+            <span class="material-symbols-outlined text-primary text-3xl mb-2">verified</span>
+            <h3 class="font-bold">Verified Providers</h3>
             <p class="text-sm text-muted">Rigorous vetting process for your peace of mind.</p>
         </div>
         <div class="flex flex-col items-center">
-            <span class="material-symbols-outlined text-primary" style="font-size: 2.5rem;">payments</span>
-            <h3 class="font-600 mt-2">Secure Payments</h3>
+            <span class="material-symbols-outlined text-primary text-3xl mb-2">payments</span>
+            <h3 class="font-bold">Secure Payments</h3>
             <p class="text-sm text-muted">Pay only when you are satisfied with the work.</p>
         </div>
         <div class="flex flex-col items-center">
-            <span class="material-symbols-outlined text-primary" style="font-size: 2.5rem;">chat_bubble_outline</span>
-            <h3 class="font-600 mt-2">Direct Messaging</h3>
+            <span class="material-symbols-outlined text-primary text-3xl mb-2">chat_bubble_outline</span>
+            <h3 class="font-bold">Direct Messaging</h3>
             <p class="text-sm text-muted">Communicate clearly before hiring.</p>
         </div>
     </div>
