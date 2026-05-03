@@ -28,8 +28,8 @@ if (window.location.hash) {
 </script>
 <?php else: ?>
     </main>
-    <footer class="footer" style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.875rem;">
-        <div class="container">
+    <footer class="py-8 text-center text-muted text-sm border-t mt-12">
+        <div class="max-w-7xl mx-auto px-6">
             <p>&copy; <?= date('Y'); ?> Helperly Marketplace. Built with premium care.</p>
         </div>
     </footer>
