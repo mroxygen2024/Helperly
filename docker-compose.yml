@@ -48,9 +48,40 @@ services:
     networks:
       - servant_network
 
+  # Database (MongoDB)
+  mongodb:
+    image: mongo:latest
+    container_name: servant_mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=${MONGODB_DB:-servant_db}
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - servant_network
+
+  # MongoDB GUI (Optional, useful for dev)
+  mongo-express:
+    image: mongo-express
+    container_name: servant_mongo_express
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=pass
+    depends_on:
+      - mongodb
+    networks:
+      - servant_network
+
 networks:
   servant_network:
     driver: bridge
 
 volumes:
   redis_data:
+  mongodb_data:

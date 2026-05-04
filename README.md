@@ -26,66 +26,102 @@ Helperly is a modern, professional marketplace platform that connects families w
 
 ---
 
-## 🚀 Getting Started (Docker - Recommended)
+## 🚀 Quick Start (Docker Compose)
 
-The easiest and most consistent way to run Helperly is using Docker.
+The easiest way to run the entire stack (App, MongoDB, Redis) locally.
 
-### 1. Prerequisites
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
-- A [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) account and connection string.
-
-### 2. Setup Environment
+### 1. Setup Environment
 ```bash
 cp .env.example .env
-# Open .env and add your MONGODB_URI and JWT_SECRET
 ```
+Open `.env` and set `MONGODB_URI` to `mongodb://mongodb:27017` (for local Docker use) or your Atlas URI.
 
-### 3. Build and Launch
+### 2. Launch Stack
 ```bash
 docker-compose up -d --build
 ```
+This starts:
+- **PHP App**: `http://localhost:8000`
+- **MongoDB**: Port `27017`
+- **Mongo Express (GUI)**: `http://localhost:8081` (Admin UI for your DB)
+- **Redis**: Port `6379`
 
-### 4. Install Dependencies
+### 3. Initialize Data
 ```bash
+# Install PHP dependencies
 docker-compose exec app composer install
+
+# Seed dummy data (Parent, Provider, Admin)
+docker-compose exec app php scratch/seed_dummy_data.php
 ```
 
-The application is now live at: **`http://localhost:8000`**
+---
+
+## ☁️ Cloud Hosting (Render)
+
+Deploy Helperly to Render in minutes using our optimized Docker setup.
+
+### 1. Prerequisites
+- A GitHub repository with your code.
+- A [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) cluster (Free tier works great).
+
+### 2. Deploy to Render
+1. Create a new **Web Service** on Render.
+2. Connect your GitHub repository.
+3. In the **Environment** settings:
+   - **Runtime**: `Docker`
+   - **Docker Command**: Leave default (it will use `Dockerfile`) or specify `Dockerfile.render` if you want the simplified Apache version.
+4. Add the following **Environment Variables** in the Render dashboard:
+   - `MONGODB_URI`: Your MongoDB Atlas connection string.
+   - `MONGODB_DB`: `helperly_prod`
+   - `JWT_SECRET`: A long random string.
+   - `APP_URL`: Your Render service URL (e.g., `https://helperly.onrender.com`).
+   - `IMAGEKIT_PUBLIC_KEY` / `IMAGEKIT_PRIVATE_KEY` / `IMAGEKIT_URL_ENDPOINT`: From your ImageKit dashboard.
+5. Click **Deploy Web Service**.
 
 ---
 
 ## 🏗️ Folder Structure
 
 ```text
-├── assets/             # Static files (CSS, JS, Images)
-├── config/             # Bootstrap, 12-factor config, DB wiring
-├── controllers/        # Request handling & business logic
-├── models/             # Data access layer (MongoDB collections)
-├── public/             # Web root & front controller (index.php)
-├── scratch/            # Utility scripts, seeders, and debug tools
-├── views/              # Presentation layer (PHP Templates)
-├── Dockerfile          # Multi-stage production build
-├── docker-compose.yml  # Full-stack orchestration
-└── nginx.conf          # Hardened Nginx configuration
+├── assets/             # Global CSS, JS, and Design System
+├── config/             # App bootstrap and DB wiring
+├── controllers/        # Business logic & Route handlers
+├── models/             # MongoDB Collection Models
+├── public/             # Web root (index.php)
+├── scratch/            # Database seeders & utility scripts
+├── views/              # PHP Templates (layouts, admin, marketplace)
+├── Dockerfile          # Multi-stage production build (PHP-FPM)
+├── Dockerfile.render   # Simplified Apache build (Recommended for Render)
+├── docker-compose.yml  # Local development orchestration
+└── nginx.conf          # Nginx config for Docker local setup
 ```
 
 ---
 
-## 🔐 Environment Variables
+## 🔐 Key Environment Variables
 
-| Variable | Description | Default | Required |
-| :--- | :--- | :--- | :---: |
-| `APP_ENV` | `development` or `production` | `development` | No |
-| `APP_DEBUG` | Show verbose errors | `false` | No |
-| `APP_URL` | Base URL of the app | `http://localhost:8000` | Yes |
-| `MONGODB_URI` | MongoDB Atlas URI | - | **Yes** |
-| `JWT_SECRET` | Secret for API tokens | - | **Yes** |
-| `REDIS_HOST` | Redis service hostname | `redis` | No |
-| `SMTP_HOST` | Email server host | - | No |
+| Variable | Description | Recommended for Dev |
+| :--- | :--- | :--- |
+| `MONGODB_URI` | Database Connection String | `mongodb://mongodb:27017` |
+| `MONGODB_DB` | Database Name | `servant_marketplace` |
+| `JWT_SECRET` | Secret for auth tokens | `any-random-string` |
+| `APP_URL` | Base URL of the site | `http://localhost:8000` |
+| `IMAGEKIT_...` | Media Hosting Credentials | [Get at ImageKit.io](https://imagekit.io) |
+
+---
+
+## 🐳 Useful Docker Commands
+
+- **Logs**: `docker-compose logs -f app`
+- **Stop**: `docker-compose down`
+- **Reset DB**: `docker-compose exec app php scratch/seed_dummy_data.php`
+- **Shell**: `docker-compose exec app bash`
 
 ---
 
 ## 🤝 Contributing
+... (rest of the content)
 
 We welcome contributions! To maintain code quality, please follow these guidelines:
 
