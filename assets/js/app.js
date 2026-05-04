@@ -468,3 +468,40 @@ console.info('Servant Marketplace UI loaded.');
 	setupSelfieFlow();
 	form.addEventListener('submit', validateForm);
 })();
+
+(() => {
+	// --- Auth Page Interactions ---
+	const setupAuthInteractions = () => {
+		// Password visibility toggle
+		document.querySelectorAll('[data-password-toggle]').forEach(btn => {
+			btn.addEventListener('click', (e) => {
+				e.preventDefault();
+				const inputId = btn.dataset.passwordToggle;
+				const input = document.getElementById(inputId);
+				const icon = btn.querySelector('.material-symbols-outlined');
+
+				if (input.type === 'password') {
+					input.type = 'text';
+					icon.textContent = 'visibility_off';
+				} else {
+					input.type = 'password';
+					icon.textContent = 'visibility';
+				}
+			});
+		});
+
+		// Loading state on form submission
+		document.querySelectorAll('[data-auth-form]').forEach(form => {
+			form.addEventListener('submit', () => {
+				const submitBtn = form.querySelector('button[type="submit"]');
+				if (submitBtn) {
+					submitBtn.classList.add('btn-loading');
+					// We don't disable here to allow the browser to submit the form, 
+					// but the class handles the visual part.
+				}
+			});
+		});
+	};
+
+	setupAuthInteractions();
+})();

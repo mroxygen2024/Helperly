@@ -38,7 +38,7 @@ $currentPage = $_GET['page'] ?? 'dashboard';
             'dashboard' => ['label' => 'Dashboard', 'url' => '/dashboard', 'icon' => 'dashboard'],
             'users' => ['label' => 'User Management', 'url' => '/admin/users', 'icon' => 'group'],
             'providers' => ['label' => 'Providers', 'url' => '/admin/providers', 'icon' => 'badge'],
-            'verifications' => ['label' => 'Verifications', 'url' => '/admin/verifications', 'icon' => 'verified_user'],
+            'verifications' => ['label' => 'Verifications', 'url' => '/admin/verified_user', 'icon' => 'verified_user'],
             'jobs' => ['label' => 'Job Management', 'url' => '/admin/jobs', 'icon' => 'work'],
         ];
     }
@@ -137,20 +137,24 @@ $currentPage = $_GET['page'] ?? 'dashboard';
             <?php endif; ?>
 <?php else: ?>
     <!-- Public Header for Login/Register -->
-    <header class="topbar border-none bg-transparent">
-        <div class="flex justify-between items-center w-full max-w-7xl mx-auto px-6">
-            <a href="/" class="sidebar-logo text-primary text-2xl font-extrabold">Helperly</a>
-            <div class="flex gap-4">
-                <a href="/login" class="btn btn-outline rounded-full px-6">Login</a>
-                <a href="/register" class="btn btn-primary rounded-full px-6">Join Now</a>
+    <?php if (!isset($fullWidthLayout) || !$fullWidthLayout): ?>
+        <header class="topbar border-none bg-transparent">
+            <div class="flex justify-between items-center w-full max-w-7xl mx-auto px-6">
+                <a href="/" class="sidebar-logo text-primary text-2xl font-extrabold">Helperly</a>
+                <div class="flex gap-4">
+                    <a href="/login" class="btn btn-outline rounded-full px-6">Login</a>
+                    <a href="/register" class="btn btn-primary rounded-full px-6">Join Now</a>
+                </div>
             </div>
-        </div>
-    </header>
-    <main class="content-body" style="max-width: 600px;">
-        <?php if ($successFlash): ?>
-            <div class="alert alert-success"><?= escape($successFlash); ?></div>
-        <?php endif; ?>
-        <?php if ($errorFlash): ?>
-            <div class="alert alert-error"><?= escape($errorFlash); ?></div>
-        <?php endif; ?>
+        </header>
+        <main class="content-body" style="max-width: 600px;">
+            <?php if ($successFlash): ?>
+                <div class="alert alert-success"><?= escape($successFlash); ?></div>
+            <?php endif; ?>
+            <?php if ($errorFlash): ?>
+                <div class="alert alert-error"><?= escape($errorFlash); ?></div>
+            <?php endif; ?>
+    <?php else: ?>
+        <main class="auth-page-body">
+    <?php endif; ?>
 <?php endif; ?>
