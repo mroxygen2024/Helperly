@@ -1,168 +1,215 @@
-# 🏠 Helperly - Marketplace for Reliable Home Services
+# 🏠 Helperly: Premium Home Service Marketplace
 
-Helperly is a modern, professional marketplace platform that connects families with verified service providers. Whether you need a babysitter, a cleaner, or a gardener, Helperly provides a secure and easy-to-use interface to find, hire, and pay reliable help.
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![PHP](https://img.shields.io/badge/php-%5E8.1-777BB4.svg)
+![MongoDB](https://img.shields.io/badge/mongodb-%234ea94b.svg?logo=mongodb&logoColor=white)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+
+Helperly is a high-performance, production-ready marketplace platform connecting families with verified home service providers. Built with a focus on trust, premium aesthetics, and technical efficiency, it streamlines the process of finding, vetting, and hiring reliable help for domestic needs.
 
 ---
 
-## 🌟 Key Features
+## 🌟 Platform Features
 
-- **Triple-Sided Marketplace**: Tailored dashboards for Clients (Parents), Providers (Servants), and Administrators.
-- **Verification System**: Rigorous vetting process with identity and selfie verification.
-- **Real-time Messaging**: Direct communication between clients and providers.
-- **Secure Payments**: Integrated payment tracking and completion confirmation.
-- **Professional UI**: Fully responsive, accessible, and clean design system.
-- **12-Factor App**: Centralized configuration via environment variables.
+### 👤 Parent (Employer) Dashboard
+*   **Job Management**: Post detailed service requirements with real-time cost estimation.
+*   **Provider Discovery**: Search and filter through a verified network of service professionals.
+*   **Active Tracking**: Monitor job progress and manage multiple active service contracts.
+*   **Premium UI**: Glassmorphic dashboard with intuitive navigation and status tracking.
+
+### 🛡️ Provider (Servant) Dashboard
+*   **Professional Profiles**: Build a comprehensive resume with skills, experience, and certifications.
+*   **Verification System**: Integrated multi-step vetting (Identity ID + Live Selfie check).
+*   **Application Tracking**: Apply to open jobs and manage ongoing assignments.
+*   **Earnings Overview**: Real-time tracking of completed work and projected income.
+
+### 👑 Administrator Control Center
+*   **User Oversight**: Comprehensive management of all registered users (Block/Unblock/Delete).
+*   **Verification Queue**: Professional document review interface for approving new providers.
+*   **Marketplace Analytics**: High-level overview of system health, active jobs, and growth.
+*   **Audit Logs**: Monitor platform activity and maintain marketplace integrity.
+
+### 📱 General Features
+*   **Responsive Design**: Pixel-perfect experience across mobile, tablet, and desktop.
+*   **Secure Auth**: Role-based access control (RBAC) powered by JWT and secure sessions.
+*   **Micro-interactions**: Smooth transitions and interactive states for a premium feel.
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Backend**: Vanilla PHP 8.2 (optimized for performance)
-- **Database**: MongoDB Atlas (highly scalable NoSQL)
-- **Frontend**: Modern CSS3 (Grid/Flexbox), Native JavaScript
-- **Infrastructure**: Docker & Docker Compose
-- **Web Server**: Nginx (hardened for security)
-- **Services**: ImageKit (media storage), Redis (cache), SMTP (transactional email)
+| Layer | Technology |
+| :--- | :--- |
+| **Backend** | Vanilla PHP 8.2 (High Performance / Low Overhead) |
+| **Database** | MongoDB (Flexible NoSQL Schema) |
+| **Frontend** | HTML5, Modern CSS3 (Custom Design System), Native JavaScript |
+| **Authentication** | JWT (JSON Web Tokens) & CSRF-Protected Sessions |
+| **Media Handling** | ImageKit.io (Real-time image optimization & storage) |
+| **Caching** | Redis (Optional session and data caching) |
+| **Containerization** | Docker & Docker Compose |
+| **Web Server** | Apache (Apache/2.4.54) |
 
 ---
 
-## 🚀 Quick Start (Docker Compose)
+## 📸 Screenshots
 
-The easiest way to run the entire stack (App, MongoDB, Redis) locally.
+> [!TIP]
+> *Replace these placeholders with actual screenshots from your environment.*
 
-### 1. Setup Environment
-```bash
-cp .env.example .env
-```
-Open `.env` and set `MONGODB_URI` to `mongodb://mongodb:27017` (for local Docker use) or your Atlas URI.
-
-### 2. Launch Stack
-```bash
-docker-compose up -d --build
-```
-This starts:
-- **PHP App**: `http://localhost:8000`
-- **MongoDB**: Port `27017`
-- **Mongo Express (GUI)**: `http://localhost:8081` (Admin UI for your DB)
-- **Redis**: Port `6379`
-
-### 3. Initialize Data
-```bash
-# Install PHP dependencies
-docker-compose exec app composer install
-
-# Seed dummy data (Parent, Provider, Admin)
-docker-compose exec app php scratch/seed_dummy_data.php
-```
+| Dashboard | Mobile View |
+| :---: | :---: |
+| ![Dashboard Placeholder](https://via.placeholder.com/600x400?text=Premium+Admin+Dashboard) | ![Mobile Placeholder](https://via.placeholder.com/200x400?text=Responsive+Mobile+UI) |
 
 ---
 
-## ☁️ Cloud Hosting (Render)
-
-Deploy Helperly to Render in minutes using our optimized Docker setup.
-
-### 1. Prerequisites
-- A GitHub repository with your code.
-- A [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) cluster (Free tier works great).
-
-### 2. Deploy to Render
-1. Create a new **Web Service** on Render.
-2. Connect your GitHub repository.
-3. In the **Environment** settings:
-   - **Runtime**: `Docker`
-   - **Docker Command**: Leave default (it will use `Dockerfile`) or specify `Dockerfile.render` if you want the simplified Apache version.
-4. Add the following **Environment Variables** in the Render dashboard:
-   - `MONGODB_URI`: Your MongoDB Atlas connection string.
-   - `MONGODB_DB`: `helperly_prod`
-   - `JWT_SECRET`: A long random string.
-   - `APP_URL`: Your Render service URL (e.g., `https://helperly.onrender.com`).
-   - `IMAGEKIT_PUBLIC_KEY` / `IMAGEKIT_PRIVATE_KEY` / `IMAGEKIT_URL_ENDPOINT`: From your ImageKit dashboard.
-5. Click **Deploy Web Service**.
-
----
-
-## 🏗️ Folder Structure
+## 🏗️ Project Structure
 
 ```text
-├── assets/             # Global CSS, JS, and Design System
-├── config/             # App bootstrap and DB wiring
-├── controllers/        # Business logic & Route handlers
-├── models/             # MongoDB Collection Models
-├── public/             # Web root (index.php)
-├── scratch/            # Database seeders & utility scripts
-├── views/              # PHP Templates (layouts, admin, marketplace)
-├── Dockerfile          # Multi-stage production build (PHP-FPM)
-├── Dockerfile.render   # Simplified Apache build (Recommended for Render)
-├── docker-compose.yml  # Local development orchestration
-└── nginx.conf          # Nginx config for Docker local setup
+├── assets/             # Global Design System (CSS, JS, Fonts)
+│   ├── css/            # Custom utility-first CSS system
+│   └── js/             # Native JS modules (Chat, Validation, Modals)
+├── config/             # Bootstrap, Helpers, and 12-Factor Wiring
+├── controllers/        # Application Controllers (Business Logic)
+├── models/             # Data Access Layer (MongoDB Integration)
+├── public/             # Web root & Entry point (index.php)
+├── scratch/            # Utility scripts, Seeders, and Debug tools
+├── views/              # Presentation layer (PHP Template engine)
+│   ├── admin/          # Administrator views
+│   ├── marketplace/    # User & Provider dashboards
+│   └── layouts/        # Global header/footer fragments
+├── Dockerfile          # Production PHP-FPM build
+├── Dockerfile.render   # Optimized Apache build for Cloud hosting
+└── docker-compose.yml  # Local full-stack orchestration
 ```
 
 ---
 
-## 🔐 Key Environment Variables
+## 📋 Prerequisites
 
-| Variable | Description | Recommended for Dev |
+Before you begin, ensure you have the following installed:
+*   **Git**: For version control.
+*   **Docker Desktop**: Recommended for the fastest setup.
+*   **PHP 8.1+ & Composer**: Required only for non-Docker local development.
+*   **MongoDB**: (Atlas account or local instance).
+
+---
+
+## 🚀 Local Development Setup
+
+### Option A: Using Docker (Recommended)
+
+1.  **Clone the Repository**:
+    ```bash
+    git clone https://github.com/yourusername/helperly.git
+    cd helperly
+    ```
+
+2.  **Configure Environment**:
+    ```bash
+    cp .env.example .env
+    ```
+    *Update `MONGODB_URI` in `.env` to `mongodb://mongodb:27017`.*
+
+3.  **Start the Stack**:
+    ```bash
+    docker-compose up -d --build
+    ```
+
+4.  **Initialize App**:
+    ```bash
+    docker-compose exec app composer install
+    docker-compose exec app php scratch/seed_dummy_data.php
+    ```
+    *The app will be available at `http://localhost:8000`.*
+
+---
+
+### Option B: Without Docker
+
+1.  **Install Dependencies**:
+    ```bash
+    composer install
+    ```
+
+2.  **Configure .env**:
+    ```bash
+    cp .env.example .env
+    ```
+    *Fill in your MongoDB Atlas connection string and ImageKit keys.*
+
+3.  **Run with PHP Built-in Server**:
+    ```bash
+    php -S localhost:8000 -t public
+    ```
+
+---
+
+## 🔐 Environment Variables
+
+| Variable | Description | Example Value |
 | :--- | :--- | :--- |
-| `MONGODB_URI` | Database Connection String | `mongodb://mongodb:27017` |
-| `MONGODB_DB` | Database Name | `servant_marketplace` |
-| `JWT_SECRET` | Secret for auth tokens | `any-random-string` |
-| `APP_URL` | Base URL of the site | `http://localhost:8000` |
-| `IMAGEKIT_...` | Media Hosting Credentials | [Get at ImageKit.io](https://imagekit.io) |
+| `APP_NAME` | Name of the platform | `Helperly Marketplace` |
+| `APP_URL` | Base URL for the application | `http://localhost:8000` |
+| `MONGODB_URI` | MongoDB Connection String | `mongodb+srv://user:pass@cluster...` |
+| `MONGODB_DB` | Primary database name | `helperly_db` |
+| `JWT_SECRET` | 32+ char secret for tokens | `df83...a821` |
+| `IMAGEKIT_PUBLIC_KEY`| Media storage public key | `public_...` |
 
 ---
 
-## 🐳 Useful Docker Commands
+## ☁️ Deployment Guide
 
-- **Logs**: `docker-compose logs -f app`
-- **Stop**: `docker-compose down`
-- **Reset DB**: `docker-compose exec app php scratch/seed_dummy_data.php`
-- **Shell**: `docker-compose exec app bash`
+### Deploying to Render (Docker)
+1.  Create a **New Web Service** on Render.
+2.  Connect your repository and set **Runtime** to `Docker`.
+3.  Set **Dockerfile Path** to `Dockerfile.render`.
+4.  Add your environment variables in the Render dashboard.
 
----
-
-## 🤝 Contributing
-... (rest of the content)
-
-We welcome contributions! To maintain code quality, please follow these guidelines:
-
-### 🌈 Design Standards
-- Use the centralized CSS variable system in `assets/css/styles.css`.
-- Prefer Utility Classes (`p-4`, `flex`, `grid-cols-2`) over inline styles.
-- Ensure all new components are mobile-first and responsive.
-
-### 📜 Workflow
-1. **Branching**: Use `feature/` or `fix/` prefixes (e.g., `feature/add-redis-cache`).
-2. **Coding Style**: PSR-12 for PHP, modern ES6+ for JavaScript.
-3. **Commits**: Clear, imperative messages (e.g., "Add identity verification model").
-4. **Pull Requests**: Explain *what* changed and *why*. Include screenshots for UI changes.
+### Deploying to VPS (Traditional)
+1.  Clone repo to `/var/www/html`.
+2.  Configure Apache/Nginx to point to the `public/` directory.
+3.  Ensure `ext-mongodb` is enabled in your `php.ini`.
 
 ---
 
-## 🐳 Docker Management
+## 🤝 Contributing Guide
 
-- **Stop Containers**: `docker-compose down`
-- **View Logs**: `docker-compose logs -f app`
-- **Run Seeder**: `docker-compose exec app php scratch/master_seeder.php`
-- **Shell Access**: `docker-compose exec app bash`
+We follow a strict **Clean Code** and **Mobile-First** workflow.
 
----
-
-## 🛡️ Security & Best Practices
-
-- **Zero Hardcoded Secrets**: Everything is loaded via `env()` with validation.
-- **Fail-Fast Configuration**: App won't start if critical keys are missing.
-- **Nginx Hardening**: Blocks access to `.env`, `.git`, and prevents PHP execution in uploads.
-- **XSS/CSRF Protection**: Native `escape()` helper and token validation on all POST requests.
+1.  **Branching**: `feature/your-feature` or `fix/your-fix`.
+2.  **Styling**: Use the utility classes in `assets/css/styles.css`. Do not add inline styles.
+3.  **Commits**: Use conventional commits (e.g., `feat: add real-time messaging`).
+4.  **Pull Requests**: Always include a description of UI changes and test results.
 
 ---
 
-## 🚧 Future Roadmap
-
-- [ ] Multi-language support (i18n).
-- [ ] Push notifications using WebSockets/Socket.io.
-- [ ] Stripe/Chapa payment gateway integration.
-- [ ] Automated unit and integration testing suite.
+## 🛡️ Security Notes
+*   **Secrets**: Never commit `.env` or any hardcoded credentials.
+*   **Validation**: All inputs are sanitized using the `escape()` and `sanitizeInput()` helpers.
+*   **CSRF**: All POST forms must include the `<?= csrfToken() ?>` hidden input.
+*   **Production**: Always set `APP_DEBUG=false` in live environments.
 
 ---
 
-**Helperly** - Built with ❤️ for families and providers everywhere.
+## 🛠️ Troubleshooting
+
+**Issue**: `Fatal error: Class 'MongoDB\Client' not found`
+*   **Solution**: Ensure `composer install` was run and `vendor/autoload.php` is required. If using non-Docker, ensure the `mongodb` extension is enabled in `php.ini`.
+
+**Issue**: `Styles not loading / 404 on assets`
+*   **Solution**: Ensure your web server is configured to serve the `public/` folder as the document root.
+
+---
+
+## 📜 License
+This project is licensed under the **MIT License**. See [LICENSE](LICENSE) for details.
+
+---
+
+## 📧 Contact & Credits
+*   **Lead Developer**: [Fuad Sano](https://github.com/fuadsano)
+*   **Design Inspiration**: Modern SaaS Dashboards (Vercel, Stripe)
+*   **Support**: For issues, please open a GitHub Issue.
+
+---
+Built with ❤️ for a safer, more reliable marketplace.
