@@ -89,8 +89,7 @@ class JobController
             $errors[] = 'Type of service is required.';
         if (!validateRequired($location))
             $errors[] = 'Location is required.';
-        if (!validateRequired($instructions))
-            $errors[] = 'Special instructions are required.';
+        // Special instructions are now optional.
 
         if (!empty($errors)) {
             rememberOldInput($payload);

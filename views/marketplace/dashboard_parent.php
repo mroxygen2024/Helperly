@@ -231,6 +231,11 @@
                         <label class="label text-xs uppercase tracking-widest text-neutral-400">Start Time</label>
                         <input name="time" type="datetime-local" class="input" required value="<?= escape(old('time')); ?>">
                     </div>
+
+                    <div class="input-group m-0">
+                        <label class="label text-xs uppercase tracking-widest text-neutral-400">Special Instructions</label>
+                        <textarea name="instructions" class="textarea w-full" placeholder="e.g. Please bring cleaning supplies, be mindful of the cat..."><?= escape(old('instructions')); ?></textarea>
+                    </div>
                 </div>
 
                 <button type="submit" class="btn btn-primary w-full py-4 text-lg shadow-premium group">

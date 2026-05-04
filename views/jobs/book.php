@@ -109,7 +109,7 @@
             <div class="form-group">
                 <label for="job_instructions" class="label">Special Instructions & Details</label>
                 <textarea id="job_instructions" name="instructions" class="textarea" rows="5" 
-                        placeholder="Please provide any specific details about the job, house rules, or special care requirements..." required><?= escape(old('instructions')); ?></textarea>
+                        placeholder="Please provide any specific details about the job, house rules, or special care requirements..."><?= escape(old('instructions')); ?></textarea>
             </div>
 
             <div class="flex gap-4 pt-6" style="border-top: 1px solid var(--border-light);">

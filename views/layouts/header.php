@@ -121,30 +121,12 @@ $currentPage = $_GET['page'] ?? 'dashboard';
                     <span class="badge-dot"></span>
                 </button>
                 
-                <div class="flex items-center gap-3 pl-4 border-l <?= $role !== 'provider' ? 'cursor-pointer group profile-dropdown-trigger' : '' ?> relative">
+                <div class="flex items-center gap-3 pl-4 border-l relative">
                     <div class="text-right hidden sm:block">
-                        <p class="text-sm font-extrabold text-main m-0 leading-tight group-hover:text-primary transition-colors"><?= escape($currentUser['name']); ?></p>
+                        <p class="text-sm font-extrabold text-main m-0 leading-tight"><?= escape($currentUser['name']); ?></p>
                         <p class="text-[10px] font-bold text-neutral-400 uppercase m-0 leading-tight tracking-wider"><?= ucfirst(str_replace('_', ' ', $role)); ?></p>
                     </div>
                     <div class="user-avatar"><?= mb_substr(escape($currentUser['name']), 0, 1); ?></div>
-                    
-                    <?php if ($role !== 'provider'): ?>
-                    <!-- Dropdown Menu (Hidden by default, can be toggled via JS or hover) -->
-                    <div class="absolute right-0 top-full mt-2 w-48 bg-white rounded-2xl shadow-xl border border-neutral-100 p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all transform origin-top-right scale-95 group-hover:scale-100 z-50">
-                        <a href="/profile/account" class="flex items-center gap-3 p-3 rounded-xl hover:bg-primary-50 hover:text-primary transition-all">
-                            <span class="material-symbols-outlined text-lg">settings</span>
-                            <span class="text-sm font-bold">Settings</span>
-                        </a>
-                        <hr class="my-2 border-neutral-50">
-                        <form action="/logout" method="POST">
-                            <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">
-                            <button type="submit" class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-danger-light hover:text-danger transition-all border-none bg-transparent cursor-pointer">
-                                <span class="material-symbols-outlined text-lg">logout</span>
-                                <span class="text-sm font-bold">Logout</span>
-                            </button>
-                        </form>
-                    </div>
-                    <?php endif; ?>
                 </div>
             </div>
         </header>
