@@ -109,52 +109,83 @@ $currentPage = $_GET['page'] ?? 'dashboard';
                 <button id="sidebar-toggle" class="sidebar-toggle-btn" aria-label="Toggle Navigation">
                     <span class="material-symbols-outlined">menu</span>
                 </button>
-                <h1 class="page-title"><?= escape($title ?? 'Dashboard'); ?></h1>
+                <div class="hidden md:flex bg-neutral-100 rounded-full px-4 py-2 items-center gap-2 border border-transparent focus-within:border-primary focus-within:bg-white transition-all w-64 lg:w-96">
+                    <span class="material-symbols-outlined text-neutral-400">search</span>
+                    <input type="text" placeholder="Search for jobs or providers..." class="bg-transparent border-none outline-none text-sm w-full font-medium">
+                </div>
             </div>
+            
             <div class="topbar-right">
-                <div class="flex items-center gap-4 bg-white p-2 pl-4 rounded-full border shadow-sm">
-                    <div class="text-right user-info">
-                        <p class="text-sm font-bold text-main m-0 leading-tight"><?= escape($currentUser['name']); ?></p>
-                        <p class="text-xs font-bold text-primary uppercase m-0 leading-tight"><?= ucfirst(str_replace('_', ' ', $role)); ?></p>
+                <button class="icon-btn" aria-label="Notifications">
+                    <span class="material-symbols-outlined">notifications</span>
+                    <span class="badge-dot"></span>
+                </button>
+                
+                <div class="flex items-center gap-3 pl-4 border-l <?= $role !== 'provider' ? 'cursor-pointer group profile-dropdown-trigger' : '' ?> relative">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-sm font-extrabold text-main m-0 leading-tight group-hover:text-primary transition-colors"><?= escape($currentUser['name']); ?></p>
+                        <p class="text-[10px] font-bold text-neutral-400 uppercase m-0 leading-tight tracking-wider"><?= ucfirst(str_replace('_', ' ', $role)); ?></p>
                     </div>
-                    <div class="avatar"><?= mb_substr(escape($currentUser['name']), 0, 1); ?></div>
+                    <div class="user-avatar"><?= mb_substr(escape($currentUser['name']), 0, 1); ?></div>
+                    
+                    <?php if ($role !== 'provider'): ?>
+                    <!-- Dropdown Menu (Hidden by default, can be toggled via JS or hover) -->
+                    <div class="absolute right-0 top-full mt-2 w-48 bg-white rounded-2xl shadow-xl border border-neutral-100 p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all transform origin-top-right scale-95 group-hover:scale-100 z-50">
+                        <a href="/profile/account" class="flex items-center gap-3 p-3 rounded-xl hover:bg-primary-50 hover:text-primary transition-all">
+                            <span class="material-symbols-outlined text-lg">settings</span>
+                            <span class="text-sm font-bold">Settings</span>
+                        </a>
+                        <hr class="my-2 border-neutral-50">
+                        <form action="/logout" method="POST">
+                            <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">
+                            <button type="submit" class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-danger-light hover:text-danger transition-all border-none bg-transparent cursor-pointer">
+                                <span class="material-symbols-outlined text-lg">logout</span>
+                                <span class="text-sm font-bold">Logout</span>
+                            </button>
+                        </form>
+                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </header>
 
         <main class="content-body">
             <?php if ($successFlash): ?>
-                <div class="alert alert-success">
+                <div class="alert alert-success border-none shadow-sm animate-fade-in">
                     <span class="material-symbols-outlined">check_circle</span>
                     <?= escape($successFlash); ?>
                 </div>
             <?php endif; ?>
             <?php if ($errorFlash): ?>
-                <div class="alert alert-error">
+                <div class="alert alert-error border-none shadow-sm animate-fade-in">
                     <span class="material-symbols-outlined">error</span>
                     <?= escape($errorFlash); ?>
                 </div>
             <?php endif; ?>
 <?php else: ?>
     <!-- Public Header for Login/Register -->
-    <?php if (!isset($fullWidthLayout) || !$fullWidthLayout): ?>
-        <header class="topbar border-none bg-transparent">
-            <div class="flex justify-between items-center w-full max-w-7xl mx-auto px-6">
-                <a href="/" class="sidebar-logo text-primary text-2xl font-extrabold">Helperly</a>
-                <div class="flex gap-4">
-                    <a href="/login" class="btn btn-outline rounded-full px-6">Login</a>
-                    <a href="/register" class="btn btn-primary rounded-full px-6">Join Now</a>
-                </div>
+    <header class="topbar border-none bg-transparent">
+        <div class="flex justify-between items-center w-full max-w-7xl mx-auto px-6">
+            <a href="/" class="sidebar-logo text-primary text-2xl font-extrabold">Helperly</a>
+            <div class="flex gap-4">
+                <a href="/login" class="btn btn-outline rounded-full px-6">Login</a>
+                <a href="/register" class="btn btn-primary rounded-full px-6">Join Now</a>
             </div>
-        </header>
-        <main class="content-body" style="max-width: 600px;">
-            <?php if ($successFlash): ?>
-                <div class="alert alert-success"><?= escape($successFlash); ?></div>
-            <?php endif; ?>
-            <?php if ($errorFlash): ?>
-                <div class="alert alert-error"><?= escape($errorFlash); ?></div>
-            <?php endif; ?>
-    <?php else: ?>
-        <main class="auth-page-body">
-    <?php endif; ?>
+        </div>
+    </header>
+
+    <main class="content-body" style="width: 100%; max-width: 100%; padding: 0;">
+        <?php if ($successFlash): ?>
+            <div class="alert alert-success alert-modern mx-auto" style="max-width: 600px; margin-top: 2rem;">
+                <span class="material-symbols-outlined">check_circle</span>
+                <?= escape($successFlash); ?>
+            </div>
+        <?php endif; ?>
+        <?php if ($errorFlash): ?>
+            <div class="alert alert-error alert-modern mx-auto" style="max-width: 600px; margin-top: 2rem;">
+                <span class="material-symbols-outlined">error</span>
+                <?= escape($errorFlash); ?>
+            </div>
+        <?php endif; ?>
 <?php endif; ?>
+

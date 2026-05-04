@@ -1,99 +1,89 @@
-<div class="card" style="margin-top: 2rem; max-width: 600px; margin-inline: auto;">
-    <div class="card-header flex-col items-center gap-2 text-center" style="border-bottom: none; padding-bottom: 0;">
-        <h2 class="card-title" style="font-size: 2rem;">Start Your Journey</h2>
-        <p class="text-muted">Create an account to join our growing marketplace</p>
-    </div>
+<div class="auth-page-wrapper">
+    <div class="auth-card" style="max-width: 600px;">
+        <div class="text-center mb-10">
+            <h2 class="card-title" style="font-size: 2.25rem; margin-bottom: 0.5rem;">Create Account</h2>
+            <p class="text-muted">Join our community of professionals and families</p>
+        </div>
 
-    <div class="card-body" style="padding: 2.5rem;">
-        <form action="/register" method="POST" class="flex flex-col gap-5">
+        <form action="/register" method="POST" class="flex flex-col gap-2" data-auth-form>
             <input type="hidden" name="csrf_token" value="<?= escape($csrfToken ?? csrfToken()); ?>">
 
-            <div class="form-group">
-                <label for="name" class="label">Full Name</label>
-                <div class="input-wrapper" style="position: relative;">
-                    <input id="name" name="name" type="text" class="input-field" 
-                           value="<?= escape(old('name')); ?>" required 
-                           placeholder="John Doe"
-                           style="padding-left: 3rem;">
-                    <span class="material-symbols-outlined" 
-                          style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.25rem;">
-                        person
-                    </span>
+            <div class="floating-group">
+                <input id="name" name="name" type="text" class="input-field" 
+                       value="<?= escape(old('name')); ?>" required 
+                       placeholder=" " autocomplete="name">
+                <label for="name">Full Name</label>
+                <span class="material-symbols-outlined input-icon">person</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4">
+                <div class="floating-group">
+                    <input id="email" name="email" type="email" class="input-field" 
+                           value="<?= escape(old('email')); ?>" required 
+                           placeholder=" " autocomplete="email">
+                    <label for="email">Email Address</label>
+                    <span class="material-symbols-outlined input-icon">mail</span>
+                </div>
+                <div class="floating-group">
+                    <input id="phone" name="phone" type="tel" class="input-field" 
+                           value="<?= escape(old('phone')); ?>" required 
+                           placeholder=" " autocomplete="tel">
+                    <label for="phone">Phone Number</label>
+                    <span class="material-symbols-outlined input-icon">call</span>
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
-                <div class="form-group">
-                    <label for="email" class="label">Email Address</label>
-                    <div class="input-wrapper" style="position: relative;">
-                        <input id="email" name="email" type="email" class="input-field" 
-                               value="<?= escape(old('email')); ?>" required 
-                               placeholder="john@example.com"
-                               style="padding-left: 3rem;">
-                        <span class="material-symbols-outlined" 
-                              style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.25rem;">
-                            mail
-                        </span>
-                    </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4">
+                <div class="floating-group">
+                    <input id="password" name="password" type="password" class="input-field" 
+                           required placeholder=" " autocomplete="new-password">
+                    <label for="password">Password</label>
+                    <button type="button" class="password-toggle" data-password-toggle="password" aria-label="Toggle password visibility">
+                        <span class="material-symbols-outlined">visibility</span>
+                    </button>
                 </div>
-                <div class="form-group">
-                    <label for="phone" class="label">Phone Number</label>
-                    <div class="input-wrapper" style="position: relative;">
-                        <input id="phone" name="phone" type="tel" class="input-field" 
-                               value="<?= escape(old('phone')); ?>" required 
-                               placeholder="+1234567890"
-                               style="padding-left: 3rem;">
-                        <span class="material-symbols-outlined" 
-                              style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.25rem;">
-                            call
-                        </span>
-                    </div>
+                <div class="floating-group">
+                    <select id="role" name="role" class="select" required>
+                        <option value="" hidden></option>
+                        <option value="provider" <?= normalizeRole(old('role')) === 'provider' ? 'selected' : ''; ?>>Service Provider</option>
+                        <option value="parent" <?= normalizeRole(old('role')) === 'parent' ? 'selected' : ''; ?>>Customer (Parent)</option>
+                    </select>
+                    <label for="role">Register as</label>
+                    <span class="material-symbols-outlined input-icon">badge</span>
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
-                <div class="form-group">
-                    <label for="password" class="label">Password</label>
-                    <div class="input-wrapper" style="position: relative;">
-                        <input id="password" name="password" type="password" class="input-field" 
-                               required placeholder="••••••••"
-                               style="padding-left: 3rem;">
-                        <span class="material-symbols-outlined" 
-                              style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.25rem;">
-                            lock
-                        </span>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="role" class="label">Register as</label>
-                    <div class="input-wrapper" style="position: relative;">
-                        <select id="role" name="role" class="select" required style="padding-left: 3rem;">
-                            <option value="">Select your role</option>
-                            <option value="provider" <?= normalizeRole(old('role')) === 'provider' ? 'selected' : ''; ?>>Service Provider</option>
-                            <option value="parent" <?= normalizeRole(old('role')) === 'parent' ? 'selected' : ''; ?>>Customer (Parent)</option>
-                        </select>
-                        <span class="material-symbols-outlined" 
-                              style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.25rem;">
-                            badge
-                        </span>
-                    </div>
-                </div>
+            <div class="mb-8">
+                <label class="checkbox-group">
+                    <input type="checkbox" name="terms" required>
+                    <span class="text-sm font-semibold">I agree to the <a href="/terms" class="text-primary hover:underline">Terms of Service</a></span>
+                </label>
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width: 100%; height: 52px; font-size: 1rem; margin-top: 0.5rem;">
+            <button type="submit" class="btn btn-primary w-full" style="height: 56px; font-size: 1.1rem;">
                 Create Your Account
                 <span class="material-symbols-outlined">how_to_reg</span>
             </button>
 
-            <div class="text-center mt-6">
-                <p class="text-sm text-muted">
+            <div class="text-center mt-8">
+                <p class="text-muted">
                     Already have an account? 
-                    <a href="/login" style="color: var(--primary); font-weight: 700; text-decoration: underline; text-underline-offset: 4px;">
-                        Sign in instead
-                    </a>
+                    <a href="/login" class="text-primary font-bold hover:underline">Sign in instead</a>
                 </p>
             </div>
         </form>
     </div>
 </div>
+
+
+
+
+<style>
+@media (max-width: 768px) {
+    .grid-cols-1.md\:grid-cols-2 {
+        grid-template-columns: 1fr !important;
+    }
+}
+</style>
+
 

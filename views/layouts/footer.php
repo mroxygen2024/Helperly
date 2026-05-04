@@ -4,8 +4,31 @@
 </div> <!-- .app-container -->
 
 <script>
+// Sidebar Toggle
 document.getElementById('sidebar-toggle')?.addEventListener('click', function() {
     document.querySelector('.sidebar').classList.toggle('open');
+});
+
+// Modal Logic
+document.addEventListener('click', (e) => {
+    const openBtn = e.target.closest('[data-open-modal]');
+    if (openBtn) {
+        const modalId = openBtn.getAttribute('data-open-modal');
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    const closeBtn = e.target.closest('[data-close-modal]');
+    if (closeBtn || e.target.matches('.modal-overlay')) {
+        const modal = e.target.closest('.modal-overlay') || document.getElementById(closeBtn.getAttribute('data-close-modal'));
+        if (modal) {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    }
 });
 
 // Anchor-based active state fallback
@@ -21,7 +44,6 @@ window.addEventListener('hashchange', function() {
     });
 });
 
-// Initial check for hash
 if (window.location.hash) {
     window.dispatchEvent(new Event('hashchange'));
 }
@@ -34,6 +56,8 @@ if (window.location.hash) {
         </div>
     </footer>
 <?php endif; ?>
+
+
 
 <script src="/assets/js/app.js"></script>
 </body>
