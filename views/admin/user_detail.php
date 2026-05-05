@@ -67,7 +67,7 @@
                     <p class="font-600"><?= escape($user['profile']['location'] ?? 'N/A'); ?></p>
                 </div>
                 
-                <?php if (normalizeRole((string)$user['role']) === 'service_provider'): ?>
+                <?php if (normalizeRole((string)$user['role']) === 'provider'): ?>
                     <div>
                         <p class="text-xs text-muted font-800 uppercase letter-spacing-lg mb-1">Experience</p>
                         <p class="font-600"><?= escape($user['profile']['experience'] ?? 'N/A'); ?></p>
@@ -91,7 +91,7 @@
                 <?php endif; ?>
             </div>
 
-            <?php if (normalizeRole((string)$user['role']) === 'service_provider'): ?>
+            <?php if (normalizeRole((string)$user['role']) === 'provider'): ?>
                 <div class="mt-8 pt-8 border-t">
                     <h4 class="text-xs text-muted font-800 uppercase letter-spacing-lg mb-4">Verification Documents</h4>
                     <div class="grid grid-cols-3 gap-4">

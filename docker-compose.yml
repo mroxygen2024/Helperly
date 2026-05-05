@@ -19,6 +19,7 @@ services:
       - REDIS_HOST=redis
     depends_on:
       - redis
+      - mongodb
     networks:
       - servant_network
 
@@ -54,7 +55,7 @@ services:
     container_name: servant_mongodb
     restart: unless-stopped
     ports:
-      - "27017:27017"
+      - "127.0.0.1:27017:27017"
     environment:
       - MONGO_INITDB_DATABASE=${MONGODB_DB:-servant_db}
     volumes:

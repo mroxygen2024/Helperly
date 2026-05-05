@@ -355,7 +355,7 @@ class ProfileController
 
     public function saveServantProfile(array $payload, ?array $files = null): void
     {
-        requireRole('service_provider');
+        requireRole('provider');
 
         if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
             setFlash('error', 'Invalid request token. Please try again.');
