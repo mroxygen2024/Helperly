@@ -199,6 +199,12 @@ This project is licensed under the **MIT License**. See [LICENSE](LICENSE) for d
 
 ---
 
+## 🤝 GitHub Contribution
+* Contributions are welcome via GitHub issues and pull requests.
+* Please use descriptive branch names like `feature/your-feature` or `fix/your-fix` and include a clear PR summary.
+
+---
+
 ## 📧 Contact & Credits
 *   **Lead Developer**: [Fuad Sano](https://github.com/fuadsano)
 *   **Design Inspiration**: Modern SaaS Dashboards (Vercel, Stripe)
