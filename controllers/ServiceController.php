@@ -20,7 +20,7 @@ class ServiceController
 
     public function showForm(): void
     {
-        requireRole('service_provider');
+        requireRole('provider');
 
         $userId = (string) ($_SESSION['user_id'] ?? '');
         if ($userId === '') {
@@ -39,7 +39,7 @@ class ServiceController
 
     public function create(array $payload): void
     {
-        requireRole('service_provider');
+        requireRole('provider');
 
         if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
             setFlash('error', 'Invalid request token. Please try again.');

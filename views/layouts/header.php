@@ -4,7 +4,7 @@ $successFlash = getFlash('success');
 $errorFlash = getFlash('error');
 $currentUser = authUser();
 $role = $currentUser ? normalizeRole((string)($currentUser['role'] ?? '')) : null;
-$currentPage = $_GET['page'] ?? 'dashboard';
+$currentPage = sanitizeInput($_GET['page'] ?? 'dashboard');
 ?>
 <!DOCTYPE html>
 <html lang="en">

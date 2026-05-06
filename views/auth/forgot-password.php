@@ -31,7 +31,7 @@
             </button>
 
             <div class="text-center mt-4">
-                <a href="/login" class="text-sm font-700" style="color: var(--text-muted); display: flex; items-center justify-center gap-2;">
+                <a href="/login" class="text-sm font-700" style="color: var(--text-muted); display: flex; align-items: center; justify-content: center; gap: 2;">
                     <span class="material-symbols-outlined" style="font-size: 1.1rem;">arrow_back</span>
                     Back to login
                 </a>
