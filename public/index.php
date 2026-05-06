@@ -46,17 +46,14 @@ require_once dirname(__DIR__) . '/controllers/AdminJobController.php';
 
 startSecureSession();
 
-$authController = new AuthController();
-$marketplaceController = new MarketplaceController();
-$profileController = new ProfileController();
-$hireRequestController = new HireRequestController();
-$jobController = new JobController();
-$serviceController = new ServiceController();
-$messageController = new MessageController();
-$paymentController = new PaymentController();
-$reviewController = new ReviewController();
-$adminUserController = new AdminUserController();
-$adminJobController = new AdminJobController();
+// Lazy load controllers using an anonymous class to avoid redundant DB indexing on every page load
+$ctrl = new class {
+    private array $instances = [];
+    public function __get(string $name) {
+        $class = ucfirst($name);
+        return $this->instances[$class] ??= new $class();
+    }
+};
 
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
@@ -108,18 +105,276 @@ if ($method === 'GET' && str_starts_with($path, '/assets/')) {
 }
 try {
     if ($method === 'POST' && $path === '/api/login') {
-        $authController->loginApi(requestJsonBody());
+        $ctrl->authController->loginApi(requestJsonBody());
         return;
     }
 
     if ($method === 'GET' && $path === '/api/me') {
         $claims = requireJwtAuth();
-        $authController->meApi($claims);
+        $ctrl->authController->meApi($claims);
         return;
     }
 
     if ($method === 'GET' && $path === '/api/messages') {
-        $messageController->apiFetch($_GET);
+        $ctrl->messageController->apiFetch($_GET);
+        return;
+    }
+
+    if ($method === 'POST' && $path === '/login') {
+        $ctrl->authController->login($_POST);
+        return;
+    }
+
+    if ($method === 'POST' && $path === '/register') {
+        $ctrl->authController->register($_POST);
+        return;
+    }
+
+    if ($method === 'GET' && $path === '/verify-email') {
+        $ctrl->authController->verifyEmail($_GET);
+        return;
+    }
+
+    if ($method === 'GET' && $path === '/forgot-password') {
+        $ctrl->authController->showForgotPassword();
+        return;
+    }
+
+    if ($method === 'POST' && $path === '/forgot-password') {
+        $ctrl->authController->forgotPassword($_POST);
+        return;
+    }
+
+    if ($method === 'GET' && $path === '/reset-password') {
+        $ctrl->authController->showResetPassword($_GET);
+        return;
+    }
+
+    if ($method === 'POST' && $path === '/reset-password') {
+        $ctrl->authController->resetPassword($_POST);
+        return;
+    }
+
+    if ($method === 'GET' && $path === '/services') {
+        $ctrl->serviceController->showForm();
+        return;
+    }
+
+    if ($method === 'POST' && $path === '/services') {
+        $ctrl->serviceController->create($_POST);
+        return;
+    }
+
+
+    if ($method === 'GET' && $path === '/profile/servant') {
+        $ctrl->profileController->showServantForm();
+        return;
+    }
+
+    if ($method === 'GET' && ($path === '/admin/verifications' || $path === '/admin/verified_user')) {
+        $ctrl->profileController->showAdminVerifications();
+        return;
+    }
+
+    if ($method === 'GET' && $path === '/profile/account') {
+        $ctrl->profileController->showAccountForm();
+        return;
+    }
+
+    if ($method === 'POST' && $path === '/profile/account') {
+        $ctrl->profileController->saveAccountProfile($_POST);
+        return;
+    }
+
+    if ($method === 'POST' && $path === '/profile/servant') {
+        $ctrl->profileController->saveServantProfile($_POST, $_FILES);
+        return;
+    }
+
+    if ($method === 'POST' && $path === '/admin/servant-verification') {
+        $ctrl->profileController->updateServantVerification($_POST);
+        return;
+    }
+
+    if ($method === 'GET' && $path === '/profile/employer') {
+        $ctrl->profileController->showEmployerForm();
+        return;
+    }
+
+
+    if ($method === 'GET' && $path === '/servants') {
+        $ctrl->profileController->listServants($_GET);
+        return;
+    }
+
+    if ($method === 'POST' && $path === '/hire-requests') {
+        $ctrl->hireRequestController->createRequest($_POST);
+        return;
+    }
+
+    if ($method === 'GET' && $path === '/servant/requests') {
+        $ctrl->hireRequestController->index();
+        return;
+    }
+
+    if ($method === 'POST' && $path === '/servant/requests/status') {
+        $ctrl->hireRequestController->updateRequestStatus($_POST);
+        return;
+    }
+
+    if ($method === 'POST' && $path === '/profile/employer') {
+        $ctrl->profileController->saveEmployerProfile($_POST);
+        return;
+    }
+
+    if ($method === 'GET' && $path === '/job/book') {
+        $ctrl->jobController->showBookForm($_GET);
+        return;
+    }
+
+    if ($method === 'GET' && $path === '/messages') {
+        $ctrl->messageController->index($_GET);
+        return;
+    }
+
+    if ($method === 'POST' && $path === '/messages') {
+        $ctrl->messageController->store($_POST);
+        return;
+    }
+
+    if ($method === 'POST' && $path === '/jobs') {
+        $ctrl->jobController->create($_POST);
+        return;
+    }
+
+    if ($method === 'POST' && $path === '/jobs/apply') {
+        $ctrl->jobController->apply($_POST);
+        return;
+    }
+
+    if ($method === 'POST' && $path === '/jobs/accept') {
+        $ctrl->jobController->accept($_POST);
+        return;
+    }
+
+    if ($method === 'POST' && $path === '/jobs/reject') {
+        $ctrl->jobController->reject($_POST);
+        return;
+    }
+
+    if ($method === 'POST' && $path === '/jobs/confirm') {
+        $ctrl->jobController->confirm($_POST);
+        return;
+    }
+
+    if ($method === 'POST' && $path === '/payments/pay') {
+        $ctrl->paymentController->processPayment($_POST);
+        return;
+    }
+
+    if ($method === 'POST' && $path === '/reviews') {
+        $ctrl->reviewController->store($_POST);
+        return;
+    }
+
+    // New public detail routes for marketplace UX
+    if ($method === 'GET' && $path === '/provider/view.php') {
+        $ctrl->profileController->showServantPublic();
+        return;
+    }
+
+    if ($method === 'GET' && $path === '/parent/view.php') {
+        $ctrl->profileController->showEmployerPublic();
+        return;
+    }
+
+    if ($method === 'GET' && $path === '/jobs/detail') {
+        $ctrl->jobController->showDetail();
+        return;
+    }
+
+    if ($method === 'GET' && $path === '/jobs/available') {
+        $ctrl->jobController->showAvailableJobs();
+        return;
+    }
+
+    // Back-compat parent/provider dashboard targets
+    if ($method === 'GET' && ($path === '/parent/jobs' || $path === '/parent/jobs.php')) {
+        $ctrl->jobController->showParentJobs();
+        return;
+    }
+
+    if ($method === 'GET' && ($path === '/parent/payments' || $path === '/parent/payments.php')) {
+        $ctrl->paymentController->index();
+        return;
+    }
+
+    if ($method === 'GET' && ($path === '/parent/providers' || $path === '/parent/providers.php')) {
+        $ctrl->profileController->listServants($_GET);
+        return;
+    }
+
+    if ($method === 'GET' && ($path === '/provider/jobs' || $path === '/provider/jobs.php')) {
+        $ctrl->jobController->showProviderJobs();
+        return;
+    }
+
+    if ($method === 'GET' && ($path === '/provider/applications' || $path === '/provider/applications.php')) {
+        $ctrl->jobController->showProviderApplications();
+        return;
+    }
+
+    if ($method === 'GET' && ($path === '/provider/payments' || $path === '/provider/payments.php')) {
+        $ctrl->paymentController->index();
+        return;
+    }
+
+    if ($method === 'GET' && $path === '/admin/users') {
+        $ctrl->adminUserController->index();
+        return;
+    }
+
+    if ($method === 'GET' && $path === '/admin/users/detail') {
+        $ctrl->adminUserController->showUserDetail();
+        return;
+    }
+
+    if ($method === 'POST' && $path === '/admin/users/toggle-block') {
+        $ctrl->adminUserController->toggleBlock($_POST);
+        return;
+    }
+
+    if ($method === 'GET' && $path === '/admin/jobs') {
+        $ctrl->adminJobController->index();
+        return;
+    }
+
+    if ($method === 'GET' && $path === '/admin/jobs/detail') {
+        $ctrl->adminJobController->showDetail();
+        return;
+    }
+
+    if ($method === 'GET' && $path === '/admin/providers') {
+        $ctrl->adminUserController->listProviders();
+        return;
+    }
+
+    if ($method === 'GET' && $path === '/admin/providers/detail') {
+        $ctrl->adminUserController->showProviderDetail();
+        return;
+    }
+
+    if ($method === 'POST' && $path === '/admin/users/delete') {
+        $ctrl->adminUserController->delete($_POST);
+        return;
+    }
+
+    if ($method === 'POST' && $path === '/logout') {
+        if (!verifyCsrfToken($_POST['csrf_token'] ?? null)) {
+            setFlash('error', 'Invalid request token.');
+            redirect('/');
+        }
+        $ctrl->authController->logout();
         return;
     }
 
@@ -139,11 +394,11 @@ try {
 
             switch ($requestedPage) {
                 case 'login':
-                    $authController->showLogin();
+                    $ctrl->authController->showLogin();
                     return;
 
                 case 'register':
-                    $authController->showRegister();
+                    $ctrl->authController->showRegister();
                     return;
 
                 case 'dashboard':
@@ -156,21 +411,21 @@ try {
                     $role = normalizeRole((string) ($user['role'] ?? ''));
 
                     if ($role === 'parent') {
-                        $marketplaceController->employerDashboard();
+                        $ctrl->marketplaceController->employerDashboard();
                         return;
                     }
 
                     if ($role === 'provider') {
-                        $marketplaceController->servantDashboard();
+                        $ctrl->marketplaceController->servantDashboard();
                         return;
                     }
 
                     if ($role === 'administrator') {
-                        $marketplaceController->adminDashboard();
+                        $ctrl->marketplaceController->adminDashboard();
                         return;
                     }
 
-                    $marketplaceController->index();
+                    $ctrl->marketplaceController->index();
                     return;
 
                 case 'profiles':
@@ -183,12 +438,12 @@ try {
                     $role = normalizeRole((string) ($user['role'] ?? ''));
 
                     if ($role === 'parent') {
-                        $profileController->showEmployerForm();
+                        $ctrl->profileController->showEmployerForm();
                         return;
                     }
 
                     if ($role === 'provider') {
-                        $profileController->showServantForm();
+                        $ctrl->profileController->showServantForm();
                         return;
                     }
 
@@ -200,7 +455,7 @@ try {
                     return;
 
                 case 'profile-account':
-                    $profileController->showAccountForm();
+                    $ctrl->profileController->showAccountForm();
                     return;
 
                 case 'listings':
@@ -208,284 +463,19 @@ try {
                     $role = $user ? normalizeRole((string) ($user['role'] ?? '')) : null;
 
                     if ($role === 'parent' || $role === 'administrator') {
-                        $profileController->listServants($_GET);
+                        $ctrl->profileController->listServants($_GET);
                         return;
                     }
 
-                    $marketplaceController->index();
+                    $ctrl->marketplaceController->index();
                     return;
 
                 case 'messages':
-                    $messageController->index($_GET);
+                    $ctrl->messageController->index($_GET);
                     return;
 
-                default:
-                    http_response_code(404);
-                    renderView('errors/404', [
-                        'title' => 'Not Found',
-                        'message' => 'The page you requested does not exist.',
-                    ]);
-                    return;
             }
         }
-    }
-
-    if ($method === 'POST' && $path === '/login') {
-        $authController->login($_POST);
-        return;
-    }
-
-    if ($method === 'POST' && $path === '/register') {
-        $authController->register($_POST);
-        return;
-    }
-
-    if ($method === 'GET' && $path === '/verify-email') {
-        $authController->verifyEmail($_GET);
-        return;
-    }
-
-    if ($method === 'GET' && $path === '/forgot-password') {
-        $authController->showForgotPassword();
-        return;
-    }
-
-    if ($method === 'POST' && $path === '/forgot-password') {
-        $authController->forgotPassword($_POST);
-        return;
-    }
-
-    if ($method === 'GET' && $path === '/reset-password') {
-        $authController->showResetPassword($_GET);
-        return;
-    }
-
-    if ($method === 'POST' && $path === '/reset-password') {
-        $authController->resetPassword($_POST);
-        return;
-    }
-
-    if ($method === 'GET' && $path === '/services') {
-        $serviceController->showForm();
-        return;
-    }
-
-    if ($method === 'POST' && $path === '/services') {
-        $serviceController->create($_POST);
-        return;
-    }
-
-
-    if ($method === 'GET' && $path === '/profile/servant') {
-        $profileController->showServantForm();
-        return;
-    }
-
-    if ($method === 'GET' && $path === '/admin/verifications') {
-        $profileController->showAdminVerifications();
-        return;
-    }
-
-    if ($method === 'GET' && $path === '/profile/account') {
-        $profileController->showAccountForm();
-        return;
-    }
-
-    if ($method === 'POST' && $path === '/profile/account') {
-        $profileController->saveAccountProfile($_POST);
-        return;
-    }
-
-    if ($method === 'POST' && $path === '/profile/servant') {
-        $profileController->saveServantProfile($_POST, $_FILES);
-        return;
-    }
-
-    if ($method === 'POST' && $path === '/admin/servant-verification') {
-        $profileController->updateServantVerification($_POST);
-        return;
-    }
-
-    if ($method === 'GET' && $path === '/profile/employer') {
-        $profileController->showEmployerForm();
-        return;
-    }
-
-
-    if ($method === 'GET' && $path === '/servants') {
-        $profileController->listServants($_GET);
-        return;
-    }
-
-    if ($method === 'POST' && $path === '/hire-requests') {
-        $hireRequestController->createRequest($_POST);
-        return;
-    }
-
-    if ($method === 'GET' && $path === '/servant/requests') {
-        $hireRequestController->index();
-        return;
-    }
-
-    if ($method === 'POST' && $path === '/servant/requests/status') {
-        $hireRequestController->updateRequestStatus($_POST);
-        return;
-    }
-
-    if ($method === 'POST' && $path === '/profile/employer') {
-        $profileController->saveEmployerProfile($_POST);
-        return;
-    }
-
-    if ($method === 'GET' && $path === '/job/book') {
-        $jobController->showBookForm($_GET);
-        return;
-    }
-
-    if ($method === 'GET' && $path === '/messages') {
-        $messageController->index($_GET);
-        return;
-    }
-
-    if ($method === 'POST' && $path === '/messages') {
-        $messageController->store($_POST);
-        return;
-    }
-
-    if ($method === 'POST' && $path === '/jobs') {
-        $jobController->create($_POST);
-        return;
-    }
-
-    if ($method === 'POST' && $path === '/jobs/apply') {
-        $jobController->apply($_POST);
-        return;
-    }
-
-    if ($method === 'POST' && $path === '/jobs/accept') {
-        $jobController->accept($_POST);
-        return;
-    }
-
-    if ($method === 'POST' && $path === '/jobs/reject') {
-        $jobController->reject($_POST);
-        return;
-    }
-
-    if ($method === 'POST' && $path === '/jobs/confirm') {
-        $jobController->confirm($_POST);
-        return;
-    }
-
-    if ($method === 'POST' && $path === '/payments/pay') {
-        $paymentController->processPayment($_POST);
-        return;
-    }
-
-    if ($method === 'POST' && $path === '/reviews') {
-        $reviewController->store($_POST);
-        return;
-    }
-
-    // New public detail routes for marketplace UX
-    if ($method === 'GET' && $path === '/provider/view.php') {
-        $profileController->showServantPublic();
-        return;
-    }
-
-    if ($method === 'GET' && $path === '/parent/view.php') {
-        $profileController->showEmployerPublic();
-        return;
-    }
-
-    if ($method === 'GET' && $path === '/jobs/detail') {
-        $jobController->showDetail();
-        return;
-    }
-
-    if ($method === 'GET' && $path === '/jobs/available') {
-        $jobController->showAvailableJobs();
-        return;
-    }
-
-    // Back-compat parent/provider dashboard targets
-    if ($method === 'GET' && ($path === '/parent/jobs' || $path === '/parent/jobs.php')) {
-        $jobController->showParentJobs();
-        return;
-    }
-
-    if ($method === 'GET' && ($path === '/parent/payments' || $path === '/parent/payments.php')) {
-        $paymentController->index();
-        return;
-    }
-
-    if ($method === 'GET' && ($path === '/parent/providers' || $path === '/parent/providers.php')) {
-        $profileController->listServants($_GET);
-        return;
-    }
-
-    if ($method === 'GET' && ($path === '/provider/jobs' || $path === '/provider/jobs.php')) {
-        $jobController->showProviderJobs();
-        return;
-    }
-
-    if ($method === 'GET' && ($path === '/provider/applications' || $path === '/provider/applications.php')) {
-        $jobController->showProviderApplications();
-        return;
-    }
-
-    if ($method === 'GET' && ($path === '/provider/payments' || $path === '/provider/payments.php')) {
-        $paymentController->index();
-        return;
-    }
-
-    if ($method === 'GET' && $path === '/admin/users') {
-        $adminUserController->index();
-        return;
-    }
-
-    if ($method === 'GET' && $path === '/admin/users/detail') {
-        $adminUserController->showUserDetail();
-        return;
-    }
-
-    if ($method === 'POST' && $path === '/admin/users/toggle-block') {
-        $adminUserController->toggleBlock($_POST);
-        return;
-    }
-
-    if ($method === 'GET' && $path === '/admin/jobs') {
-        $adminJobController->index();
-        return;
-    }
-
-    if ($method === 'GET' && $path === '/admin/jobs/detail') {
-        $adminJobController->showDetail();
-        return;
-    }
-
-    if ($method === 'GET' && $path === '/admin/providers') {
-        $adminUserController->listProviders();
-        return;
-    }
-
-    if ($method === 'GET' && $path === '/admin/providers/detail') {
-        $adminUserController->showProviderDetail();
-        return;
-    }
-
-    if ($method === 'POST' && $path === '/admin/users/delete') {
-        $adminUserController->delete($_POST);
-        return;
-    }
-
-    if ($method === 'POST' && $path === '/logout') {
-        if (!verifyCsrfToken($_POST['csrf_token'] ?? null)) {
-            setFlash('error', 'Invalid request token.');
-            redirect('/');
-        }
-        $authController->logout();
-        return;
     }
 
     http_response_code(404);

@@ -29,7 +29,7 @@ class HireRequest
     {
         $this->collection = getMongoDatabase()->selectCollection('hire_requests');
         $this->servantProfilesCollection = getMongoDatabase()->selectCollection('servant_profiles');
-        $this->ensureIndexes();
+
     }
 
     private function isApprovedServant(string $servant_id): bool
@@ -45,7 +45,7 @@ class HireRequest
         return $approvedProfile !== null;
     }
 
-    private function ensureIndexes(): void
+    public function ensureIndexes(): void
     {
         if (self::$indexesEnsured) {
             return;

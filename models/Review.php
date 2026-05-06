@@ -26,10 +26,10 @@ class Review
     public function __construct()
     {
         $this->collection = getMongoDatabase()->selectCollection('reviews');
-        $this->ensureIndexes();
+
     }
 
-    private function ensureIndexes(): void
+    public function ensureIndexes(): void
     {
         if (self::$indexesEnsured) {
             return;

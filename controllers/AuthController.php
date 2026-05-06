@@ -274,6 +274,13 @@ class AuthController
             redirect('/login');
         }
 
+        $isVerified = array_key_exists('is_verified', $user) ? (bool) $user['is_verified'] : true;
+        if (!$isVerified) {
+            rememberOldInput(['email' => $email]);
+            setFlash('error', 'Please verify your email before logging in.');
+            redirect('/login');
+        }
+
         session_regenerate_id(true);
 
         $userId = (string) ($user['_id'] ?? '');
