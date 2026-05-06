@@ -9,8 +9,6 @@ services:
     restart: unless-stopped
     volumes:
       - .:/var/www/html
-      # Preserve vendor in container
-      - /var/www/html/vendor
     environment:
       - APP_ENV=${APP_ENV:-development}
       - MONGODB_URI=${MONGODB_URI}

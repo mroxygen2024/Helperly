@@ -26,7 +26,7 @@ RUN docker-php-ext-install \
     opcache \
     gd
 
-# Install and enable extensions
+# Install MongoDB and Redis extensions
 RUN pecl install mongodb redis && \
     docker-php-ext-enable mongodb redis
 
@@ -41,34 +41,38 @@ WORKDIR /var/www/html
 # ==========================================
 FROM base AS development
 
-# Use the default development configuration
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 
-# Set permissions for development
+# Copy composer files first (layer caching)
+COPY composer.json composer.lock ./
+
+# Install dependencies during build
+RUN composer install --no-interaction
+
 RUN chown -R www-data:www-data /var/www/html
 
 USER www-data
+
+EXPOSE 9000
+CMD ["php-fpm"]
 
 # ==========================================
 # STAGE 3: Production Environment
 # ==========================================
 FROM base AS production
 
-# Use the default production configuration
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
 # Copy project files
 COPY . .
 
-# Move assets to public if they are in root (for modern routing)
-# Note: In development, we use volumes, so we'll symlink or just access them.
-# For production, we copy them to the public folder.
+# Copy assets if they exist
 RUN if [ -d "assets" ]; then \
         mkdir -p public/assets && \
         cp -r assets/* public/assets/; \
     fi
 
-# Install production dependencies
+# Install production dependencies only
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 # Set proper permissions
@@ -77,5 +81,4 @@ RUN chown -R www-data:www-data /var/www/html
 USER www-data
 
 EXPOSE 9000
-
 CMD ["php-fpm"]
