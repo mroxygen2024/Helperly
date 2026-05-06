@@ -51,14 +51,7 @@ Helperly is a high-performance, production-ready marketplace platform connecting
 
 ---
 
-## 📸 Screenshots
 
-> [!TIP]
-> *Replace these placeholders with actual screenshots from your environment.*
-
-| Dashboard | Mobile View |
-| :---: | :---: |
-| ![Dashboard Placeholder](https://via.placeholder.com/600x400?text=Premium+Admin+Dashboard) | ![Mobile Placeholder](https://via.placeholder.com/200x400?text=Responsive+Mobile+UI) |
 
 ---
 
@@ -139,7 +132,7 @@ Before you begin, ensure you have the following installed:
 
 3.  **Run with PHP Built-in Server**:
     ```bash
-    php -S localhost:8000 -t public
+    php -S localhost:8000 -t public public/index.php
     ```
 
 ---
