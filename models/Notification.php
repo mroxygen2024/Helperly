@@ -26,10 +26,10 @@ class Notification
     public function __construct()
     {
         $this->collection = getMongoDatabase()->selectCollection('notifications');
-        $this->ensureIndexes();
+
     }
 
-    private function ensureIndexes(): void
+    public function ensureIndexes(): void
     {
         if (self::$indexesEnsured) {
             return;
