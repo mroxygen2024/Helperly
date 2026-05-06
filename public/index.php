@@ -78,7 +78,6 @@ try {
     // Authentication Routes
     $router->post('/login', fn() => $ctrl->authController->login($_POST));
     $router->post('/register', fn() => $ctrl->authController->register($_POST));
-    $router->get('/verify-email', fn() => $ctrl->authController->verifyEmail($_GET));
     $router->get('/forgot-password', fn() => $ctrl->authController->showForgotPassword());
     $router->post('/forgot-password', fn() => $ctrl->authController->forgotPassword($_POST));
     $router->get('/reset-password', fn() => $ctrl->authController->showResetPassword($_GET));

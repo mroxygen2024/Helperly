@@ -1,7 +1,10 @@
 <div class="auth-page-wrapper">
     <div class="auth-card" style="max-width: 600px;">
         <div class="text-center mb-10">
-            <h2 class="card-title" style="font-size: 2.25rem; margin-bottom: 0.5rem;">Create Account</h2>
+            <div class="auth-logo-icon">
+                <span class="material-symbols-outlined">how_to_reg</span>
+            </div>
+            <h2 class="auth-title">Create Account</h2>
             <p class="text-muted">Join our community of professionals and families</p>
         </div>
 
@@ -60,7 +63,7 @@
                 </label>
             </div>
 
-            <button type="submit" class="btn btn-primary w-full" style="height: 56px; font-size: 1.1rem;">
+            <button type="submit" class="btn btn-primary btn-lg w-full">
                 Create Your Account
                 <span class="material-symbols-outlined">how_to_reg</span>
             </button>
@@ -75,9 +78,6 @@
     </div>
 </div>
 
-
-
-
 <style>
 @media (max-width: 768px) {
     .grid-cols-1.md\:grid-cols-2 {
@@ -85,5 +85,3 @@
     }
 }
 </style>
-
-

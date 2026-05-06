@@ -56,8 +56,7 @@ class User
         string $email,
         string $phone,
         string $password,
-        string $role,
-        string $verificationToken
+        string $role
     ): string
     {
         $normalizedEmail = $this->normalizeEmail($email);
@@ -80,9 +79,7 @@ class User
                 'phone' => trim($phone),
                 'password_hash' => $passwordHash,
                 'role' => $normalizedRole,
-                'is_verified' => false,
-                'verification_token' => hashVerificationToken($verificationToken),
-                'verification_sent_at' => new UTCDateTime(),
+                'is_verified' => true,
                 'created_at' => new UTCDateTime(),
             ];
 

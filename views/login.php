@@ -1,8 +1,11 @@
 <div class="auth-page-wrapper">
     <div class="auth-card">
         <div class="text-center mb-10">
-            <h2 class="card-title" style="font-size: 2.25rem; margin-bottom: 0.5rem;">Welcome Back</h2>
-            <p class="text-muted">Enter your credentials to access your account</p>
+            <div class="auth-logo-icon">
+                <span class="material-symbols-outlined">home_work</span>
+            </div>
+            <h2 class="auth-title">Welcome Back</h2>
+            <p class="text-muted">Sign in to your Helperly account</p>
         </div>
 
         <form action="/login" method="POST" class="flex flex-col gap-2" data-auth-form>
@@ -33,7 +36,7 @@
                 <a href="/forgot-password" class="text-sm font-bold text-primary hover:underline">Forgot password?</a>
             </div>
 
-            <button type="submit" class="btn btn-primary w-full" style="height: 56px; font-size: 1.1rem;">
+            <button type="submit" class="btn btn-primary btn-lg w-full">
                 Sign In
                 <span class="material-symbols-outlined">login</span>
             </button>
@@ -47,7 +50,3 @@
         </form>
     </div>
 </div>
-
-
-
-
