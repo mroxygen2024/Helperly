@@ -129,6 +129,12 @@
                             <span class="material-symbols-outlined">chat</span> Chat
                         </a>
 
+                        <?php if ($job['status'] === 'open' && ($user['role'] ?? '') === 'provider'): ?>
+                            <a href="/jobs/apply?id=<?= escape((string)$job['_id']); ?>" class="btn btn-primary w-full py-3 flex items-center justify-center gap-2">
+                                <span class="material-symbols-outlined">assignment</span> Apply Now
+                            </a>
+                        <?php endif; ?>
+
                         <?php if ($job['status'] === 'active'): ?>
                             <form action="/jobs/confirm" method="POST">
                                 <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">

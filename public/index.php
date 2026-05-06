@@ -113,6 +113,7 @@ try {
     
     $router->get('/job/book', fn() => $ctrl->jobController->showBookForm($_GET));
     $router->post('/jobs', fn() => $ctrl->jobController->create($_POST));
+    $router->get('/jobs/apply', fn() => $ctrl->jobController->showApplyForm());
     $router->post('/jobs/apply', fn() => $ctrl->jobController->apply($_POST));
     $router->post('/jobs/accept', fn() => $ctrl->jobController->accept($_POST));
     $router->post('/jobs/reject', fn() => $ctrl->jobController->reject($_POST));

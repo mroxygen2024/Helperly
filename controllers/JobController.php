@@ -120,6 +120,31 @@ class JobController
         redirect('/dashboard');
     }
 
+    public function showApplyForm(): void
+    {
+        requireRole('provider');
+        $jobId = sanitizeInput($_GET['id'] ?? '');
+        $job = $this->jobs->getJobById($jobId);
+        
+        if (!$job) {
+            setFlash('error', 'Job not found.');
+            redirect('/dashboard');
+        }
+
+        $providerId = (string) ($_SESSION['user_id'] ?? '');
+        if (!$this->servantProfiles->isApprovedByUserId($providerId)) {
+            setFlash('error', 'Only verified service providers can apply to jobs.');
+            redirect('/dashboard');
+        }
+
+        renderView('jobs/apply', [
+            'title' => 'Apply for Job',
+            'job' => $job,
+            'csrfToken' => csrfToken(),
+            'user' => authUser()
+        ]);
+    }
+
     public function apply(array $payload): void
     {
         requireRole('provider');
