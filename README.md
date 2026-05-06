@@ -101,19 +101,20 @@ Before you begin, ensure you have the following installed:
     ```bash
     cp .env.example .env
     ```
-    *Update `MONGODB_URI` in `.env` to `mongodb://mongodb:27017`.*
+    *Update `MONGODB_URI` in `.env` to `mongodb://mongodb:27017` to connect to the Docker container.*
 
 3.  **Start the Stack**:
     ```bash
-    sudo docker compose up -d
+    docker compose up --build -d
     ```
 
-4.  **Initialize App**:
+4.  **Initialize Database Indexes (Crucial)**:
+    Because we removed automatic indexing for maximum performance, you must manually build the indexes inside the Docker container:
     ```bash
-    docker-compose build --no-cache
-    docker-compose up -d
+    docker compose exec app php bin/setup.php
     ```
-    *The app will be available at `http://localhost:8000`.*
+    
+    *The app will be available at `http://localhost:8000`. Nginx serves the frontend and proxies dynamic requests to the PHP-FPM container automatically.*
 
 ---
 
