@@ -81,6 +81,7 @@ class User
                 'password_hash' => $passwordHash,
                 'role' => $normalizedRole,
                 'is_verified' => false,
+                'is_blocked' => false,
                 'verification_token' => hashVerificationToken($verificationToken),
                 'verification_sent_at' => new UTCDateTime(),
                 'created_at' => new UTCDateTime(),
