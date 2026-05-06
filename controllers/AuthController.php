@@ -326,6 +326,10 @@ class AuthController
             jsonResponse(['error' => 'Invalid login credentials.'], 401);
         }
 
+        if ((bool) ($user['is_blocked'] ?? false)) {
+            jsonResponse(['error' => 'Your account has been suspended. Please contact support.'], 403);
+        }
+
         $isVerified = array_key_exists('is_verified', $user) ? (bool) $user['is_verified'] : true;
         if (!$isVerified) {
             jsonResponse(['error' => 'Please verify your email before logging in.'], 403);
