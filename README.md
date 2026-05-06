@@ -112,13 +112,13 @@ Before you begin, ensure you have the following installed:
 
 3.  **Start the Stack**:
     ```bash
-    docker-compose up -d --build
+    sudo docker compose up -d
     ```
 
 4.  **Initialize App**:
     ```bash
-    docker-compose exec app composer install
-    docker-compose exec app php scratch/seed_dummy_data.php
+    docker-compose build --no-cache
+    docker-compose up -d
     ```
     *The app will be available at `http://localhost:8000`.*
 
