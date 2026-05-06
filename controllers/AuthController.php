@@ -319,7 +319,6 @@ class AuthController
             jsonResponse(['error' => 'Invalid login credentials.'], 401);
         }
 
-<<<<<<< HEAD
         if ((bool) ($user['is_blocked'] ?? false)) {
             jsonResponse(['error' => 'Your account has been suspended. Please contact support.'], 403);
         }
@@ -328,9 +327,6 @@ class AuthController
         if (!$isVerified) {
             jsonResponse(['error' => 'Please verify your email before logging in.'], 403);
         }
-
-=======
->>>>>>> 1c38e4e (refactor: remove email verification checks from login methods in AuthController)
         $userId = (string) ($user['_id'] ?? '');
         $role = normalizeRole((string) ($user['role'] ?? ''));
 
