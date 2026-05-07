@@ -86,7 +86,7 @@
             </div>
 
             <div class="flex justify-end pt-4" style="border-top: 1px solid var(--border-light);">
-                <button type="submit" class="btn btn-primary" style="padding-inline: 2.5rem; height: 52px;">
+                <button type="submit" class="btn btn-primary btn-lg">
                     <span class="material-symbols-outlined">check_circle</span>
                     Verify & Save Profile
                 </button>

@@ -27,10 +27,10 @@ class JobApplication
     public function __construct()
     {
         $this->collection = getMongoDatabase()->selectCollection('job_applications');
-        $this->ensureIndexes();
+
     }
 
-    private function ensureIndexes(): void
+    public function ensureIndexes(): void
     {
         if (self::$indexesEnsured) {
             return;

@@ -48,7 +48,7 @@
             </div>
 
             <div class="flex justify-end pt-4" style="border-top: 1px solid var(--border-light);">
-                <button type="submit" class="btn btn-primary" style="padding-inline: 2rem;">
+                <button type="submit" class="btn btn-primary btn-lg">
                     <span class="material-symbols-outlined">save</span>
                     Update Account
                 </button>

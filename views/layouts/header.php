@@ -38,7 +38,7 @@ $currentPage = sanitizeInput($_GET['page'] ?? 'dashboard');
             'dashboard' => ['label' => 'Dashboard', 'url' => '/dashboard', 'icon' => 'dashboard'],
             'users' => ['label' => 'User Management', 'url' => '/admin/users', 'icon' => 'group'],
             'providers' => ['label' => 'Providers', 'url' => '/admin/providers', 'icon' => 'badge'],
-            'verifications' => ['label' => 'Verifications', 'url' => '/admin/verified_user', 'icon' => 'verified_user'],
+            'verifications' => ['label' => 'Verifications', 'url' => '/admin/verifications', 'icon' => 'verified_user'],
             'jobs' => ['label' => 'Job Management', 'url' => '/admin/jobs', 'icon' => 'work'],
         ];
     }
