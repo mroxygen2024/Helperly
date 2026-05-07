@@ -12,15 +12,25 @@ use PHPMailer\PHPMailer\PHPMailer;
  | Handle HTTP input, coordinate models, then choose the view to render.
  */
 
+/**
+ * AuthController handles user authentication, registration, and password management.
+ */
 class AuthController
 {
+    /** @var User The user model instance for database operations. */
     private User $users;
 
+    /**
+     * Constructor initializes the User model.
+     */
     public function __construct()
     {
         $this->users = new User();
     }
 
+    /**
+     * Displays the login form.
+     */
     public function showLogin(): void
     {
         renderView('login', [
@@ -29,6 +39,9 @@ class AuthController
         ]);
     }
 
+    /**
+     * Displays the registration form.
+     */
     public function showRegister(): void
     {
         renderView('register', [
@@ -37,6 +50,9 @@ class AuthController
         ]);
     }
 
+    /**
+     * Displays the forgot password form.
+     */
     public function showForgotPassword(): void
     {
         renderView('auth/forgot-password', [
@@ -45,6 +61,11 @@ class AuthController
         ]);
     }
 
+    /**
+     * Displays the reset password form with token validation.
+     *
+     * @param array $query The query parameters containing the reset token.
+     */
     public function showResetPassword(array $query): void
     {
         $token = sanitizeInput($query['token'] ?? null);
@@ -56,6 +77,11 @@ class AuthController
         ]);
     }
 
+    /**
+     * Handles user registration with validation and email verification.
+     *
+     * @param array $payload The form payload containing user data.
+     */
     public function register(array $payload): void
     {
         if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
@@ -125,8 +151,11 @@ class AuthController
         redirect('/login');
     }
 
-
-
+    /**
+     * Handles forgot password request and sends reset email.
+     *
+     * @param array $payload The form payload containing the email.
+     */
     public function forgotPassword(array $payload): void
     {
         if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
@@ -162,6 +191,11 @@ class AuthController
         redirect('/login');
     }
 
+    /**
+     * Resets user password using the provided token.
+     *
+     * @param array $payload The form payload containing token and new password.
+     */
     public function resetPassword(array $payload): void
     {
         if (!verifyCsrfToken($payload['csrf_token'] ?? null)) {
@@ -205,6 +239,11 @@ class AuthController
         redirect('/login');
     }
 
+    /**
+     * Authenticates user login with validation and session setup.
+     *
+     * @param array $payload The form payload containing email and password.
+     */
     public function login(array $payload): void
     {
         // Ensure session is active even if this action is invoked in isolation.

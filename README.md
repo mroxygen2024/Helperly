@@ -143,6 +143,13 @@ MIT — See [LICENSE](LICENSE) for details.
 
 ---
 
+## GitHub Contribution
+
+- Contributions are welcome via GitHub issues and pull requests.
+- Use descriptive branch names like `feature/your-feature` or `fix/your-fix`, and include a clear PR summary.
+
+---
+
 ## Credits
 
 - **Lead Developer**: [Fuad Sano](https://github.com/fuadsano)

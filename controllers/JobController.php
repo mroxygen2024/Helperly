@@ -9,13 +9,23 @@ declare(strict_types=1);
  | Handle HTTP input, coordinate models, then choose the view to render.
  */
 
+/**
+ * JobController manages job postings, applications, and bookings.
+ */
 class JobController
 {
+    /** @var Job The job model for database operations. */
     private Job $jobs;
+    /** @var JobApplication The job application model. */
     private JobApplication $applications;
+    /** @var ServantProfile The servant profile model. */
     private ServantProfile $servantProfiles;
+    /** @var Notification The notification model. */
     private Notification $notifications;
 
+    /**
+     * Constructor initializes all required models.
+     */
     public function __construct()
     {
         $this->jobs = new Job();
@@ -24,6 +34,11 @@ class JobController
         $this->notifications = new Notification();
     }
 
+    /**
+     * Displays the job booking form for a specific provider.
+     *
+     * @param array $query The query parameters containing provider_id.
+     */
     public function showBookForm(array $query): void
     {
         requireRole('parent');
@@ -47,6 +62,11 @@ class JobController
         ]);
     }
 
+    /**
+     * Creates a new job posting from the booking form.
+     *
+     * @param array $payload The form payload containing job details.
+     */
     public function create(array $payload): void
     {
         requireRole('parent');
