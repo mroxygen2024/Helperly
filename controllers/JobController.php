@@ -176,9 +176,6 @@ class JobController
         $providerId = (string) ($_SESSION['user_id'] ?? '');
         $providerName = (string) ($_SESSION['auth_user']['name'] ?? 'A provider');
         $jobId = sanitizeInput($payload['job_id'] ?? null);
-        $coverLetter = sanitizeInput($payload['cover_letter'] ?? '');
-        $availability = sanitizeInput($payload['availability'] ?? '');
-        $timeline = sanitizeInput($payload['timeline'] ?? '');
 
         if (!$this->servantProfiles->isApprovedByUserId($providerId)) {
             setFlash('error', 'Only verified service providers can apply to jobs.');
@@ -186,7 +183,7 @@ class JobController
         }
 
         try {
-            if ($this->applications->createApplication($jobId, $providerId, $coverLetter, $availability, $timeline)) {
+            if ($this->applications->createApplication($jobId, $providerId, '', '', '')) {
                 $job = $this->jobs->getJobById($jobId);
                 if ($job) {
                     $this->notifications->create(

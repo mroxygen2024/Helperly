@@ -13,6 +13,8 @@ $currentPage = sanitizeInput($_GET['page'] ?? 'dashboard');
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= escape($title ?? $app['app_name']); ?> - Helperly</title>
     <link rel="stylesheet" href="/assets/css/styles.css">
+    <link rel="stylesheet" href="/assets/css/marketplace.css">
+    <link rel="stylesheet" href="/assets/css/messages.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 </head>
 <body>
@@ -105,13 +107,13 @@ $currentPage = sanitizeInput($_GET['page'] ?? 'dashboard');
     <div class="main-wrapper">
         <!-- Topbar -->
         <header class="topbar">
-            <div class="flex items-center gap-4">
+            <div class="topbar-left flex items-center gap-4">
                 <button id="sidebar-toggle" class="sidebar-toggle-btn" aria-label="Toggle Navigation">
                     <span class="material-symbols-outlined">menu</span>
                 </button>
-                <div class="hidden md:flex bg-neutral-100 rounded-full px-4 py-2 items-center gap-2 border border-transparent focus-within:border-primary focus-within:bg-white transition-all w-64 lg:w-96">
+                <div class="topbar-search hidden md:flex bg-neutral-100 rounded-full px-4 py-2 items-center gap-2 border border-transparent focus-within:border-primary focus-within:bg-white transition-all w-64 lg:w-96">
                     <span class="material-symbols-outlined text-neutral-400">search</span>
-                    <input type="text" placeholder="Search for jobs or providers..." class="bg-transparent border-none outline-none text-sm w-full font-medium">
+                    <input type="text" placeholder="Search for jobs or providers..." class="topbar-search-input bg-transparent border-none outline-none text-sm w-full font-medium">
                 </div>
             </div>
             
@@ -121,10 +123,10 @@ $currentPage = sanitizeInput($_GET['page'] ?? 'dashboard');
                     <span class="badge-dot"></span>
                 </button>
                 
-                <div class="flex items-center gap-3 pl-4 border-l relative">
-                    <div class="text-right hidden sm:block">
-                        <p class="text-sm font-extrabold text-main m-0 leading-tight"><?= escape($currentUser['name']); ?></p>
-                        <p class="text-[10px] font-bold text-neutral-400 uppercase m-0 leading-tight tracking-wider"><?= ucfirst(str_replace('_', ' ', $role)); ?></p>
+                <div class="topbar-user-block flex items-center gap-3 pl-4 border-l relative">
+                    <div class="topbar-user-meta text-right hidden sm:block">
+                        <p class="topbar-user-name text-sm font-extrabold text-main m-0 leading-tight"><?= escape($currentUser['name']); ?></p>
+                        <p class="topbar-user-role text-[10px] font-bold text-neutral-400 uppercase m-0 leading-tight tracking-wider"><?= ucfirst(str_replace('_', ' ', $role)); ?></p>
                     </div>
                     <div class="user-avatar"><?= mb_substr(escape($currentUser['name']), 0, 1); ?></div>
                 </div>

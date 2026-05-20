@@ -1,55 +1,63 @@
-<div class="card mb-8 border-none shadow-sm overflow-hidden" style="background: white;">
-    <div class="p-6 border-b flex justify-between items-center">
-        <div>
-            <h2 class="text-2xl font-800 text-slate-900">Find Your Perfect Helper</h2>
-            <p class="text-sm text-muted font-500">Filter through our community of <?= count($servants); ?> verified providers</p>
-        </div>
-        <div class="flex gap-2">
-            <button type="button" class="btn btn-ghost btn-sm" onclick="location.href='/servants'">Clear All</button>
+<!-- Header Section -->
+<div class="marketplace-header mb-12">
+    <div class="marketplace-header-content">
+        <h1 class="marketplace-title">Find Your Perfect Helper</h1>
+        <p class="marketplace-subtitle">Discover verified service providers in your area</p>
+        <div class="provider-badge-container">
+            <span class="provider-count-badge"><?= count($servants); ?> Verified Providers</span>
         </div>
     </div>
-    
-    <form action="/servants" method="GET" class="p-6 bg-slate-50/50">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="form-group mb-0">
-                <div class="relative">
-                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" style="font-size: 20px;">search</span>
-                    <input name="name" type="text" class="input-field pl-10 h-11 text-sm bg-white" 
-                           value="<?= escape((string) ($filters['name'] ?? '')); ?>" 
-                           placeholder="Search by name...">
-                </div>
-            </div>
-            
-            <div class="form-group mb-0">
-                <div class="relative">
-                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" style="font-size: 20px;">location_on</span>
-                    <input name="location" type="text" class="input-field pl-10 h-11 text-sm bg-white" 
-                           value="<?= escape((string) ($filters['location'] ?? '')); ?>" 
-                           placeholder="Any Location">
-                </div>
-            </div>
+</div>
 
-            <div class="form-group mb-0">
-                <div class="relative">
-                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" style="font-size: 20px;">construction</span>
-                    <input name="skill" type="text" class="input-field pl-10 h-11 text-sm bg-white" 
-                           value="<?= escape((string) ($filters['skill'] ?? '')); ?>" 
-                           placeholder="Any Skill">
-                </div>
-            </div>
-
-            <div class="form-group mb-0">
-                <button type="submit" class="btn btn-primary w-full h-11 font-800 gap-2">
-                    <span class="material-symbols-outlined" style="font-size: 20px;">filter_alt</span>
-                    Apply Filters
-                </button>
-            </div>
+<!-- Main Marketplace Container with Sidebar & Content -->
+<div class="marketplace-container">
+    <!-- Filter Sidebar -->
+    <aside class="marketplace-sidebar">
+        <div class="sidebar-header-compact">
+            <h3 class="sidebar-title">Filters</h3>
+            <button type="button" class="filter-close-btn" id="filterCloseBtn" aria-label="Close filters">
+                <span class="material-symbols-outlined">close</span>
+            </button>
         </div>
 
-        <!-- Advanced Filters (Collapsible in a real app, here always shown for simplicity) -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
-            <div class="form-group mb-0">
-                <select name="rating" class="input-field h-11 text-sm bg-white">
+        <form action="/servants" method="GET" class="filter-form" id="filterForm">
+            <!-- Search Filter -->
+            <div class="filter-group">
+                <label class="filter-label">Search Provider</label>
+                <div class="filter-input-wrapper">
+                    <span class="filter-input-icon material-symbols-outlined">search</span>
+                    <input name="name" type="text" class="filter-input" 
+                           value="<?= escape((string) ($filters['name'] ?? '')); ?>" 
+                           placeholder="By name">
+                </div>
+            </div>
+
+            <!-- Location Filter -->
+            <div class="filter-group">
+                <label class="filter-label">Location</label>
+                <div class="filter-input-wrapper">
+                    <span class="filter-input-icon material-symbols-outlined">location_on</span>
+                    <input name="location" type="text" class="filter-input" 
+                           value="<?= escape((string) ($filters['location'] ?? '')); ?>" 
+                           placeholder="Any location">
+                </div>
+            </div>
+
+            <!-- Skill Filter -->
+            <div class="filter-group">
+                <label class="filter-label">Skill or Service</label>
+                <div class="filter-input-wrapper">
+                    <span class="filter-input-icon material-symbols-outlined">construction</span>
+                    <input name="skill" type="text" class="filter-input" 
+                           value="<?= escape((string) ($filters['skill'] ?? '')); ?>" 
+                           placeholder="What skill?">
+                </div>
+            </div>
+
+            <!-- Rating Filter -->
+            <div class="filter-group">
+                <label class="filter-label">Minimum Rating</label>
+                <select name="rating" class="filter-select">
                     <option value="">Any Rating</option>
                     <option value="4.5" <?= ($filters['rating'] ?? '') == '4.5' ? 'selected' : ''; ?>>4.5+ ★ Superior</option>
                     <option value="4.0" <?= ($filters['rating'] ?? '') == '4.0' ? 'selected' : ''; ?>>4.0+ ★ Great</option>
@@ -57,17 +65,21 @@
                 </select>
             </div>
 
-            <div class="form-group mb-0">
-                <div class="relative">
-                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" style="font-size: 20px;">payments</span>
-                    <input name="max_price" type="number" class="input-field pl-10 h-11 text-sm bg-white" 
+            <!-- Price Filter -->
+            <div class="filter-group">
+                <label class="filter-label">Max Hourly Rate (ETB)</label>
+                <div class="filter-input-wrapper">
+                    <span class="filter-input-icon material-symbols-outlined">payments</span>
+                    <input name="max_price" type="number" class="filter-input" 
                            value="<?= escape((string) ($filters['max_price'] ?? '')); ?>" 
-                           placeholder="Max Rate/Hr">
+                           placeholder="No limit">
                 </div>
             </div>
 
-            <div class="form-group mb-0">
-                <select name="experience" class="input-field h-11 text-sm bg-white">
+            <!-- Experience Filter -->
+            <div class="filter-group">
+                <label class="filter-label">Experience</label>
+                <select name="experience" class="filter-select">
                     <option value="">Any Experience</option>
                     <option value="1+ years" <?= ($filters['experience'] ?? '') == '1+ years' ? 'selected' : ''; ?>>1+ years</option>
                     <option value="3+ years" <?= ($filters['experience'] ?? '') == '3+ years' ? 'selected' : ''; ?>>3+ years</option>
@@ -75,105 +87,156 @@
                 </select>
             </div>
 
-            <div class="form-group mb-0">
-                <select name="availability" class="input-field h-11 text-sm bg-white">
+            <!-- Availability Filter -->
+            <div class="filter-group">
+                <label class="filter-label">Availability</label>
+                <select name="availability" class="filter-select">
                     <option value="">Any Availability</option>
                     <option value="Full-time" <?= ($filters['availability'] ?? '') == 'Full-time' ? 'selected' : ''; ?>>Full-time</option>
                     <option value="Part-time" <?= ($filters['availability'] ?? '') == 'Part-time' ? 'selected' : ''; ?>>Part-time</option>
                     <option value="Weekend" <?= ($filters['availability'] ?? '') == 'Weekend' ? 'selected' : ''; ?>>Weekends Only</option>
                 </select>
             </div>
-        </div>
-    </form>
-</div>
 
-
-<div class="grid grid-cols-2 gap-6">
-    <?php if (empty($servants)): ?>
-        <div class="col-span-2 card text-center py-12">
-            <span class="material-symbols-outlined text-muted" style="font-size: 3rem;">search_off</span>
-            <h2 class="card-title mt-4">No match found</h2>
-            <p class="text-muted">Try adjusting your filters to find more providers.</p>
-        </div>
-    <?php else: ?>
-        <?php foreach ($servants as $servant): ?>
-            <?php $profile = $servant['profile'] ?? []; ?>
-            <div class="card p-0 overflow-hidden flex flex-col hover:shadow-xl transition-all border-none shadow-md group">
-                <div class="relative h-48">
-                    <?php if (!empty($profile['profile_photo'])): ?>
-                        <img src="<?= escape((string) $profile['profile_photo']); ?>" alt="<?= escape((string) ($servant['name'] ?? 'Servant')); ?>" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                    <?php else: ?>
-                        <div class="w-full h-full flex items-center justify-center bg-slate-200 text-slate-400 group-hover:scale-105 transition-transform duration-500">
-                            <span class="material-symbols-outlined" style="font-size: 5rem;">person</span>
-                        </div>
-                    <?php endif; ?>
-                    <div class="absolute top-4 right-4">
-                        <span class="badge badge-success shadow-lg border-2 border-white flex items-center gap-1">
-                            <span class="material-symbols-outlined" style="font-size: 14px;">verified</span> Verified
-                        </span>
-                    </div>
-                    <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
-                        <div class="flex items-center gap-2 text-white">
-                            <span class="material-symbols-outlined" style="font-size: 18px; color: #FBBF24; font-variation-settings: 'FILL' 1;">star</span>
-                            <span class="font-800"><?= number_format((float)($profile['rating'] ?? 0), 1); ?></span>
-                            <span class="text-xs opacity-80">(<?= (int)($profile['rating_count'] ?? 0); ?> reviews)</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="p-6 flex-1 flex flex-col">
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <h3 class="text-xl font-800 text-slate-900 leading-tight group-hover:text-primary transition-colors"><?= escape((string) ($servant['name'] ?? 'Unnamed servant')); ?></h3>
-                            <p class="text-sm text-muted flex items-center gap-1 mt-1">
-                                <span class="material-symbols-outlined" style="font-size: 16px;">location_on</span>
-                                <?= escape((string) ($profile['location'] ?? 'Unknown')); ?>
-                            </p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-lg font-900 text-primary mb-0"><?= escape((string) ($profile['rate'] ?? '0')); ?> <span class="text-[10px] font-600 uppercase">ETB/hr</span></p>
-                            <p class="text-[10px] text-muted font-700 uppercase tracking-widest"><?= escape((string) ($profile['experience'] ?? 'N/A')); ?></p>
-                        </div>
-                    </div>
-
-                    <div class="flex flex-wrap gap-2 mb-6">
-                        <?php $skills = $profile['skills'] ?? []; ?>
-                        <?php if (is_iterable($skills)): ?>
-                            <?php foreach (array_slice((array)$skills, 0, 3) as $skill): ?>
-                                <span class="badge badge-secondary text-[10px] font-700 uppercase tracking-wider bg-slate-100 text-slate-600 border-none"><?= escape((string) $skill); ?></span>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </div>
-
-                    <!-- Trust Signals Bar -->
-                    <div class="grid grid-cols-3 gap-2 py-3 border-y mb-6 text-[10px] font-700 uppercase tracking-tight text-slate-500">
-                        <div class="flex flex-col items-center gap-1 border-r">
-                            <span class="text-slate-400">Response</span>
-                            <span class="text-slate-800"><?= escape($profile['response_time'] ?? 'Under 1h'); ?></span>
-                        </div>
-                        <div class="flex flex-col items-center gap-1 border-r">
-                            <span class="text-slate-400">Repeats</span>
-                            <span class="text-slate-800"><?= (int)($profile['repeat_clients'] ?? 0); ?> Clients</span>
-                        </div>
-                        <div class="flex flex-col items-center gap-1">
-                            <span class="text-slate-400">Success</span>
-                            <span class="text-success"><?= (int)($profile['completion_rate'] ?? 100); ?>%</span>
-                        </div>
-                    </div>
-
-                    <div class="mt-auto flex gap-2">
-                        <button type="button" class="btn btn-outline btn-sm flex-1 font-700" data-open-modal="profile_modal_<?= escape((string)$profile['user_id']); ?>">
-                           View Profile
-                        </button>
-                        <a href="/job/book?provider_id=<?= escape((string) ($profile['user_id'] ?? '')); ?>" class="btn btn-primary btn-sm flex-1 font-800 gap-2">
-                            <span class="material-symbols-outlined" style="font-size: 18px;">bolt</span> Book Now
-                        </a>
-                    </div>
-                </div>
+            <!-- Filter Actions -->
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary filter-apply-btn">
+                    <span class="material-symbols-outlined">filter_alt</span>
+                    Apply Filters
+                </button>
+                <a href="/servants" class="btn btn-outline filter-clear-btn">
+                    Clear All
+                </a>
             </div>
-        <?php endforeach; ?>
-    <?php endif; ?>
+        </form>
+    </aside>
+
+    <!-- Filter Toggle for Mobile -->
+    <button type="button" class="filter-toggle-btn" id="filterToggleBtn" aria-label="Open filters">
+        <span class="material-symbols-outlined">tune</span>
+        <span>Filters</span>
+    </button>
+
+    <!-- Main Content Area -->
+    <div class="marketplace-content">
+        <div class="providers-grid">
+
+            <!-- Empty State -->
+            <?php if (empty($servants)): ?>
+                <div class="providers-empty-state">
+                    <span class="material-symbols-outlined">search_off</span>
+                    <h3>No providers found</h3>
+                    <p>Try adjusting your filters to find more providers</p>
+                </div>
+            <?php else: ?>
+                <!-- Provider Cards Grid -->
+                <?php foreach ($servants as $servant): ?>
+                    <?php $profile = $servant['profile'] ?? []; ?>
+                    <div class="provider-card">
+                        <!-- Card Header with Image -->
+                        <div class="provider-card-image-wrapper">
+                            <?php if (!empty($profile['profile_photo'])): ?>
+                                <img src="<?= escape((string) $profile['profile_photo']); ?>" 
+                                     alt="<?= escape((string) ($servant['name'] ?? 'Servant')); ?>" 
+                                     class="provider-card-image">
+                            <?php else: ?>
+                                <div class="provider-card-placeholder">
+                                    <span class="material-symbols-outlined">person</span>
+                                </div>
+                            <?php endif; ?>
+                            
+                            <!-- Verification Badge -->
+                            <div class="provider-verification-badge">
+                                <span class="material-symbols-outlined">verified</span>
+                                <span>Verified</span>
+                            </div>
+
+                            <!-- Rating Overlay -->
+                            <div class="provider-rating-overlay">
+                                <span class="material-symbols-outlined provider-star">star</span>
+                                <span class="provider-rating-value"><?= number_format((float)($profile['rating'] ?? 0), 1); ?></span>
+                                <span class="provider-rating-count">(<?= (int)($profile['rating_count'] ?? 0); ?>)</span>
+                            </div>
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="provider-card-body">
+                            <!-- Header with Name and Rate -->
+                            <div class="provider-header">
+                                <div class="provider-name-section">
+                                    <h3 class="provider-name"><?= escape((string) ($servant['name'] ?? 'Unnamed')); ?></h3>
+                                    <div class="provider-location">
+                                        <span class="material-symbols-outlined">location_on</span>
+                                        <span><?= escape((string) ($profile['location'] ?? 'Unknown')); ?></span>
+                                    </div>
+                                </div>
+                                <div class="provider-rate-section">
+                                    <p class="provider-rate"><?= escape((string) ($profile['rate'] ?? '0')); ?></p>
+                                    <p class="provider-rate-unit">ETB/hr</p>
+                                </div>
+                            </div>
+
+                            <!-- Experience -->
+                            <div class="provider-experience">
+                                <span class="experience-label">Experience</span>
+                                <span class="experience-value"><?= escape((string) ($profile['experience'] ?? 'N/A')); ?></span>
+                            </div>
+
+                            <!-- Skills Tags -->
+                            <div class="provider-skills">
+                                <?php $skills = $profile['skills'] ?? []; ?>
+                                <?php if (is_iterable($skills)): ?>
+                                    <?php foreach (array_slice((array)$skills, 0, 4) as $skill): ?>
+                                        <span class="skill-badge"><?= escape((string) $skill); ?></span>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </div>
+
+                            <!-- Stats Section -->
+                            <div class="provider-stats">
+                                <div class="stat-item">
+                                    <span class="stat-icon material-symbols-outlined">schedule</span>
+                                    <div class="stat-content">
+                                        <span class="stat-label">Response</span>
+                                        <span class="stat-value"><?= escape($profile['response_time'] ?? 'Under 1h'); ?></span>
+                                    </div>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-icon material-symbols-outlined">people</span>
+                                    <div class="stat-content">
+                                        <span class="stat-label">Repeats</span>
+                                        <span class="stat-value"><?= (int)($profile['repeat_clients'] ?? 0); ?></span>
+                                    </div>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-icon material-symbols-outlined">check_circle</span>
+                                    <div class="stat-content">
+                                        <span class="stat-label">Success</span>
+                                        <span class="stat-value-success"><?= (int)($profile['completion_rate'] ?? 100); ?>%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="provider-actions">
+                                <button type="button" class="btn btn-outline provider-btn-secondary" data-open-modal="profile_modal_<?= escape((string)$profile['user_id']); ?>">
+                                    <span class="material-symbols-outlined">person_outline</span>
+                                    View Profile
+                                </button>
+                                <a href="/job/book?provider_id=<?= escape((string) ($profile['user_id'] ?? '')); ?>" class="btn btn-primary provider-btn-primary">
+                                    <span class="material-symbols-outlined">event_available</span>
+                                    Book Now
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+    </div>
 </div>
+
+
 
 <!-- Servant Profile Modals -->
 <?php foreach ($servants as $servant): ?>
@@ -258,6 +321,7 @@
 
 <script>
 (() => {
+    // Modal handling
     const openButtons = document.querySelectorAll('[data-open-modal]');
     const closeButtons = document.querySelectorAll('[data-close-modal]');
 
@@ -281,5 +345,48 @@
             event.target.classList.remove('open');
         }
     };
+
+    // Filter sidebar toggle for mobile
+    const filterToggleBtn = document.getElementById('filterToggleBtn');
+    const filterCloseBtn = document.getElementById('filterCloseBtn');
+    const marketplaceSidebar = document.querySelector('.marketplace-sidebar');
+
+    if (filterToggleBtn) {
+        filterToggleBtn.addEventListener('click', () => {
+            marketplaceSidebar.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+    }
+
+    if (filterCloseBtn) {
+        filterCloseBtn.addEventListener('click', () => {
+            marketplaceSidebar.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        });
+    }
+
+    // Close sidebar on filter apply
+    const filterForm = document.getElementById('filterForm');
+    if (filterForm) {
+        filterForm.addEventListener('submit', () => {
+            if (window.innerWidth < 1024) {
+                marketplaceSidebar.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        });
+    }
+
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', (e) => {
+        if (window.innerWidth < 1024) {
+            const isClickInsideSidebar = marketplaceSidebar.contains(e.target);
+            const isClickOnToggle = filterToggleBtn && filterToggleBtn.contains(e.target);
+            
+            if (!isClickInsideSidebar && !isClickOnToggle && marketplaceSidebar.classList.contains('active')) {
+                marketplaceSidebar.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        }
+    });
 })();
 </script>

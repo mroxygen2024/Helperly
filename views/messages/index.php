@@ -1,87 +1,148 @@
-<div class="chat-viewport-wrapper">
-    <div class="chat-container">
-        <!-- 1. Header -->
-        <header class="chat-header">
-            <div class="flex items-center gap-3">
-                <div class="user-avatar-rect" style="width: 44px; height: 44px;">
-                    <?= mb_substr(escape($otherParty['name'] ?? 'U'), 0, 1); ?>
+<?php
+$otherRoleRaw = normalizeRole((string) ($otherParty['role'] ?? ''));
+$otherRole = $otherRoleRaw === 'parent' ? 'Parent' : ($otherRoleRaw === 'provider' ? 'Servant' : 'User');
+$jobStatus = escape(ucfirst((string) ($job['status'] ?? 'active')));
+?>
+
+<section class="messenger-page">
+    <div class="messenger-shell">
+        <article class="messenger-card messenger-chat">
+            <header class="chat-header">
+                <div class="chat-header-main">
+                    <div class="chat-header-avatar">
+                        <?php if (!empty($otherParty['profile_photo'])): ?>
+                            <img src="<?= escape((string) $otherParty['profile_photo']); ?>" alt="<?= escape((string) ($otherParty['name'] ?? 'User')); ?>">
+                        <?php else: ?>
+                            <?= mb_substr(escape((string) ($otherParty['name'] ?? 'U')), 0, 1); ?>
+                        <?php endif; ?>
+                    </div>
+                    <div style="min-width:0;">
+                        <h2 class="chat-header-name"><?= escape((string) ($otherParty['name'] ?? 'Unknown')); ?></h2>
+                        <p class="chat-header-sub">
+                            <span class="messenger-role-badge <?= $otherRoleRaw === 'parent' ? 'messenger-role-parent' : 'messenger-role-servant'; ?>"><?= escape($otherRole); ?></span>
+                            <span class="chat-status-pill">
+                                <span class="material-symbols-outlined" style="font-size: 12px;">circle</span>
+                                Online
+                            </span>
+                            <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:220px;">
+                                <?= escape((string) ($job['service_type'] ?? 'Untitled Job')); ?>
+                            </span>
+                        </p>
+                    </div>
                 </div>
-                <div>
-                    <h2 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-main); line-height: 1.2;"><?= escape((string) ($otherParty['name'] ?? 'Unknown')); ?></h2>
-                    <p style="margin: 0; font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Discussing: <?= escape((string) ($job['service_type'] ?? 'Untitled Job')); ?></p>
-                </div>
-            </div>
-            <div class="flex gap-3 items-center">
-            <!-- DEBUG INFO (Hidden in production) -->
-            <div style="font-size: 10px; opacity: 0.3; text-align: right;">
-                Job: <?= substr((string)$job['_id'], -6) ?><br>
-                User: <?= substr($userId, -6) ?>
-            </div>
-            <div class="flex items-center gap-1.5 px-3 py-1.5 bg-success-soft text-success rounded-full" style="font-size: 0.75rem; font-weight: 700;">
-                    <span class="relative flex h-2 w-2">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
+
+                <div class="chat-header-actions">
+                    <span class="chat-sync">
+                        <span class="material-symbols-outlined" style="font-size: 14px;">sync</span>
+                        Connected
+                        <span id="heartbeat"></span>
                     </span>
-                    Connected
-                    <span id="heartbeat" style="margin-left: 4px; font-weight: normal; opacity: 0.5;"></span>
+                    <button type="button" class="chat-action-btn" title="Call">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">call</span>
+                    </button>
+                    <button type="button" class="chat-action-btn" title="Attachments">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">attach_file</span>
+                    </button>
+                    <button type="button" class="chat-action-btn" title="More">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">more_horiz</span>
+                    </button>
+                    <a href="/messages" class="chat-action-btn" title="Back to conversations">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">arrow_back</span>
+                    </a>
+                    <a href="/dashboard" class="chat-action-btn" title="Back to dashboard">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">close</span>
+                    </a>
                 </div>
-                <a href="/dashboard" class="btn btn-outline btn-sm" style="padding: 0.5rem; display: flex;" title="Back to Dashboard">
-                    <span class="material-symbols-outlined" style="font-size: 20px;">close</span>
+            </header>
+
+            <div id="chat-box" class="chat-messages">
+                <?php if (empty($messages)): ?>
+                    <div id="empty-state" class="messenger-empty" style="min-height: 100%;">
+                        <div>
+                            <span class="material-symbols-outlined">chat_bubble</span>
+                            <h3 class="messenger-title" style="font-size:1.05rem;">Start the conversation</h3>
+                            <p class="messenger-subtitle" style="max-width: 270px; margin: 0.35rem auto 0;">
+                                Discuss job details, requirements, and updates in real time.
+                            </p>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <?php foreach ($messages as $msg):
+                        $isSender = (string) $msg['sender_id'] === $userId;
+                    ?>
+                        <div class="msg-bubble-wrapper <?= $isSender ? 'sent' : 'received'; ?>">
+                            <div class="msg-bubble">
+                                <?= str_replace("\n", "<br>", escape((string) ($msg['message'] ?? ''))); ?>
+                            </div>
+                            <div class="msg-meta">
+                                <?= $msg['created_at'] instanceof \MongoDB\BSON\UTCDateTime ? $msg['created_at']->toDateTime()->format('g:i A') : ''; ?>
+                                <?php if ($isSender): ?>
+                                    <span class="material-symbols-outlined" style="color: <?= ($msg['is_read'] ?? false) ? 'var(--primary)' : 'inherit'; ?>;">
+                                        <?= ($msg['is_read'] ?? false) ? 'done_all' : 'done'; ?>
+                                    </span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+
+            <div class="chat-typing-row" id="typing-indicator"></div>
+
+            <div class="chat-input-area">
+                <form id="chat-form" action="/messages" method="POST" class="chat-input-form">
+                    <input type="hidden" name="csrf_token" value="<?= escape($csrfToken ?? ''); ?>">
+                    <input type="hidden" name="job_id" id="current-job-id" value="<?= escape((string) $job['_id']); ?>">
+                    <input type="hidden" name="ajax" value="1">
+
+                    <button type="button" class="chat-icon-btn" title="Attachment">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">attach_file</span>
+                    </button>
+                    <button type="button" class="chat-icon-btn" title="Emoji">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">mood</span>
+                    </button>
+
+                    <input type="text" name="message" id="message-input" placeholder="Write a message..." required autocomplete="off" class="chat-input-field">
+
+                    <button type="submit" id="send-btn" class="chat-send-btn" title="Send message">
+                        <span class="material-symbols-outlined" style="font-size: 19px;">send</span>
+                    </button>
+                </form>
+            </div>
+        </article>
+
+        <aside class="messenger-card messenger-details">
+            <div class="messenger-details-head">
+                <h3 class="messenger-details-title">Conversation Details</h3>
+            </div>
+            <div class="messenger-details-body">
+                <div class="details-item">
+                    <p class="details-label">Participant</p>
+                    <p class="details-value"><?= escape((string) ($otherParty['name'] ?? 'Unknown')); ?></p>
+                </div>
+                <div class="details-item">
+                    <p class="details-label">Role</p>
+                    <p class="details-value"><?= escape($otherRole); ?></p>
+                </div>
+                <div class="details-item">
+                    <p class="details-label">Job</p>
+                    <p class="details-value"><?= escape((string) ($job['service_type'] ?? 'Untitled Job')); ?></p>
+                </div>
+                <div class="details-item">
+                    <p class="details-label">Status</p>
+                    <p class="details-value"><?= $jobStatus; ?></p>
+                </div>
+                <div class="details-item">
+                    <p class="details-label">Conversation ID</p>
+                    <p class="details-value">#<?= escape(substr((string) ($job['_id'] ?? ''), -8)); ?></p>
+                </div>
+                <a href="/jobs/detail?id=<?= escape((string) ($job['_id'] ?? '')); ?>" class="btn btn-primary" style="border-radius: 999px; justify-content: center;">
+                    Open Job Details
                 </a>
             </div>
-        </header>
-
-        <!-- 2. Messages Area (Inner Scroll) -->
-        <div id="chat-box" class="chat-messages" style="background: #F1F5F9; padding: 1.5rem;">
-            <?php if (empty($messages)): ?>
-                <div id="empty-state" style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 4rem 2rem;">
-                    <div style="background: white; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm); margin-bottom: 1.5rem; color: var(--primary);">
-                        <span class="material-symbols-outlined" style="font-size: 2.5rem;">chat_bubble</span>
-                    </div>
-                    <h3 style="font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">Start the conversation</h3>
-                    <p style="font-size: 0.9rem; color: var(--text-muted); max-width: 250px;">Discuss job details, requirements, or any questions here.</p>
-                </div>
-            <?php else: ?>
-                <?php foreach ($messages as $msg): 
-                    $isSender = (string)$msg['sender_id'] === $userId;
-                ?>
-                    <div class="msg-bubble-wrapper <?= $isSender ? 'sent' : 'received' ?>" style="margin-bottom: 1.25rem;">
-                        <div class="msg-bubble" style="box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-radius: <?= $isSender ? '18px 18px 2px 18px' : '18px 18px 18px 2px' ?>;">
-                            <?= str_replace("\n", "<br>", escape($msg['message'])); ?>
-                        </div>
-                        <div class="msg-meta" style="font-size: 0.7rem; font-weight: 700; opacity: 0.6; margin-top: 4px; display: flex; align-items: center; gap: 4px; justify-content: <?= $isSender ? 'flex-end' : 'flex-start' ?>;">
-                            <?= $msg['created_at'] instanceof \MongoDB\BSON\UTCDateTime ? $msg['created_at']->toDateTime()->format('g:i A') : ''; ?>
-                            <?php if ($isSender): ?>
-                                <span class="material-symbols-outlined" style="font-size: 14px; color: <?= ($msg['is_read'] ?? false) ? 'var(--primary)' : 'inherit' ?>;">
-                                    <?= ($msg['is_read'] ?? false) ? 'done_all' : 'done' ?>
-                                </span>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
-
-        <!-- 3. Input Area -->
-        <div class="chat-input-area" style="background: white; border-top: 1px solid var(--border-base); padding: 1.25rem 2rem;">
-            <form id="chat-form" action="/messages" method="POST" class="chat-input-form" style="background: #F8FAFC; border: 1px solid var(--border-base); border-radius: 99px; padding: 0.4rem 0.4rem 0.4rem 1.5rem; display: flex; align-items: center; gap: 1rem;">
-                <input type="hidden" name="csrf_token" value="<?= escape($csrfToken ?? ''); ?>">
-                <input type="hidden" name="job_id" id="current-job-id" value="<?= escape((string)$job['_id']); ?>">
-                <input type="hidden" name="ajax" value="1">
-                
-                <button type="button" class="btn btn-ghost btn-sm" style="padding: 0; min-width: 32px; height: 32px; border-radius: 50%; color: var(--text-muted);">
-                    <span class="material-symbols-outlined" style="font-size: 20px;">add_circle</span>
-                </button>
-
-                <input type="text" name="message" id="message-input" placeholder="Type your message..." required autocomplete="off" class="chat-input-field" style="background: transparent; border: none; flex: 1; outline: none; font-size: 0.95rem; font-weight: 500; height: 40px; color: var(--text-main);">
-                
-                <button type="submit" id="send-btn" class="chat-send-btn" style="background: var(--primary); color: white; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; border: none; box-shadow: var(--shadow-md);">
-                    <span class="material-symbols-outlined" style="font-size: 1.25rem;">send</span>
-                </button>
-            </form>
-        </div>
+        </aside>
     </div>
-</div>
+</section>
 
 <script>
 (() => {
@@ -96,6 +157,8 @@
     const chatBox = document.getElementById('chat-box');
     const chatForm = document.getElementById('chat-form');
     const messageInput = document.getElementById('message-input');
+    const sendBtn = document.getElementById('send-btn');
+    const typingIndicator = document.getElementById('typing-indicator');
     const jobId = document.getElementById('current-job-id').value;
     const userId = "<?= $userId; ?>";
     
@@ -117,10 +180,12 @@
         chatBox.innerHTML = '';
         if (messages.length === 0) {
             chatBox.innerHTML = `
-                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; items-center; font-weight: center; opacity: 0.5; color: var(--text-muted); align-items: center;">
-                    <span class="material-symbols-outlined" style="font-size: 4rem; margin-bottom: 1rem;">chat_bubble_outline</span>
-                    <p style="font-weight: 600; margin: 0;">No messages yet</p>
-                    <p style="font-size: 0.85rem; margin-top: 0.25rem;">Start the conversation by sending a message.</p>
+                <div class="messenger-empty" style="min-height:100%;">
+                    <div>
+                        <span class="material-symbols-outlined">chat_bubble_outline</span>
+                        <p class="messenger-title" style="font-size:1rem; margin:0.25rem 0 0;">No messages yet</p>
+                        <p class="messenger-subtitle" style="margin:0.35rem 0 0;">Start the conversation by sending a message.</p>
+                    </div>
                 </div>
             `;
             return;
@@ -131,7 +196,7 @@
             const bubbleWrapper = document.createElement('div');
             bubbleWrapper.className = `msg-bubble-wrapper ${isSender ? 'sent' : 'received'}`;
             
-            const checkmark = isSender ? '<span class="material-symbols-outlined" style="font-size: 14px; vertical-align: middle; margin-left: 2px;">done_all</span>' : '';
+            const checkmark = isSender ? '<span class="material-symbols-outlined">done_all</span>' : '';
 
             bubbleWrapper.innerHTML = `
                 <div class="msg-bubble">
@@ -213,6 +278,8 @@
         
         messageInput.value = '';
         messageInput.disabled = true;
+        if (sendBtn) sendBtn.disabled = true;
+        if (typingIndicator) typingIndicator.textContent = '';
 
         try {
             const resp = await fetch('/messages', {
@@ -231,8 +298,23 @@
             console.error('Send failed:', e);
         } finally {
             messageInput.disabled = false;
+            if (sendBtn) sendBtn.disabled = false;
             messageInput.focus();
         }
     };
+
+    let typingTimeout;
+    if (messageInput) {
+        messageInput.addEventListener('input', () => {
+            if (!typingIndicator) return;
+            typingIndicator.textContent = messageInput.value.trim() ? 'Typing...' : '';
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                if (typingIndicator) typingIndicator.textContent = '';
+            }, 1200);
+        });
+    }
+
+    window.addEventListener('beforeunload', () => clearInterval(interval));
 })();
 </script>
