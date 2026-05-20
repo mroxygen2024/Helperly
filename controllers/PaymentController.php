@@ -63,6 +63,19 @@ class PaymentController
 
             $updated = $this->payments->updateStatus($jobId, 'paid');
             if ($updated) {
+                // Notify provider that payment was made
+                $providerId = (string) ($job['selected_provider_id'] ?? '');
+                if ($providerId) {
+                    $notif = new Notification();
+                    $notif->create(
+                        $providerId,
+                        'payment_received',
+                        'Payment Received',
+                        'Payment for job "' . ($job['service_type'] ?? 'job') . '" has been processed by the parent.',
+                        '/jobs/detail?id=' . $jobId
+                    );
+                }
+
                 setFlash('success', 'Payment processed successfully.');
             } else {
                 setFlash('error', 'Could not process payment. Please try again.');
@@ -70,6 +83,11 @@ class PaymentController
         } catch (Throwable $exception) {
             error_log('Payment processing failed: ' . $exception->getMessage());
             setFlash('error', 'An error occurred while processing the payment.');
+        }
+
+        // If job is completed allow parent to leave a review: redirect to job detail and open review modal
+        if (isset($job) && is_array($job) && ($job['status'] ?? '') === 'completed') {
+            redirect('/jobs/detail?id=' . $jobId . '&open_review=1');
         }
 
         redirect('/?page=dashboard');

@@ -186,11 +186,17 @@ class JobController
             if ($this->applications->createApplication($jobId, $providerId, '', '', '')) {
                 $job = $this->jobs->getJobById($jobId);
                 if ($job) {
+                    // Include provider rating snippet in the notification to the parent
+                    $profile = $this->servantProfiles->getProfileByUserId($providerId);
+                    $ratingVal = isset($profile['rating']) ? number_format((float)$profile['rating'], 1) : '0.0';
+                    $ratingCount = isset($profile['rating_count']) ? (int)$profile['rating_count'] : 0;
+                    $ratingSnippet = $ratingCount > 0 ? " ({$ratingVal}★, {$ratingCount} reviews)" : '';
+
                     $this->notifications->create(
                         (string) $job['parent_id'],
                         'application',
                         'New Application',
-                        $providerName . ' has applied for your ' . ($job['service_type'] ?? 'job') . ' post.',
+                        $providerName . $ratingSnippet . ' has applied for your ' . ($job['service_type'] ?? 'job') . ' post.',
                         '/dashboard'
                     );
                 }

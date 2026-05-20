@@ -161,35 +161,50 @@
 
 <?php if ($job['status'] === 'completed' && ($user['role'] ?? '') === 'parent' && empty($job['review'])): ?>
 <div id="review_modal" class="modal-overlay" data-modal>
-    <div class="modal-content" style="max-width: 500px;">
+    <div class="modal-content review-modal" role="dialog" aria-modal="true" aria-labelledby="review_title">
         <div class="modal-header">
-            <h2 class="card-title">Leave a Review</h2>
-            <button type="button" class="btn btn-ghost" data-close-modal="review_modal">
+            <div style="display:flex; gap:1rem; align-items:center;">
+                <div style="display:flex;flex-direction:column;">
+                    <div style="width:56px;height:56px;border-radius:12px;background:var(--primary-50);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--primary);font-size:20px;">
+                        <?= isset($job['provider']['name']) ? mb_substr(escape($job['provider']['name']), 0, 1) : 'P'; ?>
+                    </div>
+                </div>
+                <div>
+                    <h2 id="review_title" class="card-title" style="margin:0;">How was the service?</h2>
+                    <p class="text-muted" style="margin:0.25rem 0 0; font-size:0.95rem;">Rate the provider and leave a short comment to help others.</p>
+                </div>
+            </div>
+            <button type="button" class="btn btn-ghost" data-close-modal="review_modal" aria-label="Close review dialog">
                 <span class="material-symbols-outlined">close</span>
             </button>
         </div>
         <form action="/reviews" method="POST" class="p-6">
             <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">
             <input type="hidden" name="job_id" value="<?= escape((string)$job['_id']); ?>">
-            
+
             <div class="form-group">
-                <label class="block text-sm font-600 mb-2">Rating</label>
-                <div class="flex gap-2 rating-stars">
+                <label class="block text-sm font-600 mb-3">Rating</label>
+                <div class="rating-stars" style="display:flex;gap:0.6rem;align-items:center;">
                     <?php for($i=1; $i<=5; $i++): ?>
-                        <label class="cursor-pointer">
+                        <label class="star-btn" style="cursor:pointer;">
                             <input type="radio" name="rating" value="<?= $i; ?>" class="hidden" required>
-                            <span class="material-symbols-outlined text-gray-300" style="font-size: 32px;">star</span>
+                            <span class="material-symbols-outlined star-icon text-gray-300" data-value="<?= $i; ?>">star</span>
                         </label>
                     <?php endfor; ?>
+                    <div class="rating-note text-muted" style="margin-left:0.75rem;font-size:0.95rem;">Choose 1–5</div>
                 </div>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" style="margin-top:1rem;">
                 <label class="block text-sm font-600 mb-2">Your Experience</label>
-                <textarea name="review_text" class="input-field" placeholder="How was the service?" required style="height: 120px;"></textarea>
+                <textarea name="review_text" class="review-textarea" placeholder="Tell others what was great or what could improve (min 20 chars)" required maxlength="500" style="width:100%;min-height:140px;padding:1rem;border:1px solid var(--border-base);border-radius:12px;resize:vertical;"></textarea>
+                <div class="char-count text-muted" style="text-align:right;font-size:0.85rem;margin-top:0.5rem;">0/500</div>
             </div>
 
-            <button type="submit" class="btn btn-primary w-full py-3">Submit Review</button>
+            <div style="display:flex;gap:0.75rem;margin-top:1.25rem;">
+                <button type="submit" class="btn btn-primary" style="flex:1;padding:0.85rem 1rem;">Submit Review</button>
+                <button type="button" class="btn btn-outline" data-close-modal="review_modal" style="padding:0.85rem 1rem;">Cancel</button>
+            </div>
         </form>
     </div>
 </div>
@@ -197,22 +212,38 @@
 <script>
 (() => {
     const stars = document.querySelectorAll('.rating-stars input');
-    stars.forEach(star => {
+    // wire rating stars (support clicking icon and radio input)
+    const starInputs = document.querySelectorAll('.rating-stars input');
+    const starIcons = document.querySelectorAll('.rating-stars .star-icon');
+
+    const updateStars = (val) => {
+        starInputs.forEach((s, idx) => {
+            const icon = s.nextElementSibling || starIcons[idx];
+            if (idx < val) {
+                icon.classList.add('text-warning');
+            } else {
+                icon.classList.remove('text-warning');
+            }
+        });
+    };
+
+    starInputs.forEach(star => {
         star.onchange = () => {
             const val = parseInt(star.value);
-            stars.forEach((s, idx) => {
-                const icon = s.nextElementSibling;
-                if (idx < val) {
-                    icon.classList.remove('text-gray-300');
-                    icon.classList.add('text-warning');
-                    icon.textContent = 'star';
-                } else {
-                    icon.classList.remove('text-warning');
-                    icon.classList.add('text-gray-300');
-                    icon.textContent = 'star';
-                }
-            });
+            updateStars(val);
         };
+    });
+
+    // clicking star icon sets the underlying radio
+    starIcons.forEach(icon => {
+        icon.addEventListener('click', (e) => {
+            const val = parseInt(icon.dataset.value || '0');
+            const input = Array.from(starInputs).find(i => i.value === String(val));
+            if (input) {
+                input.checked = true;
+                input.dispatchEvent(new Event('change'));
+            }
+        });
     });
 
     const openBtns = document.querySelectorAll('[data-open-modal]');
@@ -231,6 +262,25 @@
             if (modal) modal.classList.remove('open');
         }
     });
+
+    // char counter for review textarea
+    const reviewTextarea = document.querySelector('.review-textarea');
+    const charCount = document.querySelector('.char-count');
+    if (reviewTextarea && charCount) {
+        reviewTextarea.addEventListener('input', () => {
+            const len = reviewTextarea.value.length;
+            charCount.textContent = `${len}/500`;
+        });
+    }
+})();
+</script>
+<?php endif; ?>
+
+<?php if (isset($_GET['open_review']) && $_GET['open_review'] === '1'): ?>
+<script>
+(() => {
+    const modal = document.getElementById('review_modal');
+    if (modal) modal.classList.add('open');
 })();
 </script>
 <?php endif; ?>

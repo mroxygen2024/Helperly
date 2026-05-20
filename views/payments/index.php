@@ -48,6 +48,13 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <a href="/jobs/detail?id=<?= escape((string)$payment['job_id']); ?>" class="text-primary hover:text-primary-dark">View Job</a>
+                                        <?php if (($user['role'] ?? '') === 'parent' && ($payment['status'] ?? '') !== 'paid'): ?>
+                                            <form action="/payments/pay" method="POST" style="display:inline-block; margin-left:8px;">
+                                                <input type="hidden" name="csrf_token" value="<?= escape(csrfToken()); ?>">
+                                                <input type="hidden" name="job_id" value="<?= escape((string)$payment['job_id']); ?>">
+                                                <button type="submit" class="btn btn-primary btn-sm">Pay Now</button>
+                                            </form>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

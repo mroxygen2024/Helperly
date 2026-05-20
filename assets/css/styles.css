@@ -1759,3 +1759,46 @@ ul { list-style: none; }
   align-items: center;
 }
 
+/* Review modal enhancements */
+.review-modal {
+  max-width: 680px;
+  border-radius: 16px;
+  padding-bottom: 0.75rem;
+}
+
+.review-modal .star-icon {
+  font-size: 36px !important;
+  transition: transform 0.12s ease, color 0.12s ease;
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.review-modal .star-icon:hover {
+  transform: translateY(-4px) scale(1.08);
+}
+
+.review-modal .star-icon.active,
+.review-modal .star-icon.text-warning {
+  color: var(--warning) !important;
+  text-shadow: 0 4px 12px rgba(245, 158, 11, 0.12);
+}
+
+.review-textarea {
+  font-size: 1rem;
+  line-height: 1.6;
+  border-radius: 12px;
+  border: 1px solid var(--border-base);
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.03);
+}
+
+.review-modal .char-count {
+  color: var(--text-muted);
+}
+
+.modal-overlay.open .modal-content.review-modal,
+.modal-overlay.active .modal-content.review-modal {
+  transform: translateY(0) scale(1);
+}
+
