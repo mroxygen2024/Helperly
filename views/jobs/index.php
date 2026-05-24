@@ -99,7 +99,7 @@ $jobCount = count($jobs);
         document.getElementById('budget-val').textContent = budget.toLocaleString() + '+ ETB';
         
         document.querySelectorAll('[data-job-card]').forEach(card => {
-            const matches = (activeCats.includes(card.dataset.category)) &&
+            const matches = (activeCats.length === 0 || activeCats.includes(card.dataset.category)) &&
                             card.textContent.toLowerCase().includes(keyword) &&
                             card.dataset.location.includes(location) &&
                             parseFloat(card.dataset.budget) <= budget;
