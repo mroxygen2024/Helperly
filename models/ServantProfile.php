@@ -94,34 +94,45 @@ class ServantProfile
         string $profilePhoto,
         string $faydaIdFrontUrl,
         string $faydaIdBackUrl,
-        string $selfieUrl
+        string $selfieUrl,
+        ?string $resumeStorageName = null,
+        ?string $resumeFilename = null,
+        mixed $resumeUploadedAt = null
     ): bool {
         if (!$this->isValidObjectId($user_id)) {
             throw new InvalidArgumentException('Invalid user_id provided.');
         }
 
         $now = new UTCDateTime();
+        $set = [
+            'full_name' => trim($fullName),
+            'national_id' => trim($nationalId),
+            'age' => max(18, min(80, $age)),
+            'gender' => trim($gender),
+            'skills' => $this->normalizeSkills($skills),
+            'experience' => trim($experience),
+            'location' => trim($location),
+            'availability' => trim($availability),
+            'rate' => trim($rate),
+            'hourly_rate' => trim($rate),
+            'currency' => trim($currency),
+            'profile_photo' => trim($profilePhoto),
+            'fayda_id_front_url' => trim($faydaIdFrontUrl),
+            'fayda_id_back_url' => trim($faydaIdBackUrl),
+            'selfie_url' => trim($selfieUrl),
+            'updated_at' => $now,
+        ];
+
+        if ($resumeStorageName !== null && $resumeFilename !== null && $resumeUploadedAt !== null) {
+            $set['resume_storage_name'] = trim($resumeStorageName);
+            $set['resume_filename'] = trim($resumeFilename);
+            $set['resume_uploaded_at'] = $resumeUploadedAt;
+        }
+
         $result = $this->collection->updateOne(
             ['user_id' => new ObjectId($user_id)],
             [
-                '$set' => [
-                    'full_name' => trim($fullName),
-                    'national_id' => trim($nationalId),
-                    'age' => max(18, min(80, $age)),
-                    'gender' => trim($gender),
-                    'skills' => $this->normalizeSkills($skills),
-                    'experience' => trim($experience),
-                    'location' => trim($location),
-                    'availability' => trim($availability),
-                    'rate' => trim($rate),
-                    'hourly_rate' => trim($rate),
-                    'currency' => trim($currency),
-                    'profile_photo' => trim($profilePhoto),
-                    'fayda_id_front_url' => trim($faydaIdFrontUrl),
-                    'fayda_id_back_url' => trim($faydaIdBackUrl),
-                    'selfie_url' => trim($selfieUrl),
-                    'updated_at' => $now,
-                ],
+                '$set' => $set,
                 '$setOnInsert' => [
                     'user_id' => new ObjectId($user_id),
                     'verification_status' => 'pending',

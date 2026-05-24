@@ -97,6 +97,7 @@ try {
     
     $router->get('/profile/servant', fn() => $ctrl->profileController->showServantForm());
     $router->post('/profile/servant', fn() => $ctrl->profileController->saveServantProfile($_POST, $_FILES));
+    $router->get('/profile/servant/resume', fn() => $ctrl->profileController->showServantResume());
     
     $router->get('/profile/account', fn() => $ctrl->profileController->showAccountForm());
     $router->post('/profile/account', fn() => $ctrl->profileController->saveAccountProfile($_POST));

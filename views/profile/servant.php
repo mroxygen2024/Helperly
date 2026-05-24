@@ -7,6 +7,8 @@ $profilePhotoUrl = (string) ($profile['profile_photo'] ?? '');
 $frontIdUrl = (string) ($profile['fayda_id_front_url'] ?? '');
 $backIdUrl = (string) ($profile['fayda_id_back_url'] ?? '');
 $selfieUrl = (string) ($profile['selfie_url'] ?? '');
+$resumeFilename = (string) ($resumeFilename ?? ($profile['resume_filename'] ?? ''));
+$resumeAvailable = (bool) ($resumeAvailable ?? (!empty($profile['resume_storage_name']) && !empty($profile['resume_filename'])));
 $statusLabel = ServantProfile::verificationStatusLabel((string) ($profile['verification_status'] ?? 'pending'));
 $statusTone = normalizeRole((string) ($profile['verification_status'] ?? '')) === 'verified' ? 'badge-success' : 'badge-warning';
 $availabilityOptions = ['Full-time', 'Part-time', 'Weekdays', 'Weekends', 'Flexible'];
@@ -152,7 +154,35 @@ $currencyOptions = ['ETB'];
             </div>
         </div>
 
-        <!-- Section 3: Photos -->
+        <!-- Section 3: Resume -->
+        <div class="card">
+            <div class="card-header border-b mb-6 pb-4">
+                <h3 class="card-title">Resume / CV</h3>
+            </div>
+
+            <div class="flex flex-col gap-4">
+                <div class="input-group" data-field="resume_upload">
+                    <label class="label" for="resume_upload">Resume / CV</label>
+                    <input id="resume_upload" name="resume_upload" type="file" class="input" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+                    <p class="field-hint">PDF, DOC, or DOCX only. Maximum 5MB.</p>
+                    <p class="field-error" data-error-for="resume_upload"></p>
+                </div>
+
+                <?php if ($resumeAvailable): ?>
+                    <div class="rounded-xl border p-4 flex flex-wrap items-center justify-between gap-4 bg-slate-50">
+                        <div>
+                            <p class="font-semibold mb-1"><?= escape($resumeFilename); ?></p>
+                            <p class="text-xs text-muted m-0">Uploaded resume file</p>
+                        </div>
+                        <a href="<?= escape(appUrl('/profile/servant/resume')); ?>" class="btn btn-outline btn-sm" target="_blank" rel="noopener">
+                            View / Download
+                        </a>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- Section 4: Photos -->
         <div class="card" data-upload-card="profile-photo" data-existing-url="<?= escape($profilePhotoUrl); ?>">
             <div class="card-header border-b mb-6 pb-4">
                 <h3 class="card-title">Profile Photo</h3>
@@ -190,7 +220,7 @@ $currencyOptions = ['ETB'];
             <p class="field-error" data-error-for="profile_photo_upload"></p>
         </div>
 
-        <!-- Section 4: ID Verification -->
+        <!-- Section 5: ID Verification -->
         <div class="card">
             <div class="card-header border-b mb-6 pb-4">
                 <h3 class="card-title">Identity Verification</h3>

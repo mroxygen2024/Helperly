@@ -12,6 +12,7 @@ declare(strict_types=1);
 class ProfileController
 {
     private const MAX_IMAGE_UPLOAD_BYTES = 5 * 1024 * 1024;
+    private const MAX_RESUME_UPLOAD_BYTES = 5 * 1024 * 1024;
 
     private ServantProfile $servantProfiles;
     private EmployerProfile $employerProfiles;
@@ -257,6 +258,91 @@ class ProfileController
         return $this->resolveVerificationImagePath($files, 'selfie', $existingPath, $userId, $errors);
     }
 
+    private function resumeStorageDirectory(): string
+    {
+        return dirname(__DIR__) . '/storage/resumes';
+    }
+
+    private function deleteStoredResume(?string $storageName): void
+    {
+        $storageName = trim((string) $storageName);
+        if ($storageName === '') {
+            return;
+        }
+
+        $filePath = $this->resumeStorageDirectory() . '/' . basename($storageName);
+        if (is_file($filePath)) {
+            @unlink($filePath);
+        }
+    }
+
+    private function uploadResumeFile(array $file, string $userId): array
+    {
+        $errorCode = (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE);
+        if ($errorCode !== UPLOAD_ERR_OK) {
+            $error = match ($errorCode) {
+                UPLOAD_ERR_NO_FILE => 'is required.',
+                UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => 'is too large.',
+                default => 'could not be uploaded.',
+            };
+
+            throw new RuntimeException('Resume/CV ' . $error);
+        }
+
+        $tmpName = (string) ($file['tmp_name'] ?? '');
+        if ($tmpName === '' || !is_uploaded_file($tmpName)) {
+            throw new RuntimeException('Uploaded resume is invalid.');
+        }
+
+        $size = (int) ($file['size'] ?? 0);
+        if ($size <= 0 || $size > self::MAX_RESUME_UPLOAD_BYTES) {
+            throw new RuntimeException('Resume/CV must be 5MB or smaller.');
+        }
+
+        $originalName = basename((string) ($file['name'] ?? 'resume'));
+        $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+        $allowedExtensions = ['pdf', 'doc', 'docx'];
+        if (!in_array($extension, $allowedExtensions, true)) {
+            throw new RuntimeException('Resume/CV must be a PDF, DOC, or DOCX file.');
+        }
+
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mimeType = (string) $finfo->file($tmpName);
+        $allowedMimeTypes = [
+            'pdf' => ['application/pdf', 'application/x-pdf'],
+            'doc' => ['application/msword', 'application/vnd.ms-word'],
+            'docx' => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+        ];
+
+        if (!in_array($mimeType, $allowedMimeTypes[$extension], true)) {
+            throw new RuntimeException('Resume/CV must be a PDF, DOC, or DOCX file.');
+        }
+
+        $storageDirectory = $this->resumeStorageDirectory();
+        if (!is_dir($storageDirectory) && !mkdir($storageDirectory, 0775, true) && !is_dir($storageDirectory)) {
+            throw new RuntimeException('Could not prepare resume storage.');
+        }
+
+        $storageName = sprintf(
+            'resume_%s_%s.%s',
+            $userId,
+            bin2hex(random_bytes(8)),
+            $extension
+        );
+
+        $targetPath = $storageDirectory . '/' . $storageName;
+        if (!move_uploaded_file($tmpName, $targetPath)) {
+            throw new RuntimeException('Could not store the uploaded resume.');
+        }
+
+        return [
+            'storage_name' => $storageName,
+            'filename' => $originalName,
+            'mime_type' => $mimeType,
+            'path' => $targetPath,
+        ];
+    }
+
     public function showAccountForm(): void
     {
         requireAuth();
@@ -344,12 +430,16 @@ class ProfileController
 
         $profile = $this->servantProfiles->getProfileByUserId($userId);
         $skillsText = is_array($profile) ? $this->iterableToCsv($profile['skills'] ?? []) : '';
+        $resumeFilename = is_array($profile) ? (string) ($profile['resume_filename'] ?? '') : '';
+        $resumeStorageName = is_array($profile) ? (string) ($profile['resume_storage_name'] ?? '') : '';
 
         renderView('profile/servant', [
             'title' => 'Servant Profile',
             'csrfToken' => csrfToken(),
             'profile' => $profile,
             'skillsText' => $skillsText,
+            'resumeFilename' => $resumeFilename,
+            'resumeAvailable' => $resumeFilename !== '' && $resumeStorageName !== '',
         ]);
     }
 
@@ -382,10 +472,16 @@ class ProfileController
         $existingProfilePhoto = is_array($existingProfile)
             ? sanitizeInput((string) (($existingProfile['profile_photo'] ?? '')))
             : '';
+        $existingResumeStorageName = is_array($existingProfile)
+            ? sanitizeInput((string) (($existingProfile['resume_storage_name'] ?? '')))
+            : '';
 
         $faydaIdFrontUrl = '';
         $faydaIdBackUrl = '';
         $selfieUrl = '';
+        $resumeStorageName = null;
+        $resumeFilename = null;
+        $resumeUploadedAt = null;
 
         $fullName = sanitizeInput($payload['full_name'] ?? null);
         $nationalId = sanitizeInput($payload['national_id'] ?? null);
@@ -400,6 +496,7 @@ class ProfileController
         $profilePhotoRemove = !empty($payload['profile_photo_remove']);
         $faydaIdFrontRemove = !empty($payload['fayda_id_front_remove']);
         $faydaIdBackRemove = !empty($payload['fayda_id_back_remove']);
+        $resumeFile = $uploadedFiles['resume_upload'] ?? null;
 
         $errors = [];
         if (!validateRequired($fullName)) {
@@ -465,6 +562,17 @@ class ProfileController
             $profilePhotoRemove
         );
 
+            if (empty($errors) && is_array($resumeFile) && (int) ($resumeFile['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
+            try {
+                $resumeUpload = $this->uploadResumeFile($resumeFile, $userId);
+                $resumeStorageName = (string) $resumeUpload['storage_name'];
+                $resumeFilename = (string) $resumeUpload['filename'];
+                $resumeUploadedAt = new \MongoDB\BSON\UTCDateTime();
+            } catch (Throwable $exception) {
+                $errors[] = $exception->getMessage();
+            }
+        }
+
         $verificationUploadsChanged = $faydaIdFrontUrl !== $existingIdFront
             || $faydaIdBackUrl !== $existingIdBack
             || $selfieUrl !== $existingSelfie;
@@ -505,14 +613,24 @@ class ProfileController
                 $profilePhoto,
                 $faydaIdFrontUrl,
                 $faydaIdBackUrl,
-                $selfieUrl
+                $selfieUrl,
+                $resumeStorageName,
+                $resumeFilename,
+                $resumeUploadedAt
             );
 
             if ($verificationUploadsChanged) {
                 $this->servantProfiles->updateVerificationStatus($userId, 'pending', '');
             }
+
+            if ($existingResumeStorageName !== '' && $resumeStorageName !== null) {
+                $this->deleteStoredResume($existingResumeStorageName);
+            }
         } catch (Throwable $exception) {
             error_log('Servant profile save failed: ' . $exception->getMessage());
+            if ($resumeStorageName !== null) {
+                $this->deleteStoredResume($resumeStorageName);
+            }
             setFlash('error', 'Could not save profile. Please try again.');
             redirect('/profile/servant');
         }
@@ -520,6 +638,49 @@ class ProfileController
         clearOldInput();
         setFlash('success', 'Servant profile saved successfully.');
         redirect('/profile/servant');
+    }
+
+    public function showServantResume(): void
+    {
+        requireRole('provider');
+
+        $userId = (string) ($_SESSION['user_id'] ?? '');
+        if ($userId === '') {
+            setFlash('error', 'User session is invalid. Please login again.');
+            redirect('/login');
+        }
+
+        $profile = $this->servantProfiles->getProfileByUserId($userId);
+        $storageName = is_array($profile) ? trim((string) ($profile['resume_storage_name'] ?? '')) : '';
+        $filename = is_array($profile) ? trim((string) ($profile['resume_filename'] ?? '')) : '';
+
+        if ($storageName === '' || $filename === '') {
+            setFlash('error', 'No resume has been uploaded yet.');
+            redirect('/profile/servant');
+        }
+
+        $filePath = $this->resumeStorageDirectory() . '/' . basename($storageName);
+        if (!is_file($filePath)) {
+            setFlash('error', 'The uploaded resume could not be found.');
+            redirect('/profile/servant');
+        }
+
+        $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+        $mimeType = match ($extension) {
+            'pdf' => 'application/pdf',
+            'doc' => 'application/msword',
+            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            default => mime_content_type($filePath) ?: 'application/octet-stream',
+        };
+
+        $safeDownloadName = preg_replace('/[\r\n"]+/', '', $filename) ?: 'resume.' . $extension;
+
+        header('Content-Type: ' . $mimeType);
+        header('Content-Length: ' . (string) filesize($filePath));
+        header('X-Content-Type-Options: nosniff');
+        header('Content-Disposition: inline; filename="' . $safeDownloadName . '"');
+        readfile($filePath);
+        exit;
     }
 
     public function updateServantVerification(array $payload): void
