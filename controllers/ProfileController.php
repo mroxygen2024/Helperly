@@ -475,6 +475,8 @@ class ProfileController
         $existingResumeStorageName = is_array($existingProfile)
             ? sanitizeInput((string) (($existingProfile['resume_storage_name'] ?? '')))
             : '';
+        $existingGuarantor = is_array($existingProfile) ? ($existingProfile['guarantor'] ?? []) : [];
+        $existingGuarantorIdUpload = sanitizeInput((string) ($existingGuarantor['id_upload_url'] ?? ''));
 
         $faydaIdFrontUrl = '';
         $faydaIdBackUrl = '';
@@ -497,6 +499,18 @@ class ProfileController
         $faydaIdFrontRemove = !empty($payload['fayda_id_front_remove']);
         $faydaIdBackRemove = !empty($payload['fayda_id_back_remove']);
         $resumeFile = $uploadedFiles['resume_upload'] ?? null;
+
+        $guarantor = [
+            'full_name' => sanitizeInput($payload['guarantor_full_name'] ?? null),
+            'phone' => sanitizeInput($payload['guarantor_phone'] ?? null),
+            'alt_phone' => sanitizeInput($payload['guarantor_alt_phone'] ?? null),
+            'relationship' => sanitizeInput($payload['guarantor_relationship'] ?? null),
+            'address' => sanitizeInput($payload['guarantor_address'] ?? null),
+            'occupation' => sanitizeInput($payload['guarantor_occupation'] ?? null),
+            'national_id' => sanitizeInput($payload['guarantor_national_id'] ?? null),
+            'id_upload_url' => '',
+        ];
+        $guarantorIdRemove = !empty($payload['guarantor_id_remove']);
 
         $errors = [];
         if (!validateRequired($fullName)) {
@@ -526,6 +540,14 @@ class ProfileController
         if (!validateRequired($rate)) {
             $errors[] = 'Hourly rate is required.';
         }
+        
+        // Guarantor validation
+        if (!validateRequired($guarantor['full_name'])) { $errors[] = 'Guarantor full name is required.'; }
+        if (!validatePhone($guarantor['phone'])) { $errors[] = 'Valid guarantor phone is required.'; }
+        if (!validateRequired($guarantor['relationship'])) { $errors[] = 'Guarantor relationship is required.'; }
+        if (!validateRequired($guarantor['address'])) { $errors[] = 'Guarantor address is required.'; }
+        if (!validateRequired($guarantor['occupation'])) { $errors[] = 'Guarantor occupation is required.'; }
+
         if (!in_array($currency, ['ETB'], true)) {
             $currency = 'ETB';
         }
@@ -561,6 +583,14 @@ class ProfileController
             $errors,
             $profilePhotoRemove
         );
+        $guarantor['id_upload_url'] = $this->resolveOptionalImagePath(
+            $uploadedFiles,
+            'guarantor_id_upload',
+            $existingGuarantorIdUpload,
+            $userId,
+            $errors,
+            $guarantorIdRemove
+        );
 
             if (empty($errors) && is_array($resumeFile) && (int) ($resumeFile['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
             try {
@@ -592,6 +622,13 @@ class ProfileController
                 'currency' => $currency,
                 'profile_photo' => $profilePhoto,
                 'profile_photo_remove' => $profilePhotoRemove ? '1' : '',
+                'guarantor_full_name' => $guarantor['full_name'],
+                'guarantor_phone' => $guarantor['phone'],
+                'guarantor_alt_phone' => $guarantor['alt_phone'],
+                'guarantor_relationship' => $guarantor['relationship'],
+                'guarantor_address' => $guarantor['address'],
+                'guarantor_occupation' => $guarantor['occupation'],
+                'guarantor_national_id' => $guarantor['national_id'],
             ]);
             setFlash('error', implode(' ', $errors));
             redirect('/profile/servant');
@@ -616,7 +653,8 @@ class ProfileController
                 $selfieUrl,
                 $resumeStorageName,
                 $resumeFilename,
-                $resumeUploadedAt
+                $resumeUploadedAt,
+                $guarantor
             );
 
             if ($verificationUploadsChanged) {

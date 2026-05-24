@@ -182,7 +182,60 @@ $currencyOptions = ['ETB'];
             </div>
         </div>
 
-        <!-- Section 4: Photos -->
+        <!-- Section 4: Guarantor Information -->
+        <div class="card">
+            <div class="card-header border-b mb-6 pb-4">
+                <h3 class="card-title">Guarantor Information</h3>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="input-group" data-field="guarantor_full_name">
+                    <label class="label">Guarantor Full Name <span class="required-mark">*</span></label>
+                    <input name="guarantor_full_name" type="text" class="input" value="<?= escape(old('guarantor_full_name', (string) ($profile['guarantor']['full_name'] ?? ''))); ?>" required>
+                    <p class="field-error" data-error-for="guarantor_full_name"></p>
+                </div>
+                <div class="input-group" data-field="guarantor_phone">
+                    <label class="label">Guarantor Phone <span class="required-mark">*</span></label>
+                    <input name="guarantor_phone" type="text" class="input" value="<?= escape(old('guarantor_phone', (string) ($profile['guarantor']['phone'] ?? ''))); ?>" required>
+                    <p class="field-error" data-error-for="guarantor_phone"></p>
+                </div>
+                <div class="input-group" data-field="guarantor_alt_phone">
+                    <label class="label">Guarantor Alternative Phone</label>
+                    <input name="guarantor_alt_phone" type="text" class="input" value="<?= escape(old('guarantor_alt_phone', (string) ($profile['guarantor']['alt_phone'] ?? ''))); ?>">
+                    <p class="field-error" data-error-for="guarantor_alt_phone"></p>
+                </div>
+                <div class="input-group" data-field="guarantor_relationship">
+                    <label class="label">Relationship to Servant <span class="required-mark">*</span></label>
+                    <input name="guarantor_relationship" type="text" class="input" value="<?= escape(old('guarantor_relationship', (string) ($profile['guarantor']['relationship'] ?? ''))); ?>" placeholder="e.g. Uncle, Parent" required>
+                    <p class="field-error" data-error-for="guarantor_relationship"></p>
+                </div>
+                <div class="input-group" data-field="guarantor_address">
+                    <label class="label">Guarantor Address <span class="required-mark">*</span></label>
+                    <input name="guarantor_address" type="text" class="input" value="<?= escape(old('guarantor_address', (string) ($profile['guarantor']['address'] ?? ''))); ?>" required>
+                    <p class="field-error" data-error-for="guarantor_address"></p>
+                </div>
+                <div class="input-group" data-field="guarantor_occupation">
+                    <label class="label">Guarantor Occupation <span class="required-mark">*</span></label>
+                    <input name="guarantor_occupation" type="text" class="input" value="<?= escape(old('guarantor_occupation', (string) ($profile['guarantor']['occupation'] ?? ''))); ?>" required>
+                    <p class="field-error" data-error-for="guarantor_occupation"></p>
+                </div>
+                <div class="input-group" data-field="guarantor_national_id">
+                    <label class="label">Guarantor National ID</label>
+                    <input name="guarantor_national_id" type="text" class="input" value="<?= escape(old('guarantor_national_id', (string) ($profile['guarantor']['national_id'] ?? ''))); ?>">
+                    <p class="field-error" data-error-for="guarantor_national_id"></p>
+                </div>
+                <div class="input-group" data-field="guarantor_id_upload">
+                    <label class="label">Guarantor ID Upload</label>
+                    <input type="hidden" name="guarantor_id_remove" value="0" data-upload-remove-flag>
+                    <input name="guarantor_id_upload" type="file" class="input" accept="image/*">
+                    <?php if (!empty($profile['guarantor']['id_upload_url'])): ?>
+                        <p class="text-xs text-muted mt-2">Current ID uploaded: <a href="<?= escape($profile['guarantor']['id_upload_url']); ?>" target="_blank">View</a></p>
+                    <?php endif; ?>
+                    <p class="field-error" data-error-for="guarantor_id_upload"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 5: Photos -->
         <div class="card" data-upload-card="profile-photo" data-existing-url="<?= escape($profilePhotoUrl); ?>">
             <div class="card-header border-b mb-6 pb-4">
                 <h3 class="card-title">Profile Photo</h3>

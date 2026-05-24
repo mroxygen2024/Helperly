@@ -97,7 +97,8 @@ class ServantProfile
         string $selfieUrl,
         ?string $resumeStorageName = null,
         ?string $resumeFilename = null,
-        mixed $resumeUploadedAt = null
+        mixed $resumeUploadedAt = null,
+        array $guarantor = []
     ): bool {
         if (!$this->isValidObjectId($user_id)) {
             throw new InvalidArgumentException('Invalid user_id provided.');
@@ -120,6 +121,16 @@ class ServantProfile
             'fayda_id_front_url' => trim($faydaIdFrontUrl),
             'fayda_id_back_url' => trim($faydaIdBackUrl),
             'selfie_url' => trim($selfieUrl),
+            'guarantor' => [
+                'full_name' => trim((string) ($guarantor['full_name'] ?? '')),
+                'phone' => trim((string) ($guarantor['phone'] ?? '')),
+                'alt_phone' => trim((string) ($guarantor['alt_phone'] ?? '')),
+                'relationship' => trim((string) ($guarantor['relationship'] ?? '')),
+                'address' => trim((string) ($guarantor['address'] ?? '')),
+                'occupation' => trim((string) ($guarantor['occupation'] ?? '')),
+                'national_id' => trim((string) ($guarantor['national_id'] ?? '')),
+                'id_upload_url' => trim((string) ($guarantor['id_upload_url'] ?? '')),
+            ],
             'updated_at' => $now,
         ];
 
