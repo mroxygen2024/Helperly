@@ -1,11 +1,12 @@
 <?php $isAvailableJobsPage = (($title ?? '') === 'Available Jobs'); ?>
 <?php if ($isAvailableJobsPage): ?>
+<script src="https://cdn.tailwindcss.com"></script>
 <?php
 $jobCategories = isset($jobCategories) && is_array($jobCategories) ? $jobCategories : [];
 $jobs = isset($jobs) && is_array($jobs) ? $jobs : [];
 $jobCount = count($jobs);
 ?>
-<div class="container py-12 available-jobs-v2">
+<div class="max-w-7xl mx-auto px-4 py-12">
     <div class="max-w-7xl mx-auto">
         <!-- Simplified Header -->
         <header class="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-12">
@@ -36,9 +37,10 @@ $jobCount = count($jobs);
                 <p class="text-slate-500 max-w-sm mx-auto mb-0 text-lg">Check back soon! New opportunities are posted every day.</p>
             </div>
         <?php else: ?>
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 w-full">
                 <!-- Main Content (Jobs) -->
-                <div class="lg:col-span-8 xl:col-span-9 flex flex-col gap-6">
+                <div class="md:col-span-3 flex flex-col gap-6">
+
                     <div class="flex items-center justify-between px-2 mb-2">
                         <div class="flex items-center gap-3">
                             <span class="w-2 h-2 bg-success rounded-full animate-pulse"></span>
@@ -67,55 +69,40 @@ $jobCount = count($jobs);
                             $instructionsSnippet = mb_strlen($instructions) > 160 ? mb_substr($instructions, 0, 157) . '...' : $instructions;
                             $matchScore = (int) ($job['match_score'] ?? 0);
                             ?>
-                            <article class="job-card-v2 group bg-white rounded-[32px] p-8 hover:shadow-2xl hover:shadow-slate-200/50 transition-all duration-500 border border-slate-100 relative overflow-hidden" 
+                            <article class="group bg-white rounded-3xl p-6 shadow-sm border border-gray-100 hover:shadow-xl hover:border-primary-100 transition-all duration-300" 
                                 data-job-card 
+
                                 data-category="<?= escape($categorySlug); ?>" 
                                 data-match-score="<?= $matchScore; ?>" 
                                 data-created-at="<?= (int) $createdAtValue; ?>"
                                 data-location="<?= escape(strtolower((string)($job['location'] ?? ''))); ?>"
                                 data-budget="<?= (float)($job['total_cost'] ?? 0); ?>">
-                                <div class="flex flex-col md:flex-row justify-between gap-8">
+                                <div class="flex flex-col md:flex-row justify-between gap-6">
                                     <div class="flex-1 min-w-0">
-                                        <div class="flex flex-wrap items-center gap-3 mb-5">
-                                            <span class="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-800 uppercase tracking-wider"><?= escape($categoryLabel); ?></span>
-                                            <div class="flex items-center gap-2 px-2.5 py-1 bg-success/5 text-success rounded-lg border border-success/10">
-                                                <span class="text-[10px] font-900"><?= $matchScore; ?>% Match</span>
-                                                <div class="w-10 h-1 bg-success/20 rounded-full overflow-hidden hidden sm:block">
-                                                    <div class="h-full bg-success" style="width: <?= $matchScore; ?>%"></div>
-                                                </div>
-                                            </div>
+                                        <div class="flex items-center gap-2 mb-3">
+                                            <span class="px-2 py-0.5 bg-primary-50 text-primary-700 rounded-lg text-[10px] font-bold uppercase tracking-wider"><?= escape($categoryLabel); ?></span>
+                                            <span class="text-[10px] font-bold text-gray-400"><?= $matchScore; ?>% Match</span>
                                         </div>
 
-                                        <h3 class="text-2xl font-900 text-slate-900 mb-4 group-hover:text-primary transition-colors cursor-pointer" onclick="location.href='/jobs/detail?id=<?= escape((string) $job['_id']); ?>'"><?= escape((string) ($job['service_type'] ?? 'Job')); ?></h3>
+                                        <h3 class="text-xl font-extrabold text-gray-900 mb-2 cursor-pointer hover:text-primary transition-colors" onclick="location.href='/jobs/detail?id=<?= escape((string) $job['_id']); ?>'"><?= escape((string) ($job['service_type'] ?? 'Job')); ?></h3>
                                         
-                                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-y-6 gap-x-8 mb-6">
-                                            <div class="flex flex-col">
-                                                <span class="text-[10px] font-800 text-slate-400 uppercase tracking-widest mb-1">Budget</span>
-                                                <span class="text-base font-800 text-slate-900"><?= number_format((float) ($job['total_cost'] ?? 0), 2); ?> ETB</span>
-                                            </div>
-                                            <div class="flex flex-col">
-                                                <span class="text-[10px] font-800 text-slate-400 uppercase tracking-widest mb-1">Duration</span>
-                                                <span class="text-base font-800 text-slate-900"><?= (float) ($job['duration'] ?? 0); ?> Hours</span>
-                                            </div>
-                                            <div class="flex flex-col">
-                                                <span class="text-[10px] font-800 text-slate-400 uppercase tracking-widest mb-1">Location</span>
-                                                <span class="text-base font-800 text-slate-900 truncate"><?= escape((string) ($job['location'] ?? 'N/A')); ?></span>
-                                            </div>
+                                        <p class="text-gray-600 text-sm mb-4 line-clamp-2"><?= escape($instructionsSnippet); ?></p>
+                                        
+                                        <div class="flex flex-wrap gap-4 text-xs font-semibold text-gray-500">
+                                            <span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">location_on</span> <?= escape((string) ($job['location'] ?? 'N/A')); ?></span>
+                                            <span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">payments</span> <?= number_format((float) ($job['total_cost'] ?? 0), 2); ?> ETB</span>
+                                            <span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">schedule</span> <?= (float) ($job['duration'] ?? 0); ?> Hours</span>
                                         </div>
-
-                                        <?php if (!empty($instructionsSnippet)): ?>
-                                            <p class="text-slate-500 text-sm leading-relaxed mb-0 line-clamp-2 pr-4"><?= escape($instructionsSnippet); ?></p>
-                                        <?php endif; ?>
                                     </div>
 
-                                    <div class="flex flex-row md:flex-col justify-between md:justify-end items-center md:items-end gap-4 shrink-0 pt-6 md:pt-0 border-t md:border-t-0 border-slate-50">
+                                    <div class="flex flex-row md:flex-col justify-between items-center md:items-end gap-3 shrink-0 pt-4 md:pt-0 border-t md:border-t-0 border-gray-50">
                                         <div class="text-right hidden md:block">
-                                            <span class="text-[10px] font-800 text-slate-400 uppercase tracking-widest block mb-1">Posted On</span>
-                                            <span class="text-sm font-700 text-slate-600"><?= isset($job['created_at']) ? (is_string($job['created_at']) ? date('M d, Y', strtotime($job['created_at'])) : ($job['created_at'] instanceof \MongoDB\BSON\UTCDateTime ? $job['created_at']->toDateTime()->format('M d, Y') : 'N/A')) : 'N/A'; ?></span>
+                                            <span class="text-[10px] text-gray-400 uppercase tracking-widest block">Posted</span>
+                                            <span class="text-sm font-semibold text-gray-700"><?= isset($job['created_at']) ? (is_string($job['created_at']) ? date('M d, Y', strtotime($job['created_at'])) : ($job['created_at'] instanceof \MongoDB\BSON\UTCDateTime ? $job['created_at']->toDateTime()->format('M d, Y') : 'N/A')) : 'N/A'; ?></span>
                                         </div>
                                         <div class="flex gap-2 w-full md:w-auto">
-                                            <a href="/jobs/detail?id=<?= escape((string) $job['_id']); ?>" class="flex-1 md:flex-none px-6 py-3 bg-slate-50 text-slate-700 rounded-xl text-xs font-800 hover:bg-slate-100 transition-all text-center">Details</a>
-                                            <a href="/messages?job_id=<?= escape((string) $job['_id']); ?>" class="flex-1 md:flex-none px-6 py-3 bg-primary text-white rounded-xl text-xs font-800 hover:shadow-lg hover:shadow-primary/20 transition-all text-center">Chat Now</a>
+                                            <a href="/jobs/detail?id=<?= escape((string) $job['_id']); ?>" class="flex-1 md:flex-none px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-xs font-bold hover:bg-gray-200 transition-all text-center">Details</a>
+                                            <a href="/messages?job_id=<?= escape((string) $job['_id']); ?>" class="flex-1 md:flex-none px-4 py-2 bg-primary text-white rounded-lg text-xs font-bold hover:bg-primary-dark transition-all text-center">Chat</a>
                                         </div>
                                     </div>
                                 </div>
@@ -133,16 +120,32 @@ $jobCount = count($jobs);
                     </div>
                 </div>
 
-                <!-- Filters Sidebar -->
-                <aside class="lg:col-span-4 xl:col-span-3">
+                <!-- Filters Sidebar - NOW RIGHT -->
+                <aside class="md:col-span-1">
+
                     <div class="sticky top-10 flex flex-col gap-8">
                         <div class="bg-white rounded-[32px] p-8 shadow-sm border border-slate-100">
-                            <div class="mb-8">
-                                <h2 class="text-xl font-900 text-slate-900 mb-1">Browse by Category</h2>
-                                <p class="text-xs font-600 text-slate-400 uppercase tracking-wider">Find work you excel at</p>
+                            <!-- Search & Location -->
+                            <div class="mb-8 space-y-4">
+                                <h2 class="text-xl font-900 text-slate-900 mb-1">Filters</h2>
+                                <div>
+                                    <label class="block text-sm font-800 text-slate-900 mb-2">Search</label>
+                                    <input type="text" placeholder="Keywords..." class="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-sm" data-keyword-filter>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-800 text-slate-900 mb-2">Location</label>
+                                    <input type="text" placeholder="City or Area..." class="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-sm" data-location-filter>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-800 text-slate-900 mb-2">Budget</label>
+                                    <input type="range" min="0" max="10000" step="100" value="10000" class="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-primary" data-budget-range-input>
+                                </div>
                             </div>
 
-                            <div class="flex flex-col gap-2" data-job-category-filters>
+                            <!-- Categories -->
+                            <div class="mb-8 pt-6 border-t border-slate-100">
+                                <h2 class="text-xl font-900 text-slate-900 mb-6">Categories</h2>
+                                <div class="flex flex-col gap-2" data-job-category-filters>
                                 <button type="button" class="category-filter-btn is-active group w-full flex items-center justify-between p-4 rounded-2xl transition-all hover:bg-slate-50" data-category-filter="all">
                                     <span class="text-sm font-800 text-slate-700 group-[.is-active]:text-primary transition-colors">All Categories</span>
                                     <span class="px-2 py-1 bg-slate-100 rounded-lg text-[10px] font-800 text-slate-500 group-[.is-active]:bg-primary-50 group-[.is-active]:text-primary-700 transition-all">All</span>
@@ -207,8 +210,18 @@ $jobCount = count($jobs);
                     };
 
                     const render = () => {
+                        const keyword = document.querySelector('[data-keyword-filter]').value.toLowerCase();
+                        const location = document.querySelector('[data-location-filter]').value.toLowerCase();
+                        const budget = parseFloat(document.querySelector('[data-budget-range-input]').value);
+
                         const visibleCards = cards
-                            .filter(card => activeCategory === 'all' || card.dataset.category === activeCategory)
+                            .filter(card => {
+                                const categoryMatch = activeCategory === 'all' || card.dataset.category === activeCategory;
+                                const keywordMatch = !keyword || card.textContent.toLowerCase().includes(keyword);
+                                const locationMatch = !location || card.dataset.location.includes(location);
+                                const budgetMatch = parseFloat(card.dataset.budget) <= budget;
+                                return categoryMatch && keywordMatch && locationMatch && budgetMatch;
+                            })
                             .sort((a, b) => {
                                 if (activeTab === 'best-match') {
                                     const scoreDiff = Number(b.dataset.matchScore || 0) - Number(a.dataset.matchScore || 0);
@@ -226,6 +239,10 @@ $jobCount = count($jobs);
                         if (noResults) noResults.classList.toggle('hidden', visibleCards.length !== 0);
                         if (resultCount) resultCount.textContent = `${visibleCards.length} job${visibleCards.length === 1 ? '' : 's'} shown`;
                     };
+
+                    document.querySelector('[data-keyword-filter]').addEventListener('input', render);
+                    document.querySelector('[data-location-filter]').addEventListener('input', render);
+                    document.querySelector('[data-budget-range-input]').addEventListener('input', render);
 
                     tabButtons.forEach(btn => {
                         btn.addEventListener('click', () => {
