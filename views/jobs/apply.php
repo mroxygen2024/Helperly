@@ -28,6 +28,15 @@
                 <input type="hidden" name="csrf_token" value="<?= escape($csrfToken); ?>">
                 <input type="hidden" name="job_id" value="<?= escape((string)$job['_id']); ?>">
 
+                <div class="flex flex-col gap-2">
+                    <label for="cover_letter" class="font-bold text-gray-700">Cover Letter</label>
+                    <textarea name="cover_letter" id="cover_letter" rows="5" class="w-full p-4 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary focus:border-primary transition-all" maxlength="500" placeholder="Write a short personalized message to the employer..." required></textarea>
+                    <div class="flex justify-between text-xs text-gray-400">
+                        <span>Helpful guidance: Briefly mention why you are a good fit for this job.</span>
+                        <span id="char-counter">0 / 500</span>
+                    </div>
+                </div>
+
                 <p class="text-sm text-muted m-0">
                     Your provider profile details will be sent to the parent with this application.
                 </p>
@@ -43,3 +52,10 @@
         </div>
     </div>
 </div>
+<script>
+    const textarea = document.getElementById('cover_letter');
+    const counter = document.getElementById('char-counter');
+    textarea.addEventListener('input', () => {
+        counter.textContent = `${textarea.value.length} / 500`;
+    });
+</script>

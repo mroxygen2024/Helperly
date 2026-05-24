@@ -337,9 +337,10 @@ class JobController
         $providerId = (string) ($_SESSION['user_id'] ?? '');
         $providerName = (string) ($_SESSION['auth_user']['name'] ?? 'A provider');
         $jobId = sanitizeInput($payload['job_id'] ?? null);
+        $coverLetter = sanitizeInput($payload['cover_letter'] ?? '');
 
         try {
-            if ($this->applications->createApplication($jobId, $providerId, '', '', '')) {
+            if ($this->applications->createApplication($jobId, $providerId, $coverLetter, '', '')) {
                 $job = $this->jobs->getJobById($jobId);
                 if ($job) {
                     // Include provider rating snippet in the notification to the parent
