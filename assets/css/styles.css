@@ -1802,3 +1802,104 @@ ul { list-style: none; }
   transform: translateY(0) scale(1);
 }
 
+
+/* 
+ * ==============================================================================
+ * ADDITIONAL UTILITY CLASSES
+ * ==============================================================================
+ */
+
+.hidden { display: none !important; }
+
+.mt-1 { margin-top: 0.25rem !important; }
+.mt-6 { margin-top: 1.5rem !important; }
+.mb-0\.5 { margin-bottom: 0.125rem !important; }
+.ml-auto { margin-left: auto !important; }
+.mr-2 { margin-right: 0.5rem !important; }
+
+.py-8 { padding-top: 2rem !important; padding-bottom: 2rem !important; }
+.p-0 { padding: 0 !important; }
+.p-16 { padding: 4rem !important; }
+
+.w-full { width: 100% !important; }
+.max-w-5xl { max-width: 64rem !important; }
+
+.inline-flex { display: inline-flex !important; }
+.items-start { align-items: flex-start !important; }
+.gap-1 { gap: 0.25rem !important; }
+.gap-3 { gap: 0.75rem !important; }
+
+.border-t { border-top-width: 1px !important; }
+.border-l-4 { border-left-width: 4px !important; }
+.border-l-primary { border-left-color: var(--primary) !important; }
+.border-l-info { border-left-color: var(--info) !important; }
+
+.bg-slate-50\/50 { background-color: rgba(248, 250, 252, 0.5) !important; }
+
+.text-info { color: var(--info) !important; }
+
+.shadow-premium { box-shadow: var(--shadow-premium) !important; }
+
+.cursor-pointer { cursor: pointer !important; }
+
+/* 
+ * ==============================================================================
+ * TAILWIND COMPATIBILITY LAYER
+ * ==============================================================================
+ */
+
+.transition-colors { transition-property: color, background-color, border-color, text-decoration-color, fill, stroke; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+.transition-all { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+.duration-500 { transition-duration: 500ms; }
+
+.cursor-pointer { cursor: pointer; }
+
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.flex-wrap { flex-wrap: wrap; }
+.items-center { align-items: center; }
+.items-start { align-items: flex-start; }
+.items-end { align-items: flex-end; }
+.justify-between { justify-content: space-between; }
+.justify-center { justify-content: center; }
+.justify-end { justify-content: flex-end; }
+
+.grid { display: grid; }
+.grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+.grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+.gap-1 { gap: 0.25rem; }
+.gap-2 { gap: 0.5rem; }
+.gap-3 { gap: 0.75rem; }
+.gap-4 { gap: 1rem; }
+.gap-6 { gap: 1.5rem; }
+.gap-8 { gap: 2rem; }
+.gap-10 { gap: 2.5rem; }
+
+.w-full { width: 100%; }
+.h-full { height: 100%; }
+
+.text-primary { color: var(--primary); }
+.text-success { color: var(--success); }
+.text-danger { color: var(--danger); }
+.text-warning { color: var(--warning); }
+.text-info { color: var(--info); }
+.text-white { color: #ffffff; }
+
+.bg-primary { background-color: var(--primary); }
+.bg-success { background-color: var(--success); }
+.bg-danger { background-color: var(--danger); }
+.bg-white { background-color: #ffffff; }
+.bg-slate-100 { background-color: #f1f5f9; }
+
+.rounded-xl { border-radius: 0.75rem; }
+.rounded-2xl { border-radius: 1rem; }
+.rounded-full { border-radius: 9999px; }
+
+.shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+
+.animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .5; }
+}

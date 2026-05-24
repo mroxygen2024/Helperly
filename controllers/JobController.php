@@ -34,6 +34,171 @@ class JobController
         $this->notifications = new Notification();
     }
 
+    private function normalizeTextTokens(mixed $value): array
+    {
+        if ($value instanceof Traversable) {
+            $value = iterator_to_array($value, false);
+        }
+
+        if (is_array($value)) {
+            $parts = [];
+            foreach ($value as $item) {
+                if (is_iterable($item)) {
+                    $parts[] = implode(' ', $this->normalizeTextTokens($item));
+                    continue;
+                }
+
+                if (is_object($item) && !method_exists($item, '__toString')) {
+                    continue;
+                }
+
+                $parts[] = trim((string) $item);
+            }
+
+            $value = implode(' ', array_filter($parts, static fn(string $part): bool => $part !== ''));
+        }
+
+        $text = mb_strtolower(trim((string) $value));
+        if ($text === '') {
+            return [];
+        }
+
+        $parts = preg_split('/[^a-z0-9]+/i', $text, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $tokens = [];
+
+        foreach ($parts as $part) {
+            $token = trim((string) $part);
+            if (strlen($token) < 3) {
+                continue;
+            }
+
+            $tokens[$token] = true;
+        }
+
+        return array_keys($tokens);
+    }
+
+    private function resumeStorageDirectory(): string
+    {
+        return dirname(__DIR__) . '/storage/resumes';
+    }
+
+    private function extractResumeText(?array $profile): string
+    {
+        if (!is_array($profile)) {
+            return '';
+        }
+
+        $storageName = trim((string) ($profile['resume_storage_name'] ?? ''));
+        $filename = trim((string) ($profile['resume_filename'] ?? ''));
+        if ($storageName === '' || $filename === '') {
+            return '';
+        }
+
+        $filePath = $this->resumeStorageDirectory() . '/' . basename($storageName);
+        if (!is_file($filePath)) {
+            return $filename;
+        }
+
+        $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+        $text = '';
+
+        if ($extension === 'docx' && class_exists(ZipArchive::class)) {
+            $zip = new ZipArchive();
+            if ($zip->open($filePath) === true) {
+                $xml = $zip->getFromName('word/document.xml');
+                if (is_string($xml) && $xml !== '') {
+                    $text = strip_tags(html_entity_decode($xml, ENT_QUOTES | ENT_XML1, 'UTF-8'));
+                }
+                $zip->close();
+            }
+        } elseif ($extension === 'pdf') {
+            $raw = @file_get_contents($filePath, false, null, 0, 1024 * 1024);
+            if ($raw !== false) {
+                if (preg_match_all('/[A-Za-z]{3,}/', $raw, $matches)) {
+                    $text = implode(' ', array_slice(array_unique($matches[0]), 0, 400));
+                }
+            }
+        } else {
+            $raw = @file_get_contents($filePath, false, null, 0, 256 * 1024);
+            if ($raw !== false) {
+                $text = $raw;
+            }
+        }
+
+        return trim($filename . ' ' . $text);
+    }
+
+    private function scoreAvailableJob(array $job, array $profile, array $profileTokens, array $resumeTokens): int
+    {
+        $score = 0;
+        $jobCategoryTokens = $this->normalizeTextTokens($job['service_type'] ?? '');
+        $jobLocationTokens = $this->normalizeTextTokens($job['location'] ?? '');
+        $profileLocationTokens = $this->normalizeTextTokens($profile['location'] ?? '');
+
+        foreach ($jobCategoryTokens as $token) {
+            if (in_array($token, $profileTokens, true)) {
+                $score += 42;
+            }
+            if (in_array($token, $resumeTokens, true)) {
+                $score += 28;
+            }
+        }
+
+        foreach ($jobLocationTokens as $token) {
+            if (in_array($token, $profileLocationTokens, true)) {
+                $score += 14;
+                break;
+            }
+        }
+
+        $jobTextTokens = array_merge($jobCategoryTokens, $jobLocationTokens);
+        foreach (array_unique($jobTextTokens) as $token) {
+            if (in_array($token, $profileTokens, true)) {
+                $score += 6;
+            }
+            if (in_array($token, $resumeTokens, true)) {
+                $score += 4;
+            }
+        }
+
+        return $score;
+    }
+
+    private function buildJobCategories(array $jobs): array
+    {
+        $categories = [];
+
+        foreach ($jobs as $job) {
+            $label = trim((string) ($job['service_type'] ?? ''));
+            if ($label === '') {
+                continue;
+            }
+
+            $slug = strtolower(preg_replace('/[^a-z0-9]+/i', '-', $label) ?? '');
+            $slug = trim($slug, '-');
+            if ($slug === '') {
+                continue;
+            }
+
+            if (!isset($categories[$slug])) {
+                $categories[$slug] = [
+                    'label' => $label,
+                    'slug' => $slug,
+                    'count' => 0,
+                ];
+            }
+
+            $categories[$slug]['count']++;
+        }
+
+        usort($categories, static function (array $left, array $right): int {
+            return $right['count'] <=> $left['count'] ?: strcasecmp($left['label'], $right['label']);
+        });
+
+        return $categories;
+    }
+
     /**
      * Displays the job booking form for a specific provider.
      *
@@ -362,12 +527,37 @@ class JobController
     public function showAvailableJobs(): void
     {
         requireRole('provider');
-        $jobs = $this->jobs->getOpenJobs();
+
+        $jobs = array_map(static function (mixed $job): array {
+            return is_array($job) ? $job : (array) $job;
+        }, $this->jobs->getOpenJobs());
+        $userId = (string) ($_SESSION['user_id'] ?? '');
+        $profile = $userId !== '' ? $this->servantProfiles->getProfileByUserId($userId) : null;
+        $profileTokens = [];
+        $resumeTokens = [];
+
+        if (is_array($profile)) {
+            $profileTokens = array_values(array_unique(array_merge(
+                $this->normalizeTextTokens($profile['skills'] ?? []),
+                $this->normalizeTextTokens($profile['location'] ?? ''),
+                $this->normalizeTextTokens($profile['experience'] ?? ''),
+            )));
+
+            $resumeTokens = $this->normalizeTextTokens($this->extractResumeText($profile));
+        }
+
+        foreach ($jobs as &$job) {
+            $job['match_score'] = $this->scoreAvailableJob($job, is_array($profile) ? $profile : [], $profileTokens, $resumeTokens);
+        }
+        unset($job);
+
+        $jobCategories = $this->buildJobCategories($jobs);
 
         renderView('jobs/index', [
             'title' => 'Available Jobs',
             'subtitle' => 'Browse and apply for opportunities near you.',
             'jobs' => $jobs,
+            'jobCategories' => $jobCategories,
             'user' => authUser()
         ]);
     }

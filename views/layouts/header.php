@@ -15,6 +15,7 @@ $currentPage = sanitizeInput($_GET['page'] ?? 'dashboard');
     <link rel="stylesheet" href="/assets/css/styles.css">
     <link rel="stylesheet" href="/assets/css/marketplace.css">
     <link rel="stylesheet" href="/assets/css/messages.css">
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 </head>
 <body>
