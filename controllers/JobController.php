@@ -317,10 +317,6 @@ class JobController
         }
 
         $providerId = (string) ($_SESSION['user_id'] ?? '');
-        if (!$this->servantProfiles->isApprovedByUserId($providerId)) {
-            setFlash('error', 'Only verified service providers can apply to jobs.');
-            redirect('/dashboard');
-        }
 
         renderView('jobs/apply', [
             'title' => 'Apply for Job',
@@ -341,11 +337,6 @@ class JobController
         $providerId = (string) ($_SESSION['user_id'] ?? '');
         $providerName = (string) ($_SESSION['auth_user']['name'] ?? 'A provider');
         $jobId = sanitizeInput($payload['job_id'] ?? null);
-
-        if (!$this->servantProfiles->isApprovedByUserId($providerId)) {
-            setFlash('error', 'Only verified service providers can apply to jobs.');
-            redirect('/dashboard');
-        }
 
         try {
             if ($this->applications->createApplication($jobId, $providerId, '', '', '')) {
