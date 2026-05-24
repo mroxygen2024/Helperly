@@ -122,8 +122,8 @@ $jobCount = count($jobs);
 
                 <!-- Filters Sidebar - NOW RIGHT -->
                 <aside class="md:col-span-1">
+                    <div class="sticky top-10 flex flex-col gap-8 w-full">
 
-                    <div class="sticky top-10 flex flex-col gap-8">
                         <div class="bg-white rounded-[32px] p-8 shadow-sm border border-slate-100">
                             <!-- Search & Location -->
                             <div class="mb-8 space-y-4">
