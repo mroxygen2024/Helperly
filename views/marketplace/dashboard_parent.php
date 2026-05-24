@@ -168,6 +168,14 @@
                                                                 "<?= nl2br(escape($applicant['cover_letter'])); ?>"
                                                             </div>
                                                         <?php endif; ?>
+                                                        <?php if (!empty($applicant['profile_data']['guarantor'])): ?>
+                                                            <div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                                                                <h4 class="text-xs font-bold text-blue-700 mb-2 uppercase">Guarantor Info</h4>
+                                                                <p class="text-xs text-blue-800"><strong>Name:</strong> <?= escape($applicant['profile_data']['guarantor']['full_name'] ?? 'N/A'); ?></p>
+                                                                <p class="text-xs text-blue-800"><strong>Relation:</strong> <?= escape($applicant['profile_data']['guarantor']['relationship'] ?? 'N/A'); ?></p>
+                                                                <p class="text-xs text-blue-800"><strong>Phone:</strong> <?= escape($applicant['profile_data']['guarantor']['phone'] ?? 'N/A'); ?></p>
+                                                            </div>
+                                                        <?php endif; ?>
                                                     </div>
                                                 <?php endif; ?>
                                             <?php endforeach; ?>

@@ -111,6 +111,14 @@
                                         <span class="material-symbols-outlined" style="font-size: 14px;">verified</span> Verified
                                     </span>
                                 </div>
+                                <?php if (!empty($job['provider']['guarantor'])): ?>
+                                    <div class="mt-4 p-3 bg-gray-50 rounded-lg border">
+                                        <h4 class="text-xs font-bold text-gray-700 mb-2 uppercase">Guarantor Info</h4>
+                                        <p class="text-xs"><strong>Name:</strong> <?= escape($job['provider']['guarantor']['full_name'] ?? 'N/A'); ?></p>
+                                        <p class="text-xs"><strong>Relation:</strong> <?= escape($job['provider']['guarantor']['relationship'] ?? 'N/A'); ?></p>
+                                        <p class="text-xs"><strong>Phone:</strong> <?= escape($job['provider']['guarantor']['phone'] ?? 'N/A'); ?></p>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                         <?php else: ?>
                             <div class="text-center py-4 bg-gray-50 rounded-xl border border-dashed">

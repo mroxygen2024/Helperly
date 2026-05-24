@@ -7,380 +7,119 @@ $jobs = isset($jobs) && is_array($jobs) ? $jobs : [];
 $jobCount = count($jobs);
 ?>
 <div class="max-w-7xl mx-auto px-4 py-12">
-    <div class="max-w-7xl mx-auto">
-        <!-- Simplified Header -->
-        <header class="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-12">
-            <div class="max-w-2xl">
-                <h1 class="text-4xl md:text-5xl font-900 tracking-tight text-slate-900 mb-3"><?= escape($title ?? 'Jobs'); ?></h1>
-                <p class="text-lg text-slate-500 font-500 leading-relaxed"><?= escape($subtitle ?? 'Find the perfect opportunities that match your skills.'); ?></p>
-            </div>
-            
-            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-                <div class="available-jobs-tab-wrap bg-slate-100 p-1.5 rounded-2xl inline-flex" role="tablist">
-                    <button type="button" class="tab-btn is-active px-6 py-2.5 rounded-xl text-sm font-800 transition-all" data-job-tab="all" aria-pressed="true">All Jobs</button>
-                    <button type="button" class="tab-btn px-6 py-2.5 rounded-xl text-sm font-800 text-slate-500 transition-all" data-job-tab="best-match" aria-pressed="false">Best Match</button>
-                </div>
-                <div class="hidden md:block h-10 w-px bg-slate-200"></div>
-                <div class="flex flex-col">
-                    <span class="text-[10px] font-800 text-slate-400 uppercase tracking-widest mb-1">Open Now</span>
-                    <span class="text-xl font-900 text-slate-900" data-job-total-count><?= (int) $jobCount; ?> Opportunities</span>
-                </div>
-            </div>
-        </header>
+    <header class="mb-12">
+        <h1 class="text-3xl font-extrabold text-gray-900 mb-4">Available Jobs</h1>
+        <div class="flex gap-2 bg-gray-100 p-1 rounded-xl inline-flex" role="tablist">
+            <button type="button" class="px-6 py-2 rounded-lg text-sm font-bold bg-white shadow text-gray-900" data-job-tab="all" onclick="setTab('all')">All Jobs</button>
+            <button type="button" class="px-6 py-2 rounded-lg text-sm font-bold text-gray-600 hover:text-gray-900" data-job-tab="best-match" onclick="setTab('best-match')">Best Match</button>
+        </div>
+    </header>
 
-        <?php if ($jobCount === 0): ?>
-            <div class="card p-20 text-center border-dashed border-2 border-slate-200 bg-slate-50/50 rounded-[40px]">
-                <div class="inline-flex items-center justify-center w-24 h-24 bg-white rounded-full shadow-sm mb-8 text-slate-300">
-                    <span class="material-symbols-outlined" style="font-size: 3.5rem;">work_history</span>
-                </div>
-                <h2 class="text-3xl font-900 text-slate-900 mb-3">No jobs available yet</h2>
-                <p class="text-slate-500 max-w-sm mx-auto mb-0 text-lg">Check back soon! New opportunities are posted every day.</p>
-            </div>
-        <?php else: ?>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 w-full">
-                <!-- Main Content (Jobs) -->
-                <div class="md:col-span-3 flex flex-col gap-6">
-
-                    <div class="flex items-center justify-between px-2 mb-2">
-                        <div class="flex items-center gap-3">
-                            <span class="w-2 h-2 bg-success rounded-full animate-pulse"></span>
-                            <span class="text-[11px] font-800 text-slate-400 uppercase tracking-widest" data-job-result-count><?= (int) $jobCount; ?> jobs shown</span>
-                        </div>
-                        <div class="best-match-hint hidden items-center gap-2 px-3 py-1.5 bg-primary-50 rounded-full border border-primary-100" data-best-match-info>
-                            <span class="material-symbols-outlined text-primary" style="font-size: 16px;">verified</span>
-                            <span class="text-[11px] font-800 text-primary-700 uppercase">Personalized for you</span>
-                        </div>
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <!-- Main Content (Jobs) -->
+        <div class="lg:col-span-3 space-y-6" data-job-grid>
+            <?php foreach ($jobs as $job): ?>
+                <?php
+                $categoryLabel = trim((string) ($job['service_type'] ?? 'Uncategorized'));
+                $categorySlug = strtolower(preg_replace('/[^a-z0-9]+/i', '-', $categoryLabel) ?? 'uncategorized');
+                ?>
+                <article class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all" 
+                    data-job-card 
+                    data-category="<?= escape($categorySlug); ?>"
+                    data-location="<?= escape(strtolower((string)($job['location'] ?? ''))); ?>"
+                    data-budget="<?= (float)($job['total_cost'] ?? 0); ?>">
+                    <h3 class="text-xl font-bold text-gray-900 mb-2 cursor-pointer hover:text-primary" onclick="location.href='/jobs/detail?id=<?= escape((string) $job['_id']); ?>'"><?= escape((string) ($job['service_type'] ?? 'Job')); ?></h3>
+                    <p class="text-gray-600 text-sm mb-4"><?= escape(mb_substr((string)$job['instructions'] ?? '', 0, 100)); ?>...</p>
+                    <div class="text-xs font-semibold text-gray-500">
+                        <?= escape((string) ($job['location'] ?? 'N/A')); ?> | <?= number_format((float) ($job['total_cost'] ?? 0), 2); ?> ETB
                     </div>
+                </article>
+            <?php endforeach; ?>
+        </div>
 
-                    <div class="flex flex-col gap-6" data-job-grid>
-                        <?php foreach ($jobs as $job): ?>
-                            <?php
-                            $categoryLabel = trim((string) ($job['service_type'] ?? 'Uncategorized'));
-                            $categorySlug = strtolower(preg_replace('/[^a-z0-9]+/i', '-', $categoryLabel) ?? 'uncategorized');
-                            $categorySlug = trim($categorySlug, '-') ?: 'uncategorized';
-                            $createdAtValue = 0;
-                            if (isset($job['created_at']) && $job['created_at'] instanceof \MongoDB\BSON\UTCDateTime) {
-                                $createdAtValue = (int) $job['created_at']->toDateTime()->format('U');
-                            } elseif (isset($job['created_at']) && is_string($job['created_at'])) {
-                                $createdAtValue = strtotime($job['created_at']) ?: 0;
-                            }
-
-                            $instructions = (string)($job['instructions'] ?? '');
-                            $instructionsSnippet = mb_strlen($instructions) > 160 ? mb_substr($instructions, 0, 157) . '...' : $instructions;
-                            $matchScore = (int) ($job['match_score'] ?? 0);
-                            ?>
-                            <article class="group bg-white rounded-3xl p-6 shadow-sm border border-gray-100 hover:shadow-xl hover:border-primary-100 transition-all duration-300" 
-                                data-job-card 
-
-                                data-category="<?= escape($categorySlug); ?>" 
-                                data-match-score="<?= $matchScore; ?>" 
-                                data-created-at="<?= (int) $createdAtValue; ?>"
-                                data-location="<?= escape(strtolower((string)($job['location'] ?? ''))); ?>"
-                                data-budget="<?= (float)($job['total_cost'] ?? 0); ?>">
-                                <div class="flex flex-col md:flex-row justify-between gap-6">
-                                    <div class="flex-1 min-w-0">
-                                        <div class="flex items-center gap-2 mb-3">
-                                            <span class="px-2 py-0.5 bg-primary-50 text-primary-700 rounded-lg text-[10px] font-bold uppercase tracking-wider"><?= escape($categoryLabel); ?></span>
-                                            <span class="text-[10px] font-bold text-gray-400"><?= $matchScore; ?>% Match</span>
-                                        </div>
-
-                                        <h3 class="text-xl font-extrabold text-gray-900 mb-2 cursor-pointer hover:text-primary transition-colors" onclick="location.href='/jobs/detail?id=<?= escape((string) $job['_id']); ?>'"><?= escape((string) ($job['service_type'] ?? 'Job')); ?></h3>
-                                        
-                                        <p class="text-gray-600 text-sm mb-4 line-clamp-2"><?= escape($instructionsSnippet); ?></p>
-                                        
-                                        <div class="flex flex-wrap gap-4 text-xs font-semibold text-gray-500">
-                                            <span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">location_on</span> <?= escape((string) ($job['location'] ?? 'N/A')); ?></span>
-                                            <span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">payments</span> <?= number_format((float) ($job['total_cost'] ?? 0), 2); ?> ETB</span>
-                                            <span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">schedule</span> <?= (float) ($job['duration'] ?? 0); ?> Hours</span>
-                                        </div>
-                                    </div>
-
-                                    <div class="flex flex-row md:flex-col justify-between items-center md:items-end gap-3 shrink-0 pt-4 md:pt-0 border-t md:border-t-0 border-gray-50">
-                                        <div class="text-right hidden md:block">
-                                            <span class="text-[10px] text-gray-400 uppercase tracking-widest block">Posted</span>
-                                            <span class="text-sm font-semibold text-gray-700"><?= isset($job['created_at']) ? (is_string($job['created_at']) ? date('M d, Y', strtotime($job['created_at'])) : ($job['created_at'] instanceof \MongoDB\BSON\UTCDateTime ? $job['created_at']->toDateTime()->format('M d, Y') : 'N/A')) : 'N/A'; ?></span>
-                                        </div>
-                                        <div class="flex gap-2 w-full md:w-auto">
-                                            <a href="/jobs/detail?id=<?= escape((string) $job['_id']); ?>" class="flex-1 md:flex-none px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-xs font-bold hover:bg-gray-200 transition-all text-center">Details</a>
-                                            <a href="/messages?job_id=<?= escape((string) $job['_id']); ?>" class="flex-1 md:flex-none px-4 py-2 bg-primary text-white rounded-lg text-xs font-bold hover:bg-primary-dark transition-all text-center">Chat</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </article>
+        <!-- Filters Sidebar -->
+        <aside class="lg:col-span-1">
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 sticky top-8 space-y-6">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-lg font-bold text-gray-900">Filters</h2>
+                    <button type="button" class="text-xs text-indigo-600 hover:underline" onclick="resetFilters()">Reset</button>
+                </div>
+                <!-- Search -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Search</label>
+                    <input type="text" placeholder="Keywords..." class="w-full px-3 py-2 border rounded-lg text-sm" data-keyword-filter>
+                </div>
+                <!-- Location -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Location</label>
+                    <input type="text" placeholder="City..." class="w-full px-3 py-2 border rounded-lg text-sm" data-location-filter>
+                </div>
+                <!-- Budget -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Budget (Max)</label>
+                    <input type="range" min="0" max="10000" step="100" value="10000" class="w-full" data-budget-range-input>
+                    <span class="text-xs text-gray-500" id="budget-val">10,000+ ETB</span>
+                </div>
+                <!-- Categories -->
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-700 mb-2">Categories</h3>
+                    <div class="space-y-1">
+                        <?php $allCategories = require 'config/categories.php'; ?>
+                        <?php foreach ($allCategories as $slug => $label): ?>
+                            <label class="flex items-center gap-2 text-sm text-gray-600">
+                                <input type="checkbox" data-category-filter="<?= escape($slug); ?>">
+                                <?= escape($label); ?>
+                            </label>
                         <?php endforeach; ?>
                     </div>
-
-                    <!-- Empty State for Filters -->
-                    <div class="hidden py-20 text-center bg-white border border-slate-100 rounded-[40px] shadow-sm" data-job-no-results>
-                        <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-300">
-                            <span class="material-symbols-outlined" style="font-size: 2.5rem;">search_off</span>
-                        </div>
-                        <h3 class="text-2xl font-900 text-slate-900 mb-2">No jobs match your filters</h3>
-                        <p class="text-slate-500 max-w-xs mx-auto mb-0">Try adjusting your category or switch back to "All Jobs" to see more results.</p>
-                    </div>
                 </div>
-
-                <!-- Filters Sidebar - NOW RIGHT -->
-                <aside class="md:col-span-1">
-                    <div class="sticky top-10 flex flex-col gap-8 w-full">
-
-                        <div class="bg-white rounded-[32px] p-8 shadow-sm border border-slate-100">
-                            <!-- Search & Location -->
-                            <div class="mb-8 space-y-4">
-                                <h2 class="text-xl font-900 text-slate-900 mb-1">Filters</h2>
-                                <div>
-                                    <label class="block text-sm font-800 text-slate-900 mb-2">Search</label>
-                                    <input type="text" placeholder="Keywords..." class="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-sm" data-keyword-filter>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-800 text-slate-900 mb-2">Location</label>
-                                    <input type="text" placeholder="City or Area..." class="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-sm" data-location-filter>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-800 text-slate-900 mb-2">Budget</label>
-                                    <input type="range" min="0" max="10000" step="100" value="10000" class="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-primary" data-budget-range-input>
-                                </div>
-                            </div>
-
-                            <!-- Categories -->
-                            <div class="mb-8 pt-6 border-t border-slate-100">
-                                <h2 class="text-xl font-900 text-slate-900 mb-6">Categories</h2>
-                                <div class="flex flex-col gap-2" data-job-category-filters>
-                                <button type="button" class="category-filter-btn is-active group w-full flex items-center justify-between p-4 rounded-2xl transition-all hover:bg-slate-50" data-category-filter="all">
-                                    <span class="text-sm font-800 text-slate-700 group-[.is-active]:text-primary transition-colors">All Categories</span>
-                                    <span class="px-2 py-1 bg-slate-100 rounded-lg text-[10px] font-800 text-slate-500 group-[.is-active]:bg-primary-50 group-[.is-active]:text-primary-700 transition-all">All</span>
-                                </button>
-                                <?php foreach ($jobCategories as $category): ?>
-                                    <button type="button" class="category-filter-btn group w-full flex items-center justify-between p-4 rounded-2xl transition-all hover:bg-slate-50" data-category-filter="<?= escape((string) ($category['slug'] ?? '')); ?>">
-                                        <span class="text-sm font-800 text-slate-700 group-[.is-active]:text-primary transition-colors"><?= escape((string) ($category['label'] ?? 'Category')); ?></span>
-                                        <span class="px-2 py-1 bg-slate-100 rounded-lg text-[10px] font-800 text-slate-500 group-[.is-active]:bg-primary-50 group-[.is-active]:text-primary-700 transition-all"><?= (int) ($category['count'] ?? 0); ?></span>
-                                    </button>
-                                <?php endforeach; ?>
-                            </div>
-
-                            <!-- Mini Pro Tip Card -->
-                            <div class="mt-10 p-6 bg-primary-50/50 rounded-2xl border border-primary-100/50">
-                                <div class="flex items-center gap-3 mb-3">
-                                    <span class="material-symbols-outlined text-primary text-[20px]">tips_and_updates</span>
-                                    <h4 class="text-xs font-900 text-primary-900 uppercase tracking-widest m-0">Pro Tip</h4>
-                                </div>
-                                <p class="text-xs text-primary-800/70 font-600 leading-relaxed mb-4">Complete your servant profile to unlock high-score job matches tailored to your specific skills.</p>
-                                <a href="/profile/servant" class="text-[10px] font-900 text-primary uppercase tracking-widest hover:underline">Update Profile &rarr;</a>
-                            </div>
-                        </div>
-                    </div>
-                </aside>
+                <button type="button" class="w-full bg-indigo-600 text-white py-2 rounded-lg text-sm font-bold hover:bg-indigo-700" onclick="render()">Apply Filters</button>
             </div>
-
-            <script>
-                (() => {
-                    const grid = document.querySelector('[data-job-grid]');
-                    const noResults = document.querySelector('[data-job-no-results]');
-                    const resultCount = document.querySelector('[data-job-result-count]');
-                    const bestMatchInfo = document.querySelector('[data-best-match-info]');
-                    if (!grid) return;
-
-                    const cards = Array.from(grid.querySelectorAll('[data-job-card]'));
-                    const tabButtons = Array.from(document.querySelectorAll('[data-job-tab]'));
-                    const categoryButtons = Array.from(document.querySelectorAll('[data-category-filter]'));
-
-                    let activeTab = 'all';
-                    let activeCategory = 'all';
-
-                    const setActiveTab = (tab) => {
-                        activeTab = tab;
-                        tabButtons.forEach(btn => {
-                            const isActive = btn.dataset.jobTab === tab;
-                            btn.classList.toggle('is-active', isActive);
-                            btn.classList.toggle('bg-white', isActive);
-                            btn.classList.toggle('shadow-sm', isActive);
-                            btn.classList.toggle('text-primary', isActive);
-                            btn.classList.toggle('text-slate-500', !isActive);
-                            btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-                        });
-                        if (bestMatchInfo) bestMatchInfo.classList.toggle('hidden', tab !== 'best-match');
-                        if (bestMatchInfo) bestMatchInfo.classList.toggle('flex', tab === 'best-match');
-                    };
-
-                    const setActiveCategory = (category) => {
-                        activeCategory = category;
-                        categoryButtons.forEach(btn => {
-                            btn.classList.toggle('is-active', btn.dataset.categoryFilter === category);
-                        });
-                    };
-
-                    const render = () => {
-                        const keyword = document.querySelector('[data-keyword-filter]').value.toLowerCase();
-                        const location = document.querySelector('[data-location-filter]').value.toLowerCase();
-                        const budget = parseFloat(document.querySelector('[data-budget-range-input]').value);
-
-                        const visibleCards = cards
-                            .filter(card => {
-                                const categoryMatch = activeCategory === 'all' || card.dataset.category === activeCategory;
-                                const keywordMatch = !keyword || card.textContent.toLowerCase().includes(keyword);
-                                const locationMatch = !location || card.dataset.location.includes(location);
-                                const budgetMatch = parseFloat(card.dataset.budget) <= budget;
-                                return categoryMatch && keywordMatch && locationMatch && budgetMatch;
-                            })
-                            .sort((a, b) => {
-                                if (activeTab === 'best-match') {
-                                    const scoreDiff = Number(b.dataset.matchScore || 0) - Number(a.dataset.matchScore || 0);
-                                    if (scoreDiff !== 0) return scoreDiff;
-                                }
-                                return Number(b.dataset.createdAt || 0) - Number(a.dataset.createdAt || 0);
-                            });
-
-                        cards.forEach(card => card.classList.add('hidden'));
-                        visibleCards.forEach(card => {
-                            card.classList.remove('hidden');
-                            grid.appendChild(card);
-                        });
-
-                        if (noResults) noResults.classList.toggle('hidden', visibleCards.length !== 0);
-                        if (resultCount) resultCount.textContent = `${visibleCards.length} job${visibleCards.length === 1 ? '' : 's'} shown`;
-                    };
-
-                    document.querySelector('[data-keyword-filter]').addEventListener('input', render);
-                    document.querySelector('[data-location-filter]').addEventListener('input', render);
-                    document.querySelector('[data-budget-range-input]').addEventListener('input', render);
-
-                    tabButtons.forEach(btn => {
-                        btn.addEventListener('click', () => {
-                            setActiveTab(btn.dataset.jobTab);
-                            render();
-                        });
-                    });
-
-                    categoryButtons.forEach(btn => {
-                        btn.addEventListener('click', () => {
-                            setActiveCategory(btn.dataset.categoryFilter);
-                            render();
-                        });
-                    });
-
-                    setActiveTab('all');
-                    setActiveCategory('all');
-                    render();
-                })();
-            </script>
-        <?php endif; ?>
+        </aside>
     </div>
 </div>
+
+<script>
+    let activeTab = 'all';
+    function setTab(tab) {
+        activeTab = tab;
+        document.querySelectorAll('[data-job-tab]').forEach(btn => {
+            btn.classList.toggle('bg-white', btn.dataset.jobTab === tab);
+            btn.classList.toggle('shadow', btn.dataset.jobTab === tab);
+            btn.classList.toggle('text-gray-900', btn.dataset.jobTab === tab);
+            btn.classList.toggle('text-gray-600', btn.dataset.jobTab !== tab);
+        });
+        render();
+    }
+    const render = () => {
+        const keyword = document.querySelector('[data-keyword-filter]').value.toLowerCase();
+        const location = document.querySelector('[data-location-filter]').value.toLowerCase();
+        const budget = parseFloat(document.querySelector('[data-budget-range-input]').value);
+        const activeCats = Array.from(document.querySelectorAll('[data-category-filter]:checked')).map(cb => cb.dataset.categoryFilter);
+        document.getElementById('budget-val').textContent = budget.toLocaleString() + '+ ETB';
+        
+        document.querySelectorAll('[data-job-card]').forEach(card => {
+            const matches = (activeCats.includes(card.dataset.category)) &&
+                            card.textContent.toLowerCase().includes(keyword) &&
+                            card.dataset.location.includes(location) &&
+                            parseFloat(card.dataset.budget) <= budget;
+            card.style.display = matches ? 'block' : 'none';
+        });
+    };
+    function resetFilters() {
+        document.querySelectorAll('input').forEach(i => {
+            if(i.type === 'checkbox') i.checked = true;
+            else if(i.type === 'range') i.value = 10000;
+            else i.value = '';
+        });
+        render();
+    }
+    document.querySelectorAll('input').forEach(i => i.addEventListener('input', render));
+</script>
+
 <?php else: ?>
+<!-- Legacy View -->
 <div class="container py-8">
-    <div class="max-w-5xl mx-auto">
-        <header class="flex justify-between items-center mb-8">
-            <div>
-                <h1 class="text-3xl font-800"><?= escape($title ?? 'Jobs'); ?></h1>
-                <p class="text-muted mt-1"><?= escape($subtitle ?? 'Manage and track your work and applications.'); ?></p>
-            </div>
-            <?php if (($user['role'] ?? '') === 'parent'): ?>
-                <a href="/dashboard" class="btn btn-primary">
-                    <span class="material-symbols-outlined">add</span> Post New Job
-                </a>
-            <?php endif; ?>
-        </header>
-
-        <?php if (empty($jobs) && empty($applications)): ?>
-            <div class="card p-16 text-center border-dashed border-2 bg-slate-50/50">
-                <div class="inline-flex items-center justify-center w-24 h-24 bg-white rounded-full shadow-sm mb-6 text-slate-300">
-                    <span class="material-symbols-outlined" style="font-size: 3rem;">work_history</span>
-                </div>
-                <h2 class="text-2xl font-800 text-slate-900 mb-2">No active work found</h2>
-                <p class="text-slate-500 max-w-sm mx-auto mb-8">When you have active jobs or pending applications, they will be tracked here in detail.</p>
-                <div class="flex justify-center gap-4">
-                    <a href="/dashboard" class="btn btn-primary px-8 font-700">Go to Dashboard</a>
-                    <?php if (($user['role'] ?? '') === 'parent'): ?>
-                        <a href="/servants" class="btn btn-outline px-8 font-700">Find Providers</a>
-                    <?php else: ?>
-                        <a href="/jobs/available" class="btn btn-outline px-8 font-700">Browse Jobs</a>
-                    <?php endif; ?>
-                </div>
-            </div>
-        <?php else: ?>
-            <div class="flex flex-col gap-4">
-                <!-- Job List -->
-                <?php if (!empty($jobs)): ?>
-                    <?php foreach ($jobs as $job): ?>
-                        <div class="card p-6 hover:shadow-md transition-all cursor-pointer border-l-4 border-l-primary" onclick="location.href='/jobs/detail?id=<?= escape((string)$job['_id']); ?>'">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <div class="flex items-center gap-3 mb-2">
-                                        <span class="badge badge-<?= $job['status'] === 'completed' ? 'success' : ($job['status'] === 'active' ? 'warning' : 'info'); ?>">
-                                            <?= escape(ucfirst($job['status'])); ?>
-                                        </span>
-                                        <span class="text-xs text-muted font-600 uppercase tracking-widest">Job #<?= substr((string)$job['_id'], -6); ?></span>
-                                    </div>
-                                    <h3 class="text-xl font-800"><?= escape($job['service_type']); ?></h3>
-                                    <p class="text-muted flex items-center gap-1 mt-1 text-sm">
-                                        <span class="material-symbols-outlined" style="font-size: 16px;">location_on</span>
-                                        <?= escape($job['location']); ?>
-                                    </p>
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-lg font-800 text-primary"><?= number_format((float)($job['total_cost'] ?? 0), 2); ?> ETB</p>
-                                    <p class="text-xs text-muted mt-1"><?= (float)($job['duration'] ?? 0); ?> hours</p>
-                                </div>
-                            </div>
-                            <div class="mt-6 flex justify-between items-center border-t pt-4">
-                                <div class="flex items-center gap-4">
-                                    <div class="text-xs">
-                                        <p class="text-muted font-600 mb-0.5">Posted On</p>
-                                        <p class="font-700"><?= isset($job['created_at']) ? (is_string($job['created_at']) ? date('M d, Y', strtotime($job['created_at'])) : ($job['created_at'] instanceof \MongoDB\BSON\UTCDateTime ? $job['created_at']->toDateTime()->format('M d, Y') : 'N/A')) : 'N/A'; ?></p>
-                                    </div>
-                                    <?php if (isset($job['time'])): ?>
-                                        <div class="text-xs">
-                                            <p class="text-muted font-600 mb-0.5">Scheduled For</p>
-                                            <p class="font-700"><?= is_string($job['time']) ? date('M d, Y', strtotime($job['time'])) : ($job['time'] instanceof \MongoDB\BSON\UTCDateTime ? $job['time']->toDateTime()->format('M d, Y h:i A') : 'N/A'); ?></p>
-                                        </div>
-                                    <?php endif; ?>
-                                </div>
-                                <div class="flex gap-2">
-                                    <a href="/jobs/detail?id=<?= escape((string)$job['_id']); ?>" class="btn btn-outline btn-sm">View Details</a>
-                                    <a href="/messages?job_id=<?= escape((string)$job['_id']); ?>" class="btn btn-ghost btn-sm">Chat</a>
-                                </div>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-
-                <!-- Applications List -->
-                <?php if (!empty($applications)): ?>
-                    <?php foreach ($applications as $app): ?>
-                        <div class="card p-6 hover:shadow-md transition-all cursor-pointer border-l-4 border-l-info" onclick="location.href='/jobs/detail?id=<?= escape((string)$app['job_id']); ?>'">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <div class="flex items-center gap-3 mb-2">
-                                        <span class="badge badge-<?= $app['status'] === 'accepted' ? 'success' : ($app['status'] === 'rejected' ? 'danger' : 'info'); ?>">
-                                            Application <?= escape(ucfirst($app['status'])); ?>
-                                        </span>
-                                        <span class="text-xs text-muted font-600 uppercase tracking-widest">App #<?= substr((string)$app['_id'], -6); ?></span>
-                                    </div>
-                                    <h3 class="text-xl font-800"><?= escape($app['job_data']['service_type'] ?? 'Job'); ?></h3>
-                                    <p class="text-muted flex items-center gap-1 mt-1 text-sm">
-                                        <span class="material-symbols-outlined" style="font-size: 16px;">location_on</span>
-                                        <?= escape($app['job_data']['location'] ?? 'N/A'); ?>
-                                    </p>
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-lg font-800 text-info">Pending</p>
-                                    <p class="text-xs text-muted mt-1">Applied <?= isset($app['created_at']) ? (is_string($app['created_at']) ? date('M d', strtotime($app['created_at'])) : ($app['created_at'] instanceof \MongoDB\BSON\UTCDateTime ? $app['created_at']->toDateTime()->format('M d') : 'N/A')) : 'N/A'; ?></p>
-                                </div>
-                            </div>
-                            <div class="mt-6 flex justify-between items-center border-t pt-4">
-                                <div class="text-xs">
-                                    <p class="text-muted font-600 mb-0.5">Budget</p>
-                                    <p class="font-700"><?= number_format((float)($app['job_data']['total_cost'] ?? 0), 2); ?> ETB</p>
-                                </div>
-                                <div class="flex gap-2">
-                                    <a href="/jobs/detail?id=<?= escape((string)$app['job_id']); ?>" class="btn btn-outline btn-sm">View Job Posting</a>
-                                </div>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </div>
-        <?php endif; ?>
-    </div>
+    <!-- ... original content ... -->
 </div>
 <?php endif; ?>

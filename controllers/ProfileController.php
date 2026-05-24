@@ -499,6 +499,8 @@ class ProfileController
         $faydaIdFrontRemove = !empty($payload['fayda_id_front_remove']);
         $faydaIdBackRemove = !empty($payload['fayda_id_back_remove']);
         $resumeFile = $uploadedFiles['resume_upload'] ?? null;
+        $bio = sanitizeInput($payload['bio'] ?? '');
+        $category = sanitizeInput($payload['category'] ?? '');
 
         $guarantor = [
             'full_name' => sanitizeInput($payload['guarantor_full_name'] ?? null),
@@ -629,6 +631,7 @@ class ProfileController
                 'guarantor_address' => $guarantor['address'],
                 'guarantor_occupation' => $guarantor['occupation'],
                 'guarantor_national_id' => $guarantor['national_id'],
+                'category' => $category,
             ]);
             setFlash('error', implode(' ', $errors));
             redirect('/profile/servant');
@@ -651,6 +654,8 @@ class ProfileController
                 $faydaIdFrontUrl,
                 $faydaIdBackUrl,
                 $selfieUrl,
+                $bio,
+                $category,
                 $resumeStorageName,
                 $resumeFilename,
                 $resumeUploadedAt,

@@ -13,6 +13,7 @@ $statusLabel = ServantProfile::verificationStatusLabel((string) ($profile['verif
 $statusTone = normalizeRole((string) ($profile['verification_status'] ?? '')) === 'verified' ? 'badge-success' : 'badge-warning';
 $availabilityOptions = ['Full-time', 'Part-time', 'Weekdays', 'Weekends', 'Flexible'];
 $currencyOptions = ['ETB'];
+$allCategories = require 'config/categories.php';
 ?>
 
 <div class="max-w-4xl mx-auto">
@@ -137,6 +138,23 @@ $currencyOptions = ['ETB'];
                         </div>
                         <p class="field-error" data-error-for="hourly_rate"></p>
                     </div>
+                </div>
+
+                <div class="input-group" data-field="category">
+                    <label class="label">Service Category <span class="required-mark">*</span></label>
+                    <select name="category" class="select" required>
+                        <option value="">Select a category</option>
+                        <?php foreach ($allCategories as $slug => $label): ?>
+                            <option value="<?= escape($slug); ?>" <?= old('category', (string) ($profile['category'] ?? '')) === $slug ? 'selected' : ''; ?>><?= escape($label); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <p class="field-error" data-error-for="category"></p>
+                </div>
+
+                <div class="input-group" data-field="bio">
+                    <label class="label">Professional Overview (Bio)</label>
+                    <textarea name="bio" class="input" rows="4" placeholder="Tell parents about yourself, your experience, and why they should hire you..."><?= escape(old('bio', (string) ($profile['bio'] ?? ''))); ?></textarea>
+                    <p class="field-error" data-error-for="bio"></p>
                 </div>
 
                 <div class="input-group" data-field="availability">
@@ -273,7 +291,7 @@ $currencyOptions = ['ETB'];
             <p class="field-error" data-error-for="profile_photo_upload"></p>
         </div>
 
-        <!-- Section 5: ID Verification -->
+        <!-- Section 6: ID Verification -->
         <div class="card">
             <div class="card-header border-b mb-6 pb-4">
                 <h3 class="card-title">Identity Verification</h3>

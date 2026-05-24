@@ -1,125 +1,46 @@
-<!-- Header Section -->
-<div class="marketplace-header mb-12">
-    <div class="marketplace-header-content">
-        <h1 class="marketplace-title">Find Your Perfect Helper</h1>
-        <p class="marketplace-subtitle">Discover verified service providers in your area</p>
-        <div class="provider-badge-container">
-            <span class="provider-count-badge"><?= count($servants); ?> Verified Providers</span>
-        </div>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<header class="mb-10 px-4">
+    <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight">Find Your Perfect Helper</h1>
+    <p class="mt-2 text-lg text-gray-600">Discover verified service providers in your area</p>
+    <div class="mt-4 inline-flex items-center px-4 py-2 bg-indigo-50 text-indigo-700 rounded-full text-sm font-bold">
+        <?= count($servants); ?> Verified Providers
     </div>
-</div>
+</header>
 
-<!-- Main Marketplace Container with Sidebar & Content -->
-<div class="marketplace-container">
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-8 px-4">
     <!-- Filter Sidebar -->
-    <aside class="marketplace-sidebar">
-        <div class="sidebar-header-compact">
-            <h3 class="sidebar-title">Filters</h3>
-            <button type="button" class="filter-close-btn" id="filterCloseBtn" aria-label="Close filters">
-                <span class="material-symbols-outlined">close</span>
-            </button>
+    <aside class="lg:col-span-1">
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 sticky top-8">
+            <h2 class="text-lg font-bold text-gray-900 mb-6">Filters</h2>
+            <form action="/servants" method="GET" class="space-y-6">
+                <!-- Search Filter -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Search Provider</label>
+                    <input name="name" type="text" class="w-full px-3 py-2 border rounded-lg text-sm" value="<?= escape((string) ($filters['name'] ?? '')); ?>" placeholder="By name">
+                </div>
+
+                <!-- Location Filter -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Location</label>
+                    <input name="location" type="text" class="w-full px-3 py-2 border rounded-lg text-sm" value="<?= escape((string) ($filters['location'] ?? '')); ?>" placeholder="Any location">
+                </div>
+
+                <!-- Skill Filter -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Skill or Service</label>
+                    <input name="skill" type="text" class="w-full px-3 py-2 border rounded-lg text-sm" value="<?= escape((string) ($filters['skill'] ?? '')); ?>" placeholder="What skill?">
+                </div>
+                
+                <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-2 rounded-lg text-sm hover:bg-indigo-700 transition">Apply Filters</button>
+                <a href="/servants" class="block text-center text-sm text-gray-500 hover:underline">Clear All</a>
+            </form>
         </div>
-
-        <form action="/servants" method="GET" class="filter-form" id="filterForm">
-            <!-- Search Filter -->
-            <div class="filter-group">
-                <label class="filter-label">Search Provider</label>
-                <div class="filter-input-wrapper">
-                    <span class="filter-input-icon material-symbols-outlined">search</span>
-                    <input name="name" type="text" class="filter-input" 
-                           value="<?= escape((string) ($filters['name'] ?? '')); ?>" 
-                           placeholder="By name">
-                </div>
-            </div>
-
-            <!-- Location Filter -->
-            <div class="filter-group">
-                <label class="filter-label">Location</label>
-                <div class="filter-input-wrapper">
-                    <span class="filter-input-icon material-symbols-outlined">location_on</span>
-                    <input name="location" type="text" class="filter-input" 
-                           value="<?= escape((string) ($filters['location'] ?? '')); ?>" 
-                           placeholder="Any location">
-                </div>
-            </div>
-
-            <!-- Skill Filter -->
-            <div class="filter-group">
-                <label class="filter-label">Skill or Service</label>
-                <div class="filter-input-wrapper">
-                    <span class="filter-input-icon material-symbols-outlined">construction</span>
-                    <input name="skill" type="text" class="filter-input" 
-                           value="<?= escape((string) ($filters['skill'] ?? '')); ?>" 
-                           placeholder="What skill?">
-                </div>
-            </div>
-
-            <!-- Rating Filter -->
-            <div class="filter-group">
-                <label class="filter-label">Minimum Rating</label>
-                <select name="rating" class="filter-select">
-                    <option value="">Any Rating</option>
-                    <option value="4.5" <?= ($filters['rating'] ?? '') == '4.5' ? 'selected' : ''; ?>>4.5+ ★ Superior</option>
-                    <option value="4.0" <?= ($filters['rating'] ?? '') == '4.0' ? 'selected' : ''; ?>>4.0+ ★ Great</option>
-                    <option value="3.0" <?= ($filters['rating'] ?? '') == '3.0' ? 'selected' : ''; ?>>3.0+ ★ Good</option>
-                </select>
-            </div>
-
-            <!-- Price Filter -->
-            <div class="filter-group">
-                <label class="filter-label">Max Hourly Rate (ETB)</label>
-                <div class="filter-input-wrapper">
-                    <span class="filter-input-icon material-symbols-outlined">payments</span>
-                    <input name="max_price" type="number" class="filter-input" 
-                           value="<?= escape((string) ($filters['max_price'] ?? '')); ?>" 
-                           placeholder="No limit">
-                </div>
-            </div>
-
-            <!-- Experience Filter -->
-            <div class="filter-group">
-                <label class="filter-label">Experience</label>
-                <select name="experience" class="filter-select">
-                    <option value="">Any Experience</option>
-                    <option value="1+ years" <?= ($filters['experience'] ?? '') == '1+ years' ? 'selected' : ''; ?>>1+ years</option>
-                    <option value="3+ years" <?= ($filters['experience'] ?? '') == '3+ years' ? 'selected' : ''; ?>>3+ years</option>
-                    <option value="5+ years" <?= ($filters['experience'] ?? '') == '5+ years' ? 'selected' : ''; ?>>5+ years</option>
-                </select>
-            </div>
-
-            <!-- Availability Filter -->
-            <div class="filter-group">
-                <label class="filter-label">Availability</label>
-                <select name="availability" class="filter-select">
-                    <option value="">Any Availability</option>
-                    <option value="Full-time" <?= ($filters['availability'] ?? '') == 'Full-time' ? 'selected' : ''; ?>>Full-time</option>
-                    <option value="Part-time" <?= ($filters['availability'] ?? '') == 'Part-time' ? 'selected' : ''; ?>>Part-time</option>
-                    <option value="Weekend" <?= ($filters['availability'] ?? '') == 'Weekend' ? 'selected' : ''; ?>>Weekends Only</option>
-                </select>
-            </div>
-
-            <!-- Filter Actions -->
-            <div class="filter-actions">
-                <button type="submit" class="btn btn-primary filter-apply-btn">
-                    <span class="material-symbols-outlined">filter_alt</span>
-                    Apply Filters
-                </button>
-                <a href="/servants" class="btn btn-outline filter-clear-btn">
-                    Clear All
-                </a>
-            </div>
-        </form>
     </aside>
 
-    <!-- Filter Toggle for Mobile -->
-    <button type="button" class="filter-toggle-btn" id="filterToggleBtn" aria-label="Open filters">
-        <span class="material-symbols-outlined">tune</span>
-        <span>Filters</span>
-    </button>
-
     <!-- Main Content Area -->
-    <div class="marketplace-content">
-        <div class="providers-grid">
+    <div class="lg:col-span-3">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
             <!-- Empty State -->
             <?php if (empty($servants)): ?>
@@ -129,108 +50,39 @@
                     <p>Try adjusting your filters to find more providers</p>
                 </div>
             <?php else: ?>
-                <!-- Provider Cards Grid -->
-                <?php foreach ($servants as $servant): ?>
-                    <?php $profile = $servant['profile'] ?? []; ?>
-                    <div class="provider-card">
-                        <!-- Card Header with Image -->
-                        <div class="provider-card-image-wrapper">
-                            <?php if (!empty($profile['profile_photo'])): ?>
-                                <img src="<?= escape((string) $profile['profile_photo']); ?>" 
-                                     alt="<?= escape((string) ($servant['name'] ?? 'Servant')); ?>" 
-                                     class="provider-card-image">
-                            <?php else: ?>
-                                <div class="provider-card-placeholder">
-                                    <span class="material-symbols-outlined">person</span>
-                                </div>
-                            <?php endif; ?>
-                            
-                            <!-- Verification Badge -->
-                            <div class="provider-verification-badge">
-                                <span class="material-symbols-outlined">verified</span>
-                                <span>Verified</span>
-                            </div>
-
-                            <!-- Rating Overlay -->
-                            <div class="provider-rating-overlay">
-                                <span class="material-symbols-outlined provider-star">star</span>
-                                <span class="provider-rating-value"><?= number_format((float)($profile['rating'] ?? 0), 1); ?></span>
-                                <span class="provider-rating-count">(<?= (int)($profile['rating_count'] ?? 0); ?>)</span>
-                            </div>
-                        </div>
-
-                        <!-- Card Body -->
-                        <div class="provider-card-body">
-                            <!-- Header with Name and Rate -->
-                            <div class="provider-header">
-                                <div class="provider-name-section">
-                                    <h3 class="provider-name"><?= escape((string) ($servant['name'] ?? 'Unnamed')); ?></h3>
-                                    <div class="provider-location">
-                                        <span class="material-symbols-outlined">location_on</span>
-                                        <span><?= escape((string) ($profile['location'] ?? 'Unknown')); ?></span>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <?php foreach ($servants as $servant): ?>
+                            <?php $profile = $servant['profile'] ?? []; ?>
+                            <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-shadow">
+                                <div class="flex items-center gap-4 mb-4">
+                                    <?php if (!empty($profile['profile_photo'])): ?>
+                                        <img src="<?= escape((string) $profile['profile_photo']); ?>" class="w-16 h-16 rounded-full object-cover">
+                                    <?php else: ?>
+                                        <div class="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center font-bold text-indigo-700"><?= mb_substr(escape($servant['name'] ?? 'P'), 0, 1); ?></div>
+                                    <?php endif; ?>
+                                    <div>
+                                        <h3 class="font-bold text-lg"><?= escape((string) ($servant['name'] ?? 'Unnamed')); ?></h3>
+                                        <div class="flex items-center text-sm text-gray-500">
+                                            <span class="material-symbols-outlined text-sm mr-1">location_on</span>
+                                            <?= escape((string) ($profile['location'] ?? 'Unknown')); ?>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="provider-rate-section">
-                                    <p class="provider-rate"><?= escape((string) ($profile['rate'] ?? '0')); ?></p>
-                                    <p class="provider-rate-unit">ETB/hr</p>
+                                <div class="mb-4 text-sm text-gray-700">
+                                    <span class="font-semibold">Rate:</span> <?= escape((string) ($profile['rate'] ?? '0')); ?> ETB/hr
                                 </div>
-                            </div>
-
-                            <!-- Experience -->
-                            <div class="provider-experience">
-                                <span class="experience-label">Experience</span>
-                                <span class="experience-value"><?= escape((string) ($profile['experience'] ?? 'N/A')); ?></span>
-                            </div>
-
-                            <!-- Skills Tags -->
-                            <div class="provider-skills">
-                                <?php $skills = $profile['skills'] ?? []; ?>
-                                <?php if (is_iterable($skills)): ?>
-                                    <?php foreach (array_slice((array)$skills, 0, 4) as $skill): ?>
-                                        <span class="skill-badge"><?= escape((string) $skill); ?></span>
+                                <div class="flex flex-wrap gap-2 mb-4">
+                                    <?php foreach (array_slice((array)($profile['skills'] ?? []), 0, 3) as $skill): ?>
+                                        <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs font-semibold"><?= escape((string) $skill); ?></span>
                                     <?php endforeach; ?>
-                                <?php endif; ?>
-                            </div>
-
-                            <!-- Stats Section -->
-                            <div class="provider-stats">
-                                <div class="stat-item">
-                                    <span class="stat-icon material-symbols-outlined">schedule</span>
-                                    <div class="stat-content">
-                                        <span class="stat-label">Response</span>
-                                        <span class="stat-value"><?= escape($profile['response_time'] ?? 'Under 1h'); ?></span>
-                                    </div>
                                 </div>
-                                <div class="stat-item">
-                                    <span class="stat-icon material-symbols-outlined">people</span>
-                                    <div class="stat-content">
-                                        <span class="stat-label">Repeats</span>
-                                        <span class="stat-value"><?= (int)($profile['repeat_clients'] ?? 0); ?></span>
-                                    </div>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-icon material-symbols-outlined">check_circle</span>
-                                    <div class="stat-content">
-                                        <span class="stat-label">Success</span>
-                                        <span class="stat-value-success"><?= (int)($profile['completion_rate'] ?? 100); ?>%</span>
-                                    </div>
+                                <div class="flex gap-2">
+                                    <button type="button" class="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-xs font-bold hover:bg-gray-200 transition-all text-center" data-open-modal="profile_modal_<?= escape((string)($profile['user_id'] ?? '')); ?>">Profile</button>
+                                    <a href="/job/book?provider_id=<?= escape((string) ($profile['user_id'] ?? '')); ?>" class="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-all text-center">Book</a>
                                 </div>
                             </div>
-
-                            <!-- Action Buttons -->
-                            <div class="provider-actions">
-                                <button type="button" class="btn btn-outline provider-btn-secondary" data-open-modal="profile_modal_<?= escape((string)$profile['user_id']); ?>">
-                                    <span class="material-symbols-outlined">person_outline</span>
-                                    View Profile
-                                </button>
-                                <a href="/job/book?provider_id=<?= escape((string) ($profile['user_id'] ?? '')); ?>" class="btn btn-primary provider-btn-primary">
-                                    <span class="material-symbols-outlined">event_available</span>
-                                    Book Now
-                                </a>
-                            </div>
-                        </div>
+                        <?php endforeach; ?>
                     </div>
-                <?php endforeach; ?>
             <?php endif; ?>
         </div>
     </div>

@@ -95,6 +95,8 @@ class ServantProfile
         string $faydaIdFrontUrl,
         string $faydaIdBackUrl,
         string $selfieUrl,
+        string $bio = '',
+        string $category = '',
         ?string $resumeStorageName = null,
         ?string $resumeFilename = null,
         mixed $resumeUploadedAt = null,
@@ -121,6 +123,8 @@ class ServantProfile
             'fayda_id_front_url' => trim($faydaIdFrontUrl),
             'fayda_id_back_url' => trim($faydaIdBackUrl),
             'selfie_url' => trim($selfieUrl),
+            'bio' => trim((string)$bio),
+            'category' => trim((string)$category),
             'guarantor' => [
                 'full_name' => trim((string) ($guarantor['full_name'] ?? '')),
                 'phone' => trim((string) ($guarantor['phone'] ?? '')),
